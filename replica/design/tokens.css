@@ -1,0 +1,131 @@
+/* Generated from tokens.json by build_tokens.py. Do not edit by hand. */
+
+:root {
+  --dc-color-bg: #F5F3EE;
+  --dc-color-surface: #FFFFFF;
+  --dc-color-surface-sunken: #ECE9E2;
+  --dc-color-border: #DDD8CE;
+  --dc-color-border-input: #8B857A;
+  --dc-color-text: #1C1B18;
+  --dc-color-text-muted: #5E5A52;
+  --dc-color-accent: #F2B705;
+  --dc-color-accent-hover: #E0A800;
+  --dc-color-accent-pressed: #C99700;
+  --dc-color-on-accent: #1C1B18;
+  --dc-color-accent-text: #7A4F00;
+  --dc-color-accent-tint: #FCEFC7;
+  --dc-color-control-on: #1C1B18;
+  --dc-color-ink: #1C1B18;
+  --dc-color-on-ink: #F5F3EE;
+  --dc-color-on-ink-muted: #B9B3A7;
+  --dc-color-focus: #1F5FAD;
+  --dc-color-info: #1F5FAD;
+  --dc-color-info-bg: #E3ECF8;
+  --dc-color-success: #1C6E46;
+  --dc-color-success-bg: #DFF0E6;
+  --dc-color-warning: #8A5300;
+  --dc-color-warning-bg: #FBEBCB;
+  --dc-color-danger: #B3261E;
+  --dc-color-danger-bg: #F9E1DE;
+  --dc-color-on-danger: #FFFFFF;
+  --dc-color-signature-ink: #14213D;
+  --dc-scrim: rgba(28, 27, 24, 0.48);
+  --dc-font-sans: 'Onest', 'Noto Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --dc-font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  --dc-text-caption: 12px;
+  --dc-leading-caption: 16px;
+  --dc-weight-caption: 500;
+  --dc-text-sm: 14px;
+  --dc-leading-sm: 20px;
+  --dc-weight-sm: 400;
+  --dc-text-base: 16px;
+  --dc-leading-base: 24px;
+  --dc-weight-base: 400;
+  --dc-text-lg: 18px;
+  --dc-leading-lg: 26px;
+  --dc-weight-lg: 600;
+  --dc-text-xl: 22px;
+  --dc-leading-xl: 28px;
+  --dc-weight-xl: 700;
+  --dc-text-2xl: 28px;
+  --dc-leading-2xl: 34px;
+  --dc-weight-2xl: 700;
+  --dc-text-figure: 32px;
+  --dc-leading-figure: 36px;
+  --dc-weight-figure: 700;
+  --dc-text-button: 16px;
+  --dc-leading-button: 20px;
+  --dc-weight-button: 600;
+  --dc-space-0: 0px;
+  --dc-space-1: 4px;
+  --dc-space-2: 8px;
+  --dc-space-3: 12px;
+  --dc-space-4: 16px;
+  --dc-space-5: 20px;
+  --dc-space-6: 24px;
+  --dc-space-7: 32px;
+  --dc-space-8: 40px;
+  --dc-space-9: 48px;
+  --dc-space-10: 64px;
+  --dc-radius-sm: 4px;
+  --dc-radius-md: 8px;
+  --dc-radius-lg: 12px;
+  --dc-radius-pill: 999px;
+  --dc-border-hairline: 1px;
+  --dc-border-input: 1px;
+  --dc-border-strong: 2px;
+  --dc-border-focus: 3px;
+  --dc-shadow-bar: 0 -1px 0 rgba(28,27,24,.08), 0 -6px 16px rgba(28,27,24,.06);
+  --dc-shadow-sheet: 0 -8px 24px rgba(28,27,24,.16);
+  --dc-shadow-pop: 0 8px 24px rgba(28,27,24,.16);
+  --dc-motion-fast: 120ms;
+  --dc-motion-base: 200ms;
+  --dc-motion-sheet: 280ms;
+  --dc-motion-ease: cubic-bezier(.2,.8,.2,1);
+  --dc-motion-ease-out: cubic-bezier(0,0,.2,1);
+  --dc-size-touch-min: 48px;
+  --dc-size-control-sm: 40px;
+  --dc-size-control-md: 48px;
+  --dc-size-control-lg: 56px;
+  --dc-size-icon: 24px;
+  --dc-size-icon-sm: 20px;
+  --dc-layout-content-max: 1120px;
+  --dc-layout-reading-max: 720px;
+  --dc-layout-gutter-mobile: 16px;
+  --dc-layout-gutter-desktop: 32px;
+  --dc-layout-header-mobile: 56px;
+  --dc-layout-header-desktop: 64px;
+  --dc-layout-tabbar: 64px;
+  --dc-layout-action-bar: 80px;
+  --dc-layout-sidebar: 248px;
+  --dc-layout-preview-pane: 520px;
+  --dc-z-base: 0;
+  --dc-z-sticky: 10;
+  --dc-z-tabbar: 20;
+  --dc-z-sheet: 40;
+  --dc-z-dialog: 50;
+  --dc-z-toast: 60;
+}
+
+/* Base rules every screen relies on. */
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--dc-color-bg);
+  color: var(--dc-color-text);
+  font-family: var(--dc-font-sans);
+  font-size: var(--dc-text-base);
+  line-height: var(--dc-leading-base);
+  font-synthesis: none;
+  -webkit-font-smoothing: antialiased;
+}
+:focus-visible { outline: var(--dc-border-focus) solid var(--dc-color-focus); outline-offset: 2px; }
+.dc-num { font-variant-numeric: tabular-nums; }
+/* Money and document numbers are atomic: "1 874 300 ₸" and "СЧ-2026-0014" never break across lines. */
+.dc-money { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.dc-code { font-family: var(--dc-font-mono); font-variant-numeric: tabular-nums; letter-spacing: 0; white-space: nowrap; }
+/* Russian labels: wrap whole words onto a second line, never hyphenate or truncate a button. */
+.dc-label { white-space: normal; overflow-wrap: normal; hyphens: manual; text-wrap: balance; min-width: 0; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; scroll-behavior: auto !important; }
+}

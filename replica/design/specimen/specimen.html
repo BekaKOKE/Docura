@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Docura specimen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- All subsets on purpose: ₸ is in latin-ext, Kazakh letters in cyrillic-ext. -->
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400..800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../tokens.css">
+<style>
+  * { box-sizing: border-box; }
+  main { max-width: var(--dc-layout-content-max); margin: 0 auto; padding: 16px 16px 120px; }
+  h1 { font-size: var(--dc-text-2xl); line-height: var(--dc-leading-2xl); margin: 8px 0 4px; }
+  h2 { font-size: var(--dc-text-lg); line-height: var(--dc-leading-lg); margin: 32px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--dc-color-border); }
+  .muted { color: var(--dc-color-text-muted); }
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  /* minmax(0,1fr): one long Russian word must never widen the whole column. */
+  .phone { width: 100%; max-width: 360px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .row { display: flex; gap: 8px; }
+  .row > * { min-width: 0; }
+  .swatch { border: 1px solid var(--dc-color-border); border-radius: var(--dc-radius-md); overflow: hidden; background: var(--dc-color-surface); font-size: var(--dc-text-caption); line-height: var(--dc-leading-caption); }
+  .swatch div { height: 48px; border-bottom: 1px solid var(--dc-color-border); }
+  .swatch span { display: block; padding: 6px 8px; }
+
+  /* Button */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: var(--dc-size-control-md); padding: 10px 16px;
+         border-radius: var(--dc-radius-md); border: 1px solid transparent; font: var(--dc-weight-button) var(--dc-text-button)/var(--dc-leading-button) var(--dc-font-sans);
+         text-align: center; cursor: pointer; }
+  .btn > span { white-space: normal; overflow-wrap: normal; hyphens: manual; text-wrap: balance; min-width: 0; }
+  .btn svg { width: 20px; height: 20px; flex: none; }
+  .btn-lg { min-height: var(--dc-size-control-lg); padding: 12px 20px; }
+  .btn-block { width: 100%; }
+  .btn-primary { background: var(--dc-color-accent); color: var(--dc-color-on-accent); }
+  .btn-primary:hover { background: var(--dc-color-accent-hover); }
+  .btn-secondary { background: var(--dc-color-surface); color: var(--dc-color-text); border-color: var(--dc-color-border-input); }
+  .btn-ghost { background: transparent; color: var(--dc-color-accent-text); }
+  .btn-danger { background: var(--dc-color-danger); color: var(--dc-color-on-danger); }
+  .btn-ink { background: var(--dc-color-ink); color: var(--dc-color-on-ink); }
+
+  /* Badge */
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: var(--dc-radius-pill); font-size: var(--dc-text-caption); line-height: var(--dc-leading-caption); font-weight: 600; white-space: nowrap; }
+  .b-neutral { background: var(--dc-color-surface-sunken); color: var(--dc-color-text-muted); }
+  .b-info { background: var(--dc-color-info-bg); color: var(--dc-color-info); }
+  .b-success { background: var(--dc-color-success-bg); color: var(--dc-color-success); }
+  .b-warning { background: var(--dc-color-warning-bg); color: var(--dc-color-warning); }
+  .b-danger { background: var(--dc-color-danger-bg); color: var(--dc-color-danger); }
+
+  /* Field */
+  label.f { display: grid; gap: 6px; font-size: var(--dc-text-sm); font-weight: 600; }
+  .input { min-height: var(--dc-size-control-md); padding: 11px 12px; border: 1px solid var(--dc-color-border-input); border-radius: var(--dc-radius-md); background: var(--dc-color-surface); font: 400 16px/24px var(--dc-font-sans); color: var(--dc-color-text); width: 100%; }
+  .money { display: flex; align-items: center; border: 1px solid var(--dc-color-border-input); border-radius: var(--dc-radius-md); background: var(--dc-color-surface); min-height: 48px; padding: 0 12px; }
+  .money input { border: 0; outline: 0; font: 600 18px/24px var(--dc-font-sans); font-variant-numeric: tabular-nums; text-align: right; width: 100%; background: transparent; color: var(--dc-color-text); }
+  .money .cur { margin-left: 6px; color: var(--dc-color-text-muted); font-weight: 600; font-size: 18px; }
+  .stepper { display: inline-flex; align-items: stretch; border: 1px solid var(--dc-color-border-input); border-radius: var(--dc-radius-md); overflow: hidden; background: var(--dc-color-surface); }
+  .stepper button { width: 48px; min-height: 48px; border: 0; background: var(--dc-color-surface-sunken); font-size: 22px; color: var(--dc-color-text); }
+  .stepper input { width: 72px; border: 0; text-align: center; font: 600 16px/24px var(--dc-font-sans); font-variant-numeric: tabular-nums; }
+
+  /* Cards and rows */
+  .card { background: var(--dc-color-surface); border: 1px solid var(--dc-color-border); border-radius: var(--dc-radius-lg); }
+  .list-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 14px 16px; border-bottom: 1px solid var(--dc-color-border); min-height: 72px; }
+  .list-row:last-child { border-bottom: 0; }
+  .list-row .who { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .list-row .sum { font-weight: 700; text-align: right; }
+  .list-row .meta { font-size: var(--dc-text-sm); color: var(--dc-color-text-muted); }
+  .bar { height: 4px; border-radius: 2px; background: var(--dc-color-surface-sunken); overflow: hidden; grid-column: 1 / -1; }
+  .bar i { display: block; height: 100%; background: var(--dc-color-control-on); }
+  .line { padding: 12px 16px; display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; border-bottom: 1px solid var(--dc-color-border); }
+  .line .t { font-weight: 600; }
+  .totals { background: var(--dc-color-ink); color: var(--dc-color-on-ink); border-radius: var(--dc-radius-lg); padding: 12px 16px; display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; }
+  .totals .k { color: var(--dc-color-on-ink-muted); font-size: var(--dc-text-sm); }
+  .totals .v { text-align: right; font-size: var(--dc-text-sm); }
+  .totals .big { font-size: var(--dc-text-xl); line-height: var(--dc-leading-xl); font-weight: 700; color: var(--dc-color-on-ink); }
+  .kpis { display: grid; gap: 12px; grid-template-columns: minmax(0,1fr); }
+  @media (min-width: 768px) { .kpis { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+  .kpi { padding: 16px; display: grid; gap: 4px; }
+  .kpi .fig { font-size: var(--dc-text-figure); line-height: var(--dc-leading-figure); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  /* Checks */
+  .checks { font-size: var(--dc-text-sm); }
+  .checks td, .checks th { padding: 6px 8px; border-bottom: 1px solid var(--dc-color-border); text-align: left; vertical-align: top; }
+  .pass { color: var(--dc-color-success); font-weight: 700; }
+  .fail { color: var(--dc-color-danger); font-weight: 700; }
+  .glyphs { font-size: 40px; line-height: 52px; letter-spacing: 2px; overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<main>
+  <p class="muted" style="margin:0">Docura · дизайн-система v1 · образец</p>
+  <h1>Шрифт, знак ₸ и длинные подписи</h1>
+
+  <h2>Глифы (Onest)</h2>
+  <div class="glyphs"><span data-glyph="tenge">₸</span> <span data-glyph="kazakh">ӘәҒғҚқҢңӨөҰұҮүҺһІі</span> <span data-glyph="yo">Ёё</span> <span data-glyph="numero">№</span></div>
+  <p class="dc-num" style="font-size:22px; font-weight:700"><span data-glyph="money" id="money"></span></p>
+  <p style="font-family:var(--dc-font-mono); font-size:18px; line-height:28px"><span data-glyph="mono"><span class="dc-code">КП-2026-0001</span> · БИН <span class="dc-code">123456789012</span> · <span class="dc-code">KZ86125KZT5004100100</span> <span class="dc-money">345 ₸</span></span></p>
+  <table class="checks" id="checks"><thead><tr><th>Проверка</th><th>Результат</th></tr></thead><tbody></tbody></table>
+
+  <h2>Цвета (роли)</h2>
+  <div class="grid" id="swatches"></div>
+
+  <h2>Шкала шрифта</h2>
+  <div style="display:grid; gap:8px">
+    <div style="font-size:32px;line-height:36px;font-weight:700" class="dc-num">1 250 000 ₸</div>
+    <div style="font-size:28px;line-height:34px;font-weight:700">Коммерческое предложение</div>
+    <div style="font-size:22px;line-height:28px;font-weight:700">Счёт на оплату № <span class="dc-money">СЧ-2026-0014</span></div>
+    <div style="font-size:18px;line-height:26px;font-weight:600">Акт выполненных работ (оказанных услуг)</div>
+    <div style="font-size:16px;line-height:24px">Замена смесителя и прокладка труб ПП 20 мм, Қайрат Әбілқасымов, мкр. Самал-2</div>
+    <div style="font-size:14px;line-height:20px" class="muted">Действует до 02.11.2026 · Открыт 3 раза</div>
+    <div style="font-size:12px;line-height:16px;font-weight:500" class="muted">ИИК KZ86 125K ZT50 0410 0100 · Кбе 19 · КНП 859</div>
+  </div>
+
+  <h2>Кнопки на ширине 360 px</h2>
+  <div class="phone" id="buttons">
+    <button class="btn btn-primary btn-lg btn-block"><i data-lucide="send"></i><span>Отправить на подпись</span></button>
+    <button class="btn btn-primary btn-lg btn-block"><span>Сформировать акт выполненных работ</span></button>
+    <button class="btn btn-secondary btn-block"><span>Зарегистрироваться</span></button>
+    <div class="row">
+      <button class="btn btn-secondary btn-lg" style="flex:1"><i data-lucide="share-2"></i><span>Отправить</span></button>
+      <button class="btn btn-primary btn-lg" style="flex:1.4"><i data-lucide="pen-line"></i><span>Подписать сейчас</span></button>
+    </div>
+    <!-- Rule: at most 2 buttons side by side on a phone. A third action goes into "Ещё". -->
+    <div class="row">
+      <button class="btn btn-primary" style="flex:1.6"><span>Выставить счёт</span></button>
+      <button class="btn btn-secondary" style="flex:1"><i data-lucide="more-horizontal"></i><span>Ещё</span></button>
+    </div>
+    <!-- Long single words stack, full width. -->
+    <button class="btn btn-secondary btn-block"><span>Перевыставить</span></button>
+    <button class="btn btn-ghost btn-block"><span>Предварительный просмотр</span></button>
+    <button class="btn btn-danger btn-block"><span>Аннулировать документ</span></button>
+  </div>
+
+  <h2>Статусы</h2>
+  <div style="display:flex; flex-wrap:wrap; gap:8px">
+    <span class="badge b-neutral">Черновик</span><span class="badge b-info">Отправлен</span><span class="badge b-info">Просмотрен ×3</span>
+    <span class="badge b-success">Подписан</span><span class="badge b-danger">Отклонён</span><span class="badge b-warning">Срок истёк</span>
+    <span class="badge b-warning">Ждёт оплаты</span><span class="badge b-warning">Оплачен на 40%</span><span class="badge b-success">Оплачен</span>
+    <span class="badge b-danger">Просрочен 5 дн.</span><span class="badge b-neutral">Аннулирован</span>
+  </div>
+
+  <h2>Поля</h2>
+  <div class="phone">
+    <label class="f">Клиент<input class="input" value="ТОО «Алатау Құрылыс Сервис»"></label>
+    <label class="f">Цена за единицу<span class="money"><input inputmode="decimal" value="18 500"><span class="cur">₸</span></span></label>
+    <div class="f" style="font-weight:600; font-size:14px">Количество, м²
+      <span class="stepper"><button aria-label="Меньше">−</button><input inputmode="decimal" value="12,5"><button aria-label="Больше">+</button></span></div>
+  </div>
+
+  <h2>Список счетов (строки)</h2>
+  <div class="card phone" style="gap:0">
+    <div class="list-row"><span class="who">Қайрат Әбілқасымов</span><span class="sum dc-money">246 400 ₸</span>
+      <span class="meta">СЧ-2026-0014 · до 24.10</span><span><span class="badge b-warning">Оплачен на 40%</span></span>
+      <span class="bar"><i style="width:40%"></i></span></div>
+    <div class="list-row"><span class="who">ТОО «Алатау Құрылыс Сервис»</span><span class="sum dc-money">1 250 000 ₸</span>
+      <span class="meta">СЧ-2026-0011 · до 12.10</span><span><span class="badge b-danger">Просрочен 7 дн.</span></span></div>
+    <div class="list-row"><span class="who">Ирина Ёлкина</span><span class="sum dc-money">38 900 ₸</span>
+      <span class="meta">СЧ-2026-0009 · 03.10</span><span><span class="badge b-success">Оплачен</span></span></div>
+  </div>
+
+  <h2>Строки КП и итог</h2>
+  <div class="phone">
+    <div class="card">
+      <div class="line"><span class="t">Укладка ламината</span><span class="dc-money">231 250 ₸</span><span class="muted" style="font-size:14px">12,5 м² × 18 500 ₸</span><span class="muted" style="font-size:14px">НДС 37 000 ₸</span></div>
+      <div class="line" style="border-bottom:0"><span class="t">Плинтус, монтаж</span><span class="dc-money">48 000 ₸</span><span class="muted" style="font-size:14px">32 п.м. × 1 500 ₸</span><span class="muted" style="font-size:14px">НДС 7 680 ₸</span></div>
+    </div>
+    <div class="totals"><span class="k">Без НДС</span><span class="v dc-money">279 250 ₸</span><span class="k">НДС 16%</span><span class="v dc-money">44 680 ₸</span>
+      <span class="big">Итого</span><span class="big dc-money">323 930 ₸</span></div>
+  </div>
+
+  <h2>Показатели (дашборд)</h2>
+  <div class="kpis">
+    <div class="card kpi"><span class="muted" style="font-size:14px">Получено в октябре</span><span class="fig dc-money">1 874 300 ₸</span><span class="muted" style="font-size:14px">12 оплат</span></div>
+    <div class="card kpi"><span class="muted" style="font-size:14px">Ждём оплаты</span><span class="fig dc-money">2 316 000 ₸</span><span style="font-size:14px; color:var(--dc-color-danger); font-weight:600">из них просрочено <span class="dc-money">1 250 000 ₸</span></span></div>
+  </div>
+</main>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script>
+  try { lucide.createIcons({ attrs: { 'stroke-width': 2, 'aria-hidden': 'true' } }); } catch (e) {}
+  const fmt = new Intl.NumberFormat('ru-KZ', { style: 'currency', currency: 'KZT' });
+  const money = fmt.format(1250000.5);
+  document.getElementById('money').textContent = money;
+
+  fetch('../tokens.json').then(r => r.json()).catch(() => null).then(t => {
+    if (!t) return;
+    const box = document.getElementById('swatches');
+    for (const [k, v] of Object.entries(t.color)) {
+      box.insertAdjacentHTML('beforeend', `<div class="swatch"><div style="background:${v}"></div><span><b>${k}</b><br>${v}</span></div>`);
+    }
+  });
+
+  document.fonts.ready.then(() => {
+    const rows = [];
+    const sep = [...money].filter(c => !/[0-9,.₸]/.test(c)).map(c => 'U+' + c.codePointAt(0).toString(16).toUpperCase().padStart(4, '0'));
+    rows.push(['Intl ru-KZ KZT', `${money} (separators: ${[...new Set(sep)].join(', ') || 'none'})`, true]);
+    const fonts = [...document.fonts].filter(f => f.status === 'loaded').map(f => f.family.replace(/"/g, '') + ' ' + f.unicodeRange.slice(0, 18));
+    rows.push(['Font faces loaded', fonts.length + ' (' + [...new Set(fonts.map(f => f.split(' U+')[0]))].join(', ') + ')', fonts.length > 0]);
+    // A button fails if its label spills out of it, or if the button itself runs past its container or the viewport.
+    let overflow = 0;
+    const vw = document.documentElement.clientWidth;
+    document.querySelectorAll('.btn').forEach(b => {
+      const r = b.getBoundingClientRect(), c = b.parentElement.getBoundingClientRect();
+      const bad = b.scrollWidth > b.clientWidth + 1 || r.right > c.right + 1 || r.right > vw + 1;
+      if (bad) { overflow++; b.style.outline = '3px solid red'; }
+    });
+    rows.push(['Buttons that overflow (label, container or viewport)', overflow === 0 ? '0' : overflow + ' (outlined red)', overflow === 0]);
+    const pageOverflow = document.documentElement.scrollWidth - vw;
+    rows.push(['Horizontal page scroll', pageOverflow > 0 ? pageOverflow + 'px' : 'none', pageOverflow <= 0]);
+    const tb = document.querySelector('#checks tbody');
+    for (const [k, v, ok] of rows) tb.insertAdjacentHTML('beforeend', `<tr><td>${k}</td><td class="${ok ? 'pass' : 'fail'}">${v}</td></tr>`);
+    document.body.dataset.ready = '1';
+  });
+</script>
+</body>
+</html>

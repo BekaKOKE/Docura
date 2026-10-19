@@ -1,0 +1,39 @@
+  AAA   15.53:1  text                     on bg                   
+  AAA   17.22:1  text                     on surface              
+  AAA   14.20:1  text                     on surface-sunken       
+  AAA   15.02:1  text                     on accent-tint          
+  AA     6.19:1  text-muted               on bg                   
+  AA     6.86:1  text-muted               on surface              
+  AA     5.66:1  text-muted               on surface-sunken       
+  AAA    9.47:1  on-accent                on accent               
+  AAA    8.01:1  on-accent                on accent-hover         
+  AA     6.49:1  on-accent                on accent-pressed       
+  AA     6.43:1  accent-text              on bg                   
+  AAA    7.13:1  accent-text              on surface              
+  AA     6.22:1  accent-text              on accent-tint          
+  AAA   15.53:1  on-ink                   on ink                  
+  AAA    8.26:1  on-ink-muted             on ink                  
+  AAA    9.47:1  accent                   on ink                  
+  AA     6.37:1  info                     on surface              
+  AA     5.34:1  info                     on info-bg              
+  AA     6.23:1  success                  on surface              
+  AA     5.27:1  success                  on success-bg           
+  AA     6.33:1  warning                  on surface              
+  AA     5.38:1  warning                  on warning-bg           
+  AA     6.54:1  danger                   on surface              
+  AA     5.89:1  danger                   on bg                   
+  AA     5.25:1  danger                   on danger-bg            
+  AA     6.54:1  on-danger                on danger               
+  AAA   15.97:1  signature-ink            on surface              
+  PASS   3.66:1  border-input             on surface              ui
+  PASS   3.30:1  border-input             on bg                   ui
+  PASS   5.74:1  focus                    on bg                   ui
+  PASS   6.37:1  focus                    on surface              ui
+  PASS   3.50:1  focus                    on accent               ui
+  PASS   5.25:1  focus                    on surface-sunken       ui
+  PASS   9.47:1  text                     on accent               ui
+  PASS  17.22:1  control-on               on surface              ui
+  PASS  15.53:1  control-on               on bg                   ui
+  PASS  15.02:1  control-on               on accent-tint          ui
+
+  37 pairs, 0 failing AA

@@ -1,0 +1,85 @@
+feature,area,priority,original,clone,notes
+Sign up with email or phone and start a trial with no card,onboarding,must,yes,no,Khosmos: 14 days that start when the first company is set up (CGV art. 3)
+"Company setup: legal form, БИН/ИИН, address, logo, bank details (ИИК, БИК, Кбе), VAT payer flag",onboarding,must,yes,no,FR fields (SIRET etc.) swapped for KZ ones. Validate the ИИН/БИН checksum
+Responsive PWA usable one-handed on a phone on site,platform,must,yes,no,Khosmos ships native apps plus web. Docura is a PWA (user's choice)
+Russian and Kazakh interface,platform,must,no,no,KZ addition. Khosmos is French only
+"Quote editor: client, lines and totals in about a minute",quotes,must,yes,no,Core loop. Target ≤6 taps (F02)
+"Line item: title, description, quantity, unit, unit price, VAT rate per line",quotes,must,yes,no,Multiple VAT rates per line since v2.0.1
+Line discount in % or amount,quotes,must,yes,no,v2.0.1
+Up to 10 photos on a quote or invoice,quotes,must,yes,no,Was 5 before V2.3
+"Quote validity period (24h, 48h, 30 days or custom)",quotes,must,yes,no,From the free generator page
+Save drafts as often as needed,quotes,must,yes,no,V3
+Reorder lines by drag and drop,quotes,must,yes,no,V2.3
+PDF generation for every document type,documents,must,yes,no,KZ: bilingual RU/KK. Needs Cyrillic and Kazakh glyphs
+Live preview of the document before sending,documents,must,yes,no,V3 brings it to mobile
+"Send by email, WhatsApp or SMS with a secure link",sharing,must,yes,no,WhatsApp through a wa.me link is enough for v1
+On-site finger signature,signature,must,yes,no,Signature pad on the tradesperson's phone
+Remote signing page for clients without an account,signature,must,yes,no,Public token link
+SMS code check before remote signing,signature,must,yes,no,V2.3. Only if the client has a phone. Needs a KZ SMS provider
+Open tracking: how many times and when the client opened the quote,signature,must,yes,no,One of Khosmos's main selling points
+Notification when a quote is opened or signed (push and email),notifications,must,yes,no,Signed email added in V3
+"Convert a signed quote to deposit invoices, by % or amount, several allowed",invoicing,must,yes,no,KZ: a deposit is a счёт на оплату (prepayment)
+Final invoice with deposits deducted automatically,invoicing,must,yes,no,Balance = quote total minus deposits invoiced
+Create an invoice from scratch without a quote,invoicing,must,yes,no,App Store description
+Credit note by amount or %,invoicing,must,yes,no,V3. KZ VAT payers also need a corrected ESF (see ESF row)
+Sequential numbering per document type and company,documents,must,yes,no,Legal requirement. Numbers never reused
+"Record payments: amount, method, date, partial payments",payments,must,yes,no,"KZ methods: cash, transfer, card, Kaspi"
+Unpaid and overdue invoices list,payments,must,yes,no,"""Track unpaid invoices in real time"""
+"Client database: person or company, contact, address, ИИН/БИН",clients,must,yes,no,Phone optional for company clients (V3)
+"Catalogue of services and materials with unit (incl. flat rate), price and VAT",catalogue,must,yes,no,Inventory page since v2.0. Flat-rate unit in V3
+"Invite members with roles: captain, member, subcontractor, accountant",team,must,yes,no,Captain = full access
+"Permissions: create documents, see the client base, see other members' documents",team,must,yes,no,From the FAQ
+"VAT 16%, 0% and exempt, with ""Без НДС"" printed automatically for non-VAT payers; ₸ formatting",compliance,must,yes,no,KZ version of the FR 0% / art. 293B rule. Rate from 2026-01-01 (K1)
+"Счёт на оплату PDF with ИИК, БИК, Кбе and КНП",kz-documents,must,no,no,KZ addition. How Kazakh clients pay by bank transfer
+АВР (form Р-1) PDF generated from a quote or invoice,kz-documents,must,no,no,"KZ addition. The closing document for works. Signed by both parties"
+"Subscription: trial, monthly or annual, per extra seat, cancel at period end",billing,must,yes,no,Khosmos blocks generation after 3 days unpaid. Needs a KZ payment provider instead of Stripe
+"Signature certificate: initiator, signer, time, device, method",signature,should,yes,no,V2.3
+Document event history,documents,should,yes,no,V2.3
+Cancel a deposit invoice in two clicks through a credit note,invoicing,should,yes,no,V2.3
+Job report with photos and description,documents,should,yes,no,Used for insurance claims. KZ: attach to the АВР
+"Cover page on quotes: company presentation, reviews, projects, licences",quotes,should,yes,no,V2.4. Khosmos says it lifts signing rate from ~30% to 50%+ (their claim)
+"Terms of sale, legal notices and licences printed on quotes",quotes,should,yes,no,FR ten-year insurance becomes KZ construction licences
+"Dashboard: cashed vs invoiced revenue, acceptance rate, statuses, activity",reports,should,yes,no,From the third-party review
+"""Quotes to invoice"" report: signed but not fully invoiced",reports,should,yes,no,V2.3
+Payments received by period and performance per member,reports,should,yes,no,
+Filter invoices by payment method and search by total amount,invoicing,should,yes,no,V2.3. Matches a bank transfer to its invoice
+Subcontractors see only their own documents and figures,team,should,yes,no,Row-level permission
+Locked articles: use the catalogue but cannot add items or change prices,team,should,yes,no,V3
+Several companies in one account with a switcher,team,should,yes,no,FAQ
+Accountant read-only access and CSV export,team,should,yes,no,v2.0.1
+"Client record: timestamped comments, photos, documents, quick call/SMS/directions",clients,should,yes,no,V3
+Edit client details from inside a document form,clients,should,yes,no,V2.3
+"Payment reminders by SMS, email or WhatsApp",payments,should,yes,no,App Store description. Schedule unknown
+Several devices per account with push to all,platform,should,yes,no,V3 multisession
+Offline drafts and photo queue on site,platform,should,unknown,no,Weak connection on site. Unknown if Khosmos's native apps do this
+Issue ESF through the IS ESF API for VAT payers,kz-compliance,should,no,no,"KZ addition, takes the place of Factur-X. Company ЭЦП through NCALayer (desktop). Buyer confirmation for corrections (K3-K5)"
+Kaspi Pay payment link on invoices and the signing page,payments,should,no,no,KZ addition. Pasted by hand because no public invoicing API was found (K7)
+Long-press a line to see its full title and description,quotes,could,yes,no,V2.3
+Google review request by SMS,clients,could,yes,no,App Store. KZ: 2GIS reviews may matter more than Google
+Duplicate a client record,clients,could,yes,no,V3
+Pinch zoom on the document preview,documents,could,yes,no,V3
+Date and time of the quote printed for call-out jobs,quotes,could,yes,no,FAQ (emergency trades)
+Inbox for received e-invoices,kz-compliance,could,yes,no,V3 in FR. KZ: received ESF from suppliers
+Sign the АВР with an ЭЦП through an eGov Mobile QR code,kz-compliance,could,no,no,KZ addition (K8). Gives the АВР full legal weight
+Import existing clients and articles from CSV,onboarding,could,yes,no,Khosmos offers assisted migration as a service
+Free public quote generator with no account,marketing,could,yes,no,Khosmos uses it for acquisition
+Starter catalogue of articles per trade,catalogue,could,no,no,Docura idea. No sign Khosmos has it
+NF525 certification,compliance,could,yes,skip,France only
+Factur-X invoices sent through a French accredited platform (PA),compliance,could,yes,skip,France only. Replaced by the ESF row
+Registration in the French e-invoicing directory,compliance,could,yes,skip,France only
+VAT attestations (attestation TVA),compliance,could,yes,skip,France only. Also removed from the app in 2.4.1
+CEE / MaPrimeRénov' grant deducted on quotes,quotes,could,yes,skip,French state grants. No KZ equivalent
+"Art. 293B ""TVA non applicable"" notice",compliance,could,yes,skip,"Replaced by ""Без НДС"" in the VAT row"
+E-reporting to the French tax administration,compliance,could,yes,skip,France only
+Hub Khosmos,other-products,could,yes,skip,Separate product. Outside the chosen slice
+Business phone line (téléphonie),other-products,could,yes,skip,Telecom product. Outside the slice
+Directory listing (annuaire),other-products,could,yes,skip,Needs their audience and network
+Planning and scheduling,other-products,could,yes,skip,Outside the chosen slice. Could be a later phase
+Marketplace for buying and selling businesses,other-products,could,yes,skip,Separate product built on their network
+Insurance offers,other-products,could,yes,skip,Partner deal
+Amex business card,other-products,could,yes,skip,Partner deal
+Referral programme,other-products,could,yes,skip,Part of Hub
+"Free calculators (VAT, director simulator, company valuation)",marketing,could,yes,skip,Marketing tools. Not the product
+Native iOS and Android apps with Apple in-app purchase,platform,could,yes,skip,User chose a PWA
+WhatsApp support 7 days a week 9:00-23:00,service,could,yes,skip,A support team. Not software
+"15,000+ users, reviews and testimonials",network,could,yes,skip,What the app owns. Cannot be cloned
