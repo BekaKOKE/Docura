@@ -46,7 +46,7 @@ These assumptions come from the recon and the reference product's positioning. V
 
 | goal | measure, checked in user tests |
 | --- | --- |
-| A quote signed on the spot | a trained user creates a КП with an existing client and 2 catalogue lines and gets it signed in **≤ 6 taps** (typing excluded) and **under 60 s** |
+| A quote signed on the spot | a trained user creates a КП with an existing client and 2 catalogue lines and sends its link in **≤ 6 taps** (typing excluded) and **under 60 s**; the client signs it from that link on the spot |
 | No retyping | signed КП → счёт на оплату in **≤ 3 taps**; signed КП → АВР in **≤ 3 taps** |
 | Know who owes what | record a payment in **≤ 3 taps**; the dashboard answers "how much came in, how much is owed" without scrolling on a 360 px phone |
 | Clients can sign alone | a first-time client signs from a WhatsApp link on a 360 px Android phone without help |
@@ -64,12 +64,11 @@ These assumptions come from the recon and the reference product's positioning. V
 | 4 | **Quote (КП) with a VAT toggle** | client, lines (title, qty, unit, unit price), validity, note; a per-document **НДС 16 %** switch (see §6) |
 | 5 | **Live preview** | the document is rendered as it will print, while editing; the same renderer serves the public page and the PDF (browser print) |
 | 6 | **Drafts and numbering** | documents start as drafts with no number; issuing assigns the next number per company, type and year (`КП-2026-0001`, `СЧ-2026-0001`, `АВР-2026-0001`), with no gaps |
-| 7 | **Public link with a signature** | issuing a КП creates a private link; the client signs on screen (§7); a hand-over mode for signing on the owner's phone; the client can also decline |
-| 8 | **Quote → invoice → act** | from a signed КП: a счёт for the full amount, a prepayment (% or ₸) or the remainder; an АВР with the quote's lines (§5) |
+| 7 | **Public link with a finger signature** | issuing a КП creates a private link, shared by WhatsApp or copied; the client signs on screen with a finger (§7) |
+| 8 | **Quote → invoice → act** | from a signed КП: a счёт for the full amount, a prepayment (% or ₸) or the remainder; an АВР with the quote's lines, ready to print (§5) |
 | 9 | **Manual payment tracking** | record payments against a счёт (amount, method, date, note); partly paid, paid and overdue are worked out automatically; remove a wrong entry |
-| 10 | **Simple dashboard** | received and invoiced in the period, owed and overdue, signed quotes not yet invoiced, recent events; no charts |
-| 11 | **Cancel and duplicate** | cancel an issued document (an invoice only when it has no payments); duplicate any document into a new draft |
-| 12 | **Russian UI** | all strings in Russian through `t()`; data and fonts support Kazakh letters and ₸ from day one |
+| 10 | **Simple dashboard** | for the current month: received, owed (with the overdue part), invoiced, quotes signed; the list of signed quotes not yet invoiced; no charts |
+| 11 | **Russian UI** | all strings in Russian through `t()`; data and fonts support Kazakh letters and ₸ from day one |
 
 ### Post-MVP
 
@@ -89,6 +88,11 @@ Not built in the MVP. The suggested order follows `replica/architecture.md` (P1�
 | Photos | up to 10 photos on a document; needs file storage |
 | Notifications | push or email when a quote is signed |
 | Credit notes | correcting an issued invoice by amount or % |
+| Cancel and duplicate | cancel an issued document (an invoice only when it has no payments); duplicate a document into a new draft (D5) |
+| Typed-name signature | allowed by D1, and `'typed'` stays in the schema; built after the MVP (D5) |
+| Decline | the client declines a quote from the public link, with an optional reason (D5) |
+| Hand-over mode | "Подписать сейчас" opens the signing page full screen on the owner's phone (D5) |
+| Client signs the act | on-screen signature of the АВР through the public link (D5) |
 
 ## 5. Document flow
 
@@ -102,10 +106,13 @@ Not built in the MVP. The suggested order follows `replica/architecture.md` (P1�
     └──── delete (drafts only)        any sent or issued document ──cancel──▶ cancelled      any document ──duplicate──▶ new draft
 ```
 
+**In the MVP (D5):** the client can't decline, nobody can cancel or duplicate, and the АВР ends at `issued` (printed and signed on paper).
+Those transitions come after the MVP. The schema already allows their states, so adding them needs no migration.
+
 **КП (quote)**
 - States: `draft → sent → signed | declined`, plus `cancelled`. "Expired" is derived from `valid_until` in the company's time zone.
 - Editable while `draft` or `sent`. Every save bumps a version, and the client can't sign a version they haven't seen.
-- Frozen once signed, declined or cancelled. To change it: duplicate.
+- Frozen once signed, declined or cancelled. To change it: duplicate (post-MVP, D5; in the MVP, create a new КП).
 
 **Счёт на оплату (invoice)**
 - Created from a signed КП in the MVP.
@@ -120,7 +127,7 @@ Not built in the MVP. The suggested order follows `replica/architecture.md` (P1�
 **АВР (act of completed works)**
 - Created from a signed КП, with its lines and a work date per line, laid out after form Р-1. One active act per КП in the MVP.
 - States: `draft → issued → signed`, plus `cancelled`.
-- The client can sign it on screen through the same public link mechanism. The executor's side is signed on paper in the MVP; ЭЦП comes post-MVP.
+- In the MVP both sides sign the printed act on paper. The client signing it on screen through the public link comes after the MVP (D5); ЭЦП comes later still.
 
 **Payments**
 - Recorded by hand against an issued invoice: amount > 0, method (`cash`, `transfer`, `card`, `kaspi`, `other`), date, note.
@@ -143,14 +150,14 @@ Not built in the MVP. The suggested order follows `replica/architecture.md` (P1�
 
 ## 7. Signature on screen
 
-**What it is.** The client confirms a КП or an АВР on screen with one of two methods:
+**What it is.** The client confirms a КП on screen. The schema allows two methods; **the MVP builds `drawn` only** (D5):
 
-| method | how | stored as |
-| --- | --- | --- |
-| `drawn` | signs with a finger or mouse in the signature box | PNG of the strokes |
-| `typed` | types their full name instead of drawing, for people who can't draw on a screen | PNG rendered by the app from the typed name |
+| method | how | stored as | when |
+| --- | --- | --- | --- |
+| `drawn` | signs with a finger or mouse in the signature box | PNG of the strokes | MVP |
+| `typed` | types their full name instead of drawing, for people who can't draw on a screen | PNG rendered by the app from the typed name | post-MVP (D1, D5) |
 
-Both methods require:
+Signing an АВР on screen is post-MVP too (D5). Every signature requires:
 - the signer's name
 - two checkboxes: acceptance of the document number and amount, and consent to process personal data (name, signature, IP address)
 - the version the signer saw: if the document changed since, signing is refused and the new version is shown
@@ -169,7 +176,7 @@ Each signature is stored with:
 - This holds until a KZ lawyer has reviewed it and ЭЦП signing (post-MVP) exists.
 - A signature on screen is a record that the client accepted the document. It is not an ЭЦП.
 
-**Hand-over mode.** "Подписать сейчас" opens the same signing page full screen on the owner's phone, for the client to sign on site. No views are counted, and the event records that it was a hand-over.
+**Hand-over mode (post-MVP, D5).** "Подписать сейчас" will open the same signing page full screen on the owner's phone, for the client to sign on site; no views are counted, and the event records that it was a hand-over. In the MVP the owner opens the public link on their own phone instead.
 
 ## 8. Language and platform
 
@@ -185,7 +192,7 @@ The MVP does **not**:
 - do accounting: no ledger, no tax returns, no 1С export, no warehouse or stock;
 - issue ЭСФ, sign with ЭЦП, or claim legal equivalence to a handwritten or ЭЦП signature;
 - take online payments or connect to a bank or Kaspi; it doesn't act as a cash register (ККМ);
-- send email or SMS; documents are shared as a link through WhatsApp, `sms:`, `mailto:` or copy;
+- send email or SMS; documents are shared as a link through WhatsApp or copy;
 - charge subscriptions (no Stripe or billing in v1);
 - support several users per company, or several companies per user, in the UI;
 - work offline beyond keeping an unsaved draft on the device;
@@ -219,3 +226,4 @@ The MVP does **not**:
 | D2 | 2026-10-19 | **Open tracking** and **line discounts** move to post-MVP. `replica/architecture.md` had them in the MVP "at no extra cost" | the schema columns stay, unused, at their defaults; the MVP API and UI don't expose them, and components.md's "Открыт ×N" badge and "Добавить скидку" link are post-MVP |
 | D3 | 2026-10-19 | **Live preview, drafts and numbering, cancel and duplicate** are confirmed in the MVP | as described in §4 and §5 |
 | D4 | 2026-10-19 | In the MVP, invoices and acts are created **only from a signed КП** | `POST …/documents` with `type=invoice` or `act` and no source is not used by the MVP UI |
+| D5 | 2026-10-19 | **MVP cut to 40 issues** for the deadline. **Cancel, duplicate, the typed signature, decline, hand-over mode and the client signing the act** move to post-MVP, along with CI (#6), security hardening (#56), the printing check (#57) and the performance budget (#58). 15 small tasks merge into neighbours. The act is still created from the signed quote, and prepayment invoices stay. The Postgres run in #51 becomes optional ("if time allows") | §3, §4, §5 and §7 updated; supersedes the cancel and duplicate part of D3; `docs/tasks.md` lists the merges. The schema is unchanged: `'typed'`, `declined` and `cancelled` stay allowed for later |

@@ -1,6 +1,6 @@
 # Docura: draft backlog
 
-Status: **draft**. Milestones M0–M6 are the same as in `docs/process.md` and `replica/architecture.md`. These are not GitHub issues yet. When a task becomes an issue, the pm grooms it into `docs/task-template.md`
+Status: **draft**, cut to 40 mvp tasks on 2026-10-19 (spec decision D5): 5 tasks moved to post-MVP and 15 merged into others. Milestones M0–M6 are the same as in `docs/process.md` and `replica/architecture.md`. Each task is GitHub issue #N with the same number. When a task becomes an issue, the pm grooms it into `docs/task-template.md`
 (acceptance criteria, out of scope, constraints) and qa adds test cases (`docs/process.md`). Scope follows `docs/spec.md`.
 
 Each task is sized for **one session**: one person or agent can implement it and the qa-engineer can verify it in the running app of its milestone.
@@ -12,18 +12,18 @@ Format of each task:
 
 ## Milestones
 
-| milestone | name | tasks | mvp | post-mvp |
+| milestone | name | open tasks | mvp | post-mvp |
 | --- | --- | --- | --- | --- |
-| M0 | Repo and tooling | T01–T06 | 6 | 0 |
-| M1 | Frontend with mock services | T07–T33 | 27 | 0 |
-| M2 | openapi.yaml | T34–T35 | 2 | 0 |
-| M3 | Backend in memory | T36–T46 | 11 | 0 |
-| M4 | SQLite with SQLAlchemy and Alembic | T47–T51 | 5 | 0 |
-| M5 | Connect frontend and backend | T52–T55 | 4 | 0 |
-| M6 | Hardening and real testing | T56–T60 | 5 | 0 |
-| P | Post-MVP (after M6) | T61–T78 | 0 | 18 |
-| | **total** | **78** | **60** | **18** |
-
+| M0 | Repo and tooling | T01, T02, T04 | 3 | 0 |
+| M1 | Frontend with mock services | T07, T10, T11, T12, T14, T15, T16, T17, T18, T19, T21, T22, T24, T27, T28, T30, T31, T32 | 18 | 0 |
+| M2 | openapi.yaml | T34 | 1 | 0 |
+| M3 | Backend in memory | T36, T37, T38, T39, T41, T42, T43, T44, T45 | 9 | 0 |
+| M4 | SQLite with SQLAlchemy and Alembic | T47, T49, T50, T51 | 4 | 0 |
+| M5 | Connect frontend and backend | T52, T54, T55 | 3 | 0 |
+| M6 | Hardening and real testing | T59, T60 | 2 | 0 |
+| P | Post-MVP (after M6) | T06, T26, T56, T57, T58, T61, T62, T63, T64, T65, T66, T67, T68, T69, T70, T71, T72, T73, T74, T75, T76, T77, T78 | 0 | 23 |
+| | **open total** | **63** | **40** | **23** |
+| — | Merged into other tasks (closed as not planned) | 15 | | |
 
 ---
 
@@ -42,46 +42,27 @@ Format of each task:
 
 Write `docs/kz-rules.md`, one rule per row: the rule, the source URL, the date checked, and the effect on the spec or architecture. Close or update spec §11 open questions 2 and 3.
 
-### T02 · Repository hygiene and README · `mvp`
-**Goal:** the repo behaves the same on Windows and Linux, and a newcomer knows where to start.
-**Description:** add `.gitattributes` (LF for text files, binary for PNG), `.editorconfig`, and a `README.md` with the one-paragraph pitch, links to `docs/` and `AGENTS.md`, and the planned folders. Create `contracts/` with a short README.
+### T02 · Repository hygiene, README and issue templates · `mvp`
+**Goal:** the repo behaves the same on Windows and Linux, a newcomer knows where to start, and issues are created in the agreed shape.
+**Description:**
+- `.gitattributes` (LF for text files, binary for PNG) and `.editorconfig`.
+- `README.md` with the one-paragraph pitch, links to `docs/` and `AGENTS.md`, and the planned folders; `contracts/` with a short README.
+- Two issue templates, copied from `docs/task-template.md` and `docs/process.md`: `.github/ISSUE_TEMPLATE/task.md` (Goal, Acceptance criteria, Out of scope, Constraints, Test cases) and `user-test-bug.md` (Goal, Description). The labels already exist.
 
-### T03 · GitHub issue templates · `mvp`
-**Goal:** issues are created in the agreed shape without retyping the template.
-**Description:** add two templates, copied from `docs/task-template.md` and `docs/process.md`:
-- `.github/ISSUE_TEMPLATE/task.md`: Goal, Acceptance criteria, Out of scope, Constraints, Test cases
-- `user-test-bug.md`: Goal, Description
+Merged from T03.
 
-The labels `mvp`, `post-mvp` and `user-test-bug` already exist (created 2026-10-19).
+### T04 · Shared test vectors and seed data · `mvp`
+**Goal:** the frontend and backend prove the same maths against one set of expected results and start from the same realistic data.
+**Description:**
+- `contracts/test-vectors/` with JSON cases and a README describing the format:
+  - `totals.json`: half-up rounding, VAT on and off, per-line VAT, comma quantities
+  - `prepayment.json`: % and ₸ prepayments, the remainder, the cap at the quote total
+  - `bin-iin.json`: valid and invalid
+  - `iik.json`: mod-97
+  - `amount-in-words.json`: 0, 1, 2, 5, 21, 1 000 000, tiyn declension
+- `contracts/fixtures/seed.json`: a VAT-payer company (ИП Сейткали Б.) and a non-VAT company, 3 clients with Kazakh and Russian names, 8 catalogue items, and documents in every MVP status (draft, sent, signed, expired, invoice partly paid and overdue, act issued).
 
-### T04 · Shared test vectors for money and validators · `mvp`
-**Goal:** the frontend and backend prove the same maths against one set of expected results.
-**Description:** `contracts/test-vectors/` with JSON cases and a README describing the format:
-- `totals.json`: half-up rounding, VAT on and off, per-line VAT, comma quantities
-- `prepayment.json`: % and ₸ prepayments, the remainder, the cap at the quote total
-- `bin-iin.json`: valid and invalid
-- `iik.json`: mod-97
-- `amount-in-words.json`: 0, 1, 2, 5, 21, 1 000 000, tiyn declension
-
-Values come from T01 and spec §6. Depends on T01.
-
-### T05 · Shared seed data · `mvp`
-**Goal:** the mock and the backend start from the same realistic data.
-**Description:** `contracts/fixtures/seed.json` containing:
-- a VAT-payer company (ИП Сейткали Б.) and a non-VAT company
-- 3 clients with Kazakh and Russian names
-- 8 catalogue items
-- documents in every status (draft, sent, signed, declined, expired, invoice partly paid and overdue, act issued)
-
-Use the test data from `docs/team/qa.md`. No real personal data.
-
-### T06 · CI workflow · `mvp`
-**Goal:** every push runs the checks, so red never reaches main unnoticed.
-**Description:** a GitHub Actions workflow:
-- frontend: `npm ci`, `typecheck`, `test`, `build`
-- backend: `uv sync`, `ruff`, `pytest`
-
-Each job runs only when its folder exists. Uses `actions/checkout`, `actions/setup-node` and `astral-sh/setup-uv`; confirm these actions with the user first (AGENTS.md rule 2).
+Values come from T01 and spec §6; test data from `docs/team/qa.md`; no real personal data. Merged from T05. Depends on T01.
 
 ---
 
@@ -90,35 +71,26 @@ Each job runs only when its folder exists. Uses `actions/checkout`, `actions/set
 The design agent generates all the MVP screens at once from `replica/design/brief.md` (T07). The rest of M1 wires each screen to the
 mock services and brings it up to `replica/design/components.md`.
 
-### T07 · Generate the frontend from the design brief and import it · `mvp`
-**Goal:** a first React + TypeScript version of every MVP screen exists in `frontend/`.
-**Description:** run `replica/design/brief.md` in the chosen tool (Claude Design, v0 or Lovable), export the code into `frontend/` and commit it as generated. List any screens the tool skipped as follow-ups in the issue.
-
-### T08 · Align the generated app with AGENTS.md · `mvp`
-**Goal:** the generated code follows the repo's commands, folders and dependency rules.
+### T07 · Generate the frontend from the design brief, import it and align it with AGENTS.md · `mvp`
+**Goal:** a first React + TypeScript version of every MVP screen exists in `frontend/` and follows the repo's commands, folders and dependency rules.
 **Description:**
-- Add the npm scripts from AGENTS.md: `dev`, `test`, `typecheck`, `lint`, `build`; `gen:api` stays a stub until T35.
+- Run `replica/design/brief.md` in the chosen tool (Claude Design, v0 or Lovable), export the code into `frontend/` and commit it as generated. List any screens the tool skipped as follow-ups in the issue.
+- Add the npm scripts from AGENTS.md: `dev`, `test`, `typecheck`, `lint`, `build`; `gen:api` stays a stub until T34.
 - Create `src/services`, `src/domain`, `src/documents` and `src/i18n`.
 - Audit `package.json` against the agreed list. Remove what isn't needed, and ask about anything else.
 - Remove direct `fetch` calls and external services.
 
-### T09 · Design tokens, fonts and layout rules · `mvp`
-**Goal:** every screen uses Docura's tokens and renders Russian, Kazakh and ₸ correctly.
-**Description:**
-- Wire up `tokens.css` and the Tailwind mapping from `replica/design/`.
-- Load Onest and IBM Plex Mono with the cyrillic, cyrillic-ext and latin-ext subsets.
-- Add the `.dc-money`, `.dc-code` and `.dc-label` helpers.
-- Use `minmax(0,1fr)` grids.
-- Replace raw hex and default shadcn styling.
+Merged from T08.
 
-Verify with the specimen checks: ₸ drawn by Onest, no horizontal scroll at 360 px.
-
-### T10 · App shell, navigation and t() · `mvp`
-**Goal:** a user can reach every MVP screen on a phone and on desktop, all in Russian.
+### T10 · App shell: tokens, fonts, navigation and t() · `mvp`
+**Goal:** a user can reach every MVP screen on a phone and on desktop, in Russian, with Docura's tokens and with Russian, Kazakh and ₸ rendering correctly.
 **Description:**
+- Wire up `tokens.css` and the Tailwind mapping from `replica/design/`; load Onest and IBM Plex Mono with the cyrillic, cyrillic-ext and latin-ext subsets; add the `.dc-money`, `.dc-code` and `.dc-label` helpers; use `minmax(0,1fr)` grids; replace raw hex and default shadcn styling.
 - Phone: TabBar (Главная · Документы · [+] · Клиенты · Ещё) and the [+] create sheet. Desktop (≥ 1024 px): Sidebar. TopBar on both.
 - Routes for all MVP screens, with the Документы segmented control (КП · Счета · Акты).
 - `t()` with a Russian dictionary and an `Intl.PluralRules('ru')` helper; every visible string goes through it.
+
+Merged from T09.
 
 ### T11 · Services interfaces, types and error codes · `mvp`
 **Goal:** every screen gets its data through one typed services layer.
@@ -128,13 +100,14 @@ Verify with the specimen checks: ₸ drawn by Onest, no horizontal scroll at 360
 - `ApiError` with the agreed codes.
 - `index.ts` picks the implementation from `VITE_API_MODE`; the http implementation stays a stub that throws until M5.
 
-### T12 · Domain: money, totals and formatting · `mvp`
-**Goal:** the editor shows totals that are correct to the tiyn.
-**Description:** `src/domain/money.ts` and `totals.ts`: parse "12,5" and "18 500", integer tiyn, line net/VAT/gross with half-up rounding, document totals, the prepayment VAT split, and `Intl ru-KZ` formatting. Vitest runs `contracts/test-vectors/totals.json` and `prepayment.json`. Depends on T04.
+### T12 · Domain: money, totals, validators and amount in words · `mvp`
+**Goal:** the editor shows totals that are correct to the tiyn, requisites are validated, and documents can print sums in words.
+**Description:**
+- `src/domain/money.ts` and `totals.ts`: parse "12,5" and "18 500", integer tiyn, line net/VAT/gross with half-up rounding, document totals, the prepayment VAT split, and `Intl ru-KZ` formatting.
+- `binIin.ts`, `iik.ts` and `amountInWords.ts` (тенге and тиын declension), and `searchKey()`: casefold, then ё → е.
+- Vitest runs all five files in `contracts/test-vectors/`.
 
-### T13 · Domain: validators and amount in words · `mvp`
-**Goal:** requisites are validated and documents can print sums in words.
-**Description:** `binIin.ts`, `iik.ts` and `amountInWords.ts` (тенге and тиын declension), tested with vitest against `bin-iin.json`, `iik.json` and `amount-in-words.json`. Also `searchKey()`: casefold, then ё → е.
+Merged from T13. Depends on T04.
 
 ### T14 · Mock store with seed, latency and error injection · `mvp`
 **Goal:** the app behaves like a real backend before one exists.
@@ -151,7 +124,7 @@ Depends on T05 and T11.
 - Register and login forms with validation and error states; mock auth with a fake token; a logged-out guard on app routes; logout under "Ещё".
 - The company onboarding form, reused as settings: legal form, name, ИИН/БИН, address, director, VAT payer, bank, ИИК, БИК, Кбе, default КНП, validity days.
 - The logo is stored in the mock as a data URL.
-- ИИН/БИН and ИИК are validated inline (T13).
+- ИИН/БИН and ИИК are validated inline (T12).
 
 ### T16 · Clients: list, search, create, edit, archive (S22, S23) · `mvp`
 **Goal:** the owner finds or adds a client in seconds.
@@ -174,25 +147,16 @@ Depends on T05 and T11.
 
 Vitest covers the transitions and numbering. Spec §5.
 
-### T19 · Quote editor: client and lines (S07) · `mvp`
-**Goal:** a quote with a client and lines can be built one-handed.
+### T19 · Quote editor: client, lines, VAT toggle and totals (S07) · `mvp`
+**Goal:** a quote with a client, lines and correct totals can be built one-handed and saved.
 **Description:**
 - The client picker sheet with quick-create.
 - LineItem cards with collapsed and expanded views: title, work/material, QuantityInput with a unit chip, MoneyInput.
-- Add from the catalogue (2 taps per line) or by hand, with "Сохранить в каталог".
-- Reorder with ↑↓; delete with undo.
+- Add from the catalogue (2 taps per line) or by hand, with "Сохранить в каталог". Reorder with ↑↓; delete with undo.
+- The "НДС 16 %" switch, locked "Без НДС" for non-VAT payers; the ink totals bar; validity; note.
+- An explicit "Сохранить" button saves the draft.
 
-### T20 · Quote editor: VAT, totals, validity, autosave and states (S07) · `mvp`
-**Goal:** the owner sees correct totals and never loses a draft.
-**Description:**
-- The "НДС 16 %" switch; locked "Без НДС" for non-VAT payers.
-- The ink totals bar; validity segmented control; note.
-- Autosave 1.5 s after the last change, with a status line.
-- An offline draft copy in localStorage; the version-conflict banner.
-- The sent, signed, declined, expired and cancelled variants.
-- The action bar hides while the keyboard is open.
-
-Spec §6.
+Merged from T20. Autosave, the offline copy, the version-conflict banner and the status banners are post-MVP polish. Spec §6.
 
 ### T21 · Quote and invoice renderers, live preview and print (S08) · `mvp`
 **Goal:** the owner sees exactly what the client will see and print, for quotes and invoices.
@@ -204,42 +168,24 @@ Spec §6.
 
 Rendered from seed data, so it doesn't wait for T27.
 
-### T22 · Quotes list and quote detail with timeline (S06, S13) · `mvp`
-**Goal:** the owner finds any quote and sees where it stands.
+### T22 · Quotes list, quote detail and sharing the link (S06, S13, S09) · `mvp`
+**Goal:** the owner finds any quote, sees where it stands and sends its link to the client.
 **Description:**
-- The КП list: status filter chips, search by client or number, status badges.
-- The detail screen: status header, document view, the signature block when signed, an event timeline, and the actions Отправить / Подписать сейчас / Дублировать / Аннулировать (with a Dialog).
+- The КП list, newest first, with status badges.
+- The detail screen: status, document view and the signature block when signed; signed quotes offer Выставить счёт and Создать акт.
+- "Отправить" issues a draft (number assigned), then opens the share sheet: WhatsApp (`wa.me/{phone}?text=`) and "Копировать ссылку", with an editable message that has the amount, validity and link, written fresh in Russian.
 
-### T23 · Send sheet (S09) · `mvp`
-**Goal:** the owner sends the quote link through the channel the client uses.
-**Description:**
-- Sending issues the quote if it's a draft, then opens the sheet: WhatsApp (`wa.me/{phone}?text=`), SMS (`sms:`), email (`mailto:`), copy link.
-- The message text is editable, with amount, validity and link, written fresh in Russian.
-- A toast confirms the copy.
+Merged from T23. Filter chips, search, the event timeline, SMS and email sharing are post-MVP polish; duplicate and cancel are post-MVP (spec D5).
 
-### T24 · Public signing page: view, states, decline, hand-over mode (S11, S10) · `mvp`
-**Goal:** a client with no account understands the document on their phone.
+### T24 · Public link: view and finger signature (S11) · `mvp`
+**Goal:** a client with no account understands the document on their phone and signs it with a finger.
 **Description:**
 - `/p/:token` without the app chrome: company block (logo, name, БИН, phone link), title, number, amount, validity, lines as cards, "Скачать PDF".
-- States: loading, already signed, declined, expired, revoked.
-- Decline sheet with an optional reason.
-- `?handover=1` mode for signing on the owner's phone.
-
-### T25 · Drawn signature with consents (S11) · `mvp`
-**Goal:** the client signs the quote with a finger.
-**Description:**
+- States: loading, already signed, expired, revoked.
 - Signing sheet: name, SignaturePad (`signature_pad`, ink #14213D), blank detection, a cropped PNG ≤ 200 KB, the two required consent checkboxes, and the version check (409 → "Документ изменён").
-- Success screen: "Подписано на экране …".
-- Mock `public.sign` with `method: 'drawn'`.
+- Success screen: "Подписано на экране …". Mock `public.sign` with `method: 'drawn'`.
 
-Spec §7.
-
-### T26 · Typed-name signature (S11) · `mvp`
-**Goal:** a client who can't draw on a screen can still sign.
-**Description:**
-- A Нарисовать / Ввести имя segmented control in the signing sheet.
-- The typed name is rendered to PNG by the app and sent with `method: 'typed'`. Same consents and evidence.
-- The wording is always "Подпись на экране". Spec decision D1.
+Merged from T25. Decline, hand-over mode and the typed signature (T26) are post-MVP (spec D5). Spec §7.
 
 ### T27 · Convert a signed quote to an invoice (S14) · `mvp`
 **Goal:** a signed quote becomes a payment invoice in three taps.
@@ -250,21 +196,15 @@ Spec §7.
 
 Spec §5.
 
-### T28 · Invoice list (S15, S21) · `mvp`
-**Goal:** the owner sees at a glance who owes money.
+### T28 · Invoices: list and detail (S15, S16) · `mvp`
+**Goal:** the owner sees at a glance who owes money and can open any invoice.
 **Description:**
-- A summary strip (Ждём / просрочено) and filter chips (Все, Ждут оплаты, Просрочены, Оплачены, Черновики, Аннулированы).
-- Search by client, number or exact amount; month groups, sorted as in components.md §4.
-- Rows with derived payment badges and a progress bar.
-- A desktop table.
-- All empty, loading and error states.
+- A summary strip with the totals owed and overdue.
+- The invoice list, newest first: client, total, number, due date and the derived payment badge ("Оплачен на N%" with a progress bar, "Просрочен N дн.").
+- The invoice detail: document view, payment state, balance and payments list; share reuses the share sheet from T22.
+- Empty, loading and error states.
 
-### T29 · Invoice detail and cancel (S16) · `mvp`
-**Goal:** the owner opens an invoice, shares it, and cancels a wrong one.
-**Description:**
-- The detail screen: document view, payment state, balance, payments list and timeline.
-- Share (reuses the send sheet).
-- Аннулировать with a Dialog, blocked while payments exist (409).
+Merged from T29. Filter chips, amount search, month groups and the desktop table are post-MVP polish; cancel is post-MVP (spec D5).
 
 ### T30 · Record and remove payments (S16) · `mvp`
 **Goal:** a payment is recorded in three taps and mistakes can be undone.
@@ -274,55 +214,37 @@ Spec §5.
 - The derived states update: partly paid, paid, overdue.
 - Payments can also be recorded from the list row's swipe or ⋯ menu.
 
-### T31 · Act of completed works: create, screen, Р-1 renderer, signing (S18) · `mvp`
-**Goal:** a signed quote becomes an АВР that the client can sign on screen.
+### T31 · Act of completed works: create, screen and Р-1 renderer (S18) · `mvp`
+**Goal:** a signed quote becomes an АВР ready to print.
 **Description:**
 - Create from a signed quote (one active act per quote), with lines and work dates, the reporting period and the contract reference.
 - Issue АВР-YYYY-NNNN.
 - `src/documents/ActDoc` laid out after form Р-1 (per T01), with "Сдал/Принял" blocks.
-- The client signs through the public link (drawn or typed).
+
+The client signing the act on screen is post-MVP (spec D5).
 
 ### T32 · Dashboard (S04) · `mvp`
-**Goal:** in five seconds the owner knows what came in, what is owed and what to do.
+**Goal:** in five seconds the owner knows what came in and what is owed.
 **Description:**
 - Mock `dashboard` computed from the store.
-- "Нужно сделать" rows (overdue, signed but not invoiced, waiting for a signature for more than 3 days, expiring soon).
-- KPI tiles: Получено, Ждём оплаты with the overdue part, Выставлено, КП подписано N из M.
-- The "Подписано — выставьте счёт" list and recent events.
-- A period selector.
-- First run: a "Начало работы" checklist.
+- KPI tiles for the current month: Получено, Ждём оплаты with the overdue part, Выставлено, КП подписано N из M.
+- The "Подписано — выставьте счёт" list.
 
-### T33 · M1 audit: 360 px, accessibility, wording, vertical slice on a phone · `mvp`
-**Goal:** M1 closes with every screen usable on a real phone and nothing that breaks the design rules.
-**Description:** check every screen at 360 and 1280 px:
-- no horizontal scroll; at most 2 buttons per row; 48 px targets;
-- visible focus, keyboard order, labelled icon buttons;
-- no "юридически значимая", "ЭЦП" or "legally binding".
-
-Then run the vertical slice on a real phone over the LAN in mock mode: sign up → company → client → quote → sign → invoice → payment → dashboard. Fix what fails.
+The "Нужно сделать" rows, recent events, the period selector and the first-run checklist are post-MVP polish.
 
 ---
 
 ## M2 · openapi.yaml
 
-### T34 · Contract: auth, companies, clients, articles · `mvp`
-**Goal:** the first half of the API is written down exactly as the frontend uses it.
-**Description:** `contracts/openapi.yaml` (OpenAPI 3.1):
-- `/api/health`, `/api/auth/*`, `/api/me`, `/api/companies/*` with the logo routes, clients, articles
-- camelCase schemas; money in `…Tiyn`
-- the `{error:{code,message,fields}}` format; `limit`/`offset` pages
-
-Derived from `src/services/contracts.ts` and `replica/architecture.md`.
-
-### T35 · Contract: documents, public, payments, dashboard; generated TS types · `mvp`
-**Goal:** the rest of the API is written down, and the frontend can't drift from it.
+### T34 · Contract: openapi.yaml and generated TS types · `mvp`
+**Goal:** the API is written down exactly as the frontend uses it, and the frontend can't drift from it.
 **Description:**
-- Documents: list, create, get, put with `version`, delete, issue, link, cancel, duplicate, convert, events, signature.
-- Payments and dashboard.
-- Public: get, sign with `method: drawn | typed`, decline, logo.
-- Every 409 and 410 code and the examples. 38 operations in total.
+- `contracts/openapi.yaml` (OpenAPI 3.1) for every operation the MVP services use: `/api/health`, auth, `/api/me`, companies with the logo routes, clients, articles, documents (list, create, get, put with `version`, delete, issue, convert, signature), payments, dashboard, and public (get, sign, logo).
+- camelCase schemas; money in `…Tiyn`; the `{error:{code,message,fields}}` format; `limit`/`offset` pages; every 409 and 410 code with examples.
 - `npm run gen:api` (`openapi-typescript`) writes `src/services/api-types.ts`; `types.ts` is checked against it; the mock compiles; `npm run typecheck` passes.
 - The issue maps each services method to one operation.
+
+Merged from T35. Operations for post-MVP features (cancel, duplicate, decline, events, link rotation) are left out.
 
 ---
 
@@ -348,33 +270,30 @@ Derived from `src/services/contracts.ts` and `replica/architecture.md`.
 - `STORAGE=memory` wiring.
 - Unit tests for the rollback and the compare-and-set.
 
-### T39 · Auth endpoints · `mvp`
-**Goal:** users can register, log in and identify themselves.
+### T39 · Auth, companies and tenant isolation · `mvp`
+**Goal:** users can register, log in and identify themselves, and each user sees only their own company's data.
 **Description:**
-- `POST /auth/register`, `POST /auth/login` (JSON and form), `GET /me`.
-- argon2id through pwdlib; a JWT HS256 token valid for 12 h.
-- An in-process rate limit of 5/min per IP+email.
+- `POST /auth/register`, `POST /auth/login` (JSON and form), `GET /me`; argon2id through pwdlib; a JWT HS256 token valid for 12 h; an in-process rate limit of 5/min per IP+email.
+- Company create, get, patch; logo PUT and GET (PNG/JPEG ≤ 300 KB).
+- A `require_member(cid)` dependency; every repository call takes `company_id`; a reusable test helper that hits a route with another company's ids and expects 404.
 - Tests: duplicate email, wrong password, expired token.
 
-### T40 · Companies, logo and tenant isolation · `mvp`
-**Goal:** each user sees only their own company's data.
-**Description:**
-- Company create, get, patch; logo PUT and GET (PNG/JPEG ≤ 300 KB).
-- A `require_member(cid)` dependency; every repository call takes `company_id`.
-- A reusable test helper that hits a route with another company's ids and expects 404.
+Merged from T40.
 
 ### T41 · Clients and articles endpoints · `mvp`
 **Goal:** the clients and catalogue screens have a real API.
 **Description:** list, create, get, patch and delete-or-archive for clients; list, create, patch and archive for articles. Search on the `search_key` columns with Kazakh and ё cases; pagination. Tests include tenant isolation.
 
-### T42 · Documents: CRUD, issue, numbering, cancel, duplicate · `mvp`
+### T42 · Documents: CRUD, issue and numbering · `mvp`
 **Goal:** quotes, invoices and acts follow the state machine on the server.
 **Description:**
 - Create a draft.
 - `PUT` with the version check (409); only drafts can be deleted.
 - `issue`: a gap-free counter per company, type and year; snapshots frozen; the share link created.
-- Cancel (blocked while payments exist), duplicate, events, signature PNG.
+- The signature PNG.
 - Server-side totals recomputation.
+
+Cancel, duplicate and the events endpoint are post-MVP (spec D5).
 
 ### T43 · Convert endpoint · `mvp`
 **Goal:** a signed quote becomes an invoice or an act on the server, safely.
@@ -385,44 +304,42 @@ Derived from `src/services/contracts.ts` and `replica/architecture.md`.
 
 Tests cover two concurrent conversions.
 
-### T44 · Public endpoints: view, sign, decline · `mvp`
+### T44 · Public endpoints: view and sign · `mvp`
 **Goal:** a client can view and sign through the link, with evidence stored.
 **Description:**
 - `GET /public/{token}`: whitelisted fields; `noindex` and `no-referrer` headers.
 - `POST …/sign`:
-  - `drawn | typed`, PNG checks;
+  - `method: drawn`, PNG checks;
   - the snapshot and its sha256, the consent texts, IP and user agent;
   - the compare-and-set status change; the unique signature;
   - 409 and 410 codes.
-- `POST …/decline`.
 - A rate limit of 60/min per IP and 5/min per token for signing.
 
-### T45 · Payments and dashboard endpoints · `mvp`
-**Goal:** payments and the dashboard numbers come from the server.
+Decline and the typed signature are post-MVP (spec D5).
+
+### T45 · Payments, dashboard, contract parity and seed · `mvp`
+**Goal:** payments and the dashboard numbers come from the server, the backend provably matches `openapi.yaml`, and it can start with demo data.
 **Description:**
 - Payments: list, create (overpayment 409, `clientRequestId`) and delete. The derived payment state and balance on invoice reads.
-- `GET /dashboard` with the payload from components.md §5, computed in the company's time zone (`Asia/Almaty`, `tzdata`).
-
-### T46 · Contract parity test and seed command · `mvp`
-**Goal:** the backend provably matches `openapi.yaml` and can start with demo data.
-**Description:**
+- `GET /dashboard` with the tiles and list that T32 shows, computed in the company's time zone (`Asia/Almaty`, `tzdata`).
 - A pytest that compares the paths, methods and status codes of `contracts/openapi.yaml` with `app.openapi()`.
 - `uv run python -m app.seed` loads `contracts/fixtures/seed.json` into the configured storage.
+
+Merged from T46.
 
 ---
 
 ## M4 · SQLite with SQLAlchemy and Alembic
 
-### T47 · SQLAlchemy models and session · `mvp`
-**Goal:** the database tables exist as typed models that work on SQLite and Postgres.
+### T47 · SQLAlchemy models, session and initial migration · `mvp`
+**Goal:** the database tables exist as typed models that work on SQLite and Postgres, and are created by migrations, never by hand.
 **Description:**
 - SQLAlchemy 2.0 models for the 12 tables in `replica/schema.sql`; `Uuid`, `JSON`, `LargeBinary`; text + check constraints.
 - A `UTCDateTime` TypeDecorator.
 - An engine from `DATABASE_URL`, with `PRAGMA foreign_keys=ON` and `check_same_thread=False` only for SQLite.
+- Alembic with `render_as_batch=True` and an initial migration. A test compares the migrated SQLite schema with `replica/schema.sql`: tables, columns, constraints, indexes. Any difference is fixed or documented.
 
-### T48 · Alembic initial migration · `mvp`
-**Goal:** the database is created and upgraded by migrations, never by hand.
-**Description:** Alembic with `render_as_batch=True` and an initial migration. A test compares the migrated SQLite schema with `replica/schema.sql`: tables, columns, constraints, indexes. Any difference is fixed or documented.
+Merged from T48.
 
 ### T49 · SQL repositories: users, companies, clients, articles · `mvp`
 **Goal:** accounts, companies, clients and the catalogue persist in SQLite.
@@ -435,72 +352,43 @@ Tests cover two concurrent conversions.
 - The counter-row update for numbering; the version compare-and-set as a conditional `UPDATE`.
 - The unique indexes as the backstop; `NO ACTION` and cascade rules as in the schema.
 
-### T51 · One test suite on both storages, and a Postgres run · `mvp`
-**Goal:** memory, SQLite and Postgres can't silently behave differently.
+### T51 · One test suite on both storages · `mvp`
+**Goal:** memory and SQLite can't silently behave differently.
 **Description:**
 - Parametrise the API tests over `STORAGE=memory` and `sql` (a fresh SQLite file per test).
 - Add a restart test: data written, server restarted, data still there.
-- Run the migration and the full suite once against a local PostgreSQL (`DATABASE_URL=postgresql+psycopg://…`, dev dependency `psycopg[binary]`). Record the result in the issue and fix any SQLite-only behaviour found.
+- If time allows: run the migration and the full suite once against a local PostgreSQL (`DATABASE_URL=postgresql+psycopg://…`, dev dependency `psycopg[binary]`) and record the result in the issue.
 
 ---
 
 ## M5 · Connect frontend and backend
 
-### T52 · http services: core, auth and company · `mvp`
-**Goal:** the app logs in and manages the company against the real backend.
+### T52 · http services for every screen · `mvp`
+**Goal:** every screen works against the real backend exactly as it did on the mock.
 **Description:**
 - `src/services/http`: a fetch client, the bearer token, `ApiError` mapping, `VITE_API_MODE=http`, a Vite proxy for `/api`.
-- The auth and company services, including the logo upload.
-- The mock stays selectable.
+- Every service: auth, company (including the logo upload), clients, articles, documents, payments, dashboard, public.
+- Signature and logo images fetched as blobs with auth; `clientRequestId` on payments and conversions; polling every 15 s on a sent quote.
+- The mock stays selectable. Every M1 screen is checked in http mode.
 
-### T53 · http services: clients, articles, documents, payments, dashboard, public · `mvp`
-**Goal:** every screen works against the backend exactly as it did on the mock.
-**Description:**
-- The remaining http services.
-- Signature and logo images fetched as blobs with auth.
-- `clientRequestId` on payments and conversions.
-- Polling every 15 s on a sent quote.
-
-Every M1 screen is checked in http mode.
+Merged from T53.
 
 ### T54 · Phone on the LAN and share links · `mvp`
 **Goal:** a link sent by WhatsApp opens on another person's phone.
 **Description:** `PUBLIC_BASE_URL`, uvicorn on `0.0.0.0` and `vite --host`. Document the setup in README (Windows firewall included). The share link opens the public page from a second phone on the same network.
 
-### T55 · End-to-end vertical slice on a real phone · `mvp`
-**Goal:** the core loop works for real on SQLite before anyone outside tests it.
-**Description:** on a real phone against SQLite: sign up → company → client → quote → send by WhatsApp → client signs on a second phone (drawn and typed) → invoice (prepayment and remainder) → payments → act signed → dashboard. File a `user-test-bug` for every defect found.
+### T55 · End-to-end on a real phone, with the 360 px and wording audit · `mvp`
+**Goal:** the core loop works for real on SQLite, and every screen keeps the design rules, before anyone outside tests it.
+**Description:**
+- On a real phone against SQLite: sign up → company → client → quote → share by WhatsApp → the client signs on a second phone → invoice (prepayment and remainder) → payments → act → dashboard.
+- Every screen at 360 and 1280 px: no horizontal scroll; at most 2 buttons per row; 48 px targets; visible focus, keyboard order, labelled icon buttons; no "юридически значимая", "ЭЦП" or "legally binding".
+- File a `user-test-bug` for every defect found.
+
+Merged from T33.
 
 ---
 
 ## M6 · Hardening and real testing
-
-### T56 · Security, data safety and personal-data texts · `mvp`
-**Goal:** the API and the public link resist common abuse, demo data can be backed up, and the consent texts are right.
-**Description:**
-- Security:
-  - body-size limits (413);
-  - the `JWT_SECRET` is required outside dev; CORS is locked to the configured origins;
-  - the `noindex` and `no-referrer` headers are checked;
-  - the rate limits from T39 and T44 have tests;
-  - no secrets in the repo;
-  - every route is checked for tenant isolation.
-- Data: document the SQLite backup and restore (copy with the server stopped), and add a dev reset with seed data.
-- Texts: review the consent and "Подпись на экране" texts against spec §7, and list what personal data is stored and where.
-
-### T57 · Printing check: КП, счёт, АВР · `mvp`
-**Goal:** documents print and save as PDF correctly from phones and desktops.
-**Description:**
-- Print all three documents from mobile Chrome, Safari (iOS) and desktop Chrome.
-- A4 margins, page breaks inside long tables, fonts with ₸ and Kazakh letters, amounts in words.
-- Fix the print CSS.
-
-### T58 · Performance budget on a mid-range phone · `mvp`
-**Goal:** the app and the public page open quickly on mobile data.
-**Description:** measure on a mid-range Android or Chrome's slow-4G profile; record the numbers in the issue:
-- the public page shows its content fast, with fonts loading only the needed subsets;
-- the JS bundle size;
-- no blocking requests.
 
 ### T59 · User testing plan · `mvp`
 **Goal:** real testing runs the same way for every participant.
@@ -521,6 +409,50 @@ Every M1 screen is checked in http mode.
 
 The suggested order follows `replica/architecture.md` P1–P5: SMS → Kazakh → team and accountant → Kaspi → smaller extensions → ЭЦП and ЭСФ.
 The pm may reorder. Several of these need a new dependency or provider, which needs the user's approval (AGENTS.md rule 2).
+
+Moved here from the MVP on 2026-10-19 (spec decision D5): T06, T26, T56, T57, T58.
+
+### T06 · CI workflow · `post-mvp`
+**Goal:** every push runs the checks, so red never reaches main unnoticed.
+**Description:** a GitHub Actions workflow:
+- frontend: `npm ci`, `typecheck`, `test`, `build`
+- backend: `uv sync`, `ruff`, `pytest`
+
+Each job runs only when its folder exists. Uses `actions/checkout`, `actions/setup-node` and `astral-sh/setup-uv`; confirm these actions with the user first (AGENTS.md rule 2).
+
+### T26 · Typed-name signature (S11) · `post-mvp`
+**Goal:** a client who can't draw on a screen can still sign.
+**Description:**
+- A Нарисовать / Ввести имя segmented control in the signing sheet.
+- The typed name is rendered to PNG by the app and sent with `method: 'typed'`. Same consents and evidence.
+- The wording is always "Подпись на экране". Spec decision D1.
+
+### T56 · Security, data safety and personal-data texts · `post-mvp`
+**Goal:** the API and the public link resist common abuse, demo data can be backed up, and the consent texts are right.
+**Description:**
+- Security:
+  - body-size limits (413);
+  - the `JWT_SECRET` is required outside dev; CORS is locked to the configured origins;
+  - the `noindex` and `no-referrer` headers are checked;
+  - the rate limits from T39 and T44 have tests;
+  - no secrets in the repo;
+  - every route is checked for tenant isolation.
+- Data: document the SQLite backup and restore (copy with the server stopped), and add a dev reset with seed data.
+- Texts: review the consent and "Подпись на экране" texts against spec §7, and list what personal data is stored and where.
+
+### T57 · Printing check: КП, счёт, АВР · `post-mvp`
+**Goal:** documents print and save as PDF correctly from phones and desktops.
+**Description:**
+- Print all three documents from mobile Chrome, Safari (iOS) and desktop Chrome.
+- A4 margins, page breaks inside long tables, fonts with ₸ and Kazakh letters, amounts in words.
+- Fix the print CSS.
+
+### T58 · Performance budget on a mid-range phone · `post-mvp`
+**Goal:** the app and the public page open quickly on mobile data.
+**Description:** measure on a mid-range Android or Chrome's slow-4G profile; record the numbers in the issue:
+- the public page shows its content fast, with fonts loading only the needed subsets;
+- the JS bundle size;
+- no blocking requests.
 
 ### T61 · Choose an SMS provider for Kazakhstan · `post-mvp`
 **Goal:** a provider for signing codes is picked on facts, not habit.
@@ -616,3 +548,27 @@ Depends on T75.
 ### T78 · ЭСФ status sync and buyer confirmation · `post-mvp`
 **Goal:** the owner sees the real ЭСФ status, including corrections awaiting confirmation.
 **Description:** a background job polls IS ESF every 10 minutes for pending submissions and maps the statuses (delivered, confirmed, revoked, error). The flow for corrected or revoked ЭСФ that need the buyer's confirmation (2026 rules) is shown on the invoice.
+
+---
+
+## Merged into other tasks (closed as not planned)
+
+Merged on 2026-10-19 (spec decision D5). The issues stay on GitHub with their numbers, closed as not planned with the comment "Merged into #N"; their scope now lives in the surviving task.
+
+| task | title | merged into |
+| --- | --- | --- |
+| T03 | GitHub issue templates | T02 |
+| T05 | Shared seed data | T04 |
+| T08 | Align the generated app with AGENTS.md | T07 |
+| T09 | Design tokens, fonts and layout rules | T10 |
+| T13 | Domain: validators and amount in words | T12 |
+| T20 | Quote editor: VAT, totals, validity, autosave and states (S07) | T19 |
+| T23 | Send sheet (S09) | T22 |
+| T25 | Drawn signature with consents (S11) | T24 |
+| T29 | Invoice detail and cancel (S16) | T28 |
+| T33 | M1 audit: 360 px, accessibility, wording, vertical slice on a phone | T55 |
+| T35 | Contract: documents, public, payments, dashboard; generated TS types | T34 |
+| T40 | Companies, logo and tenant isolation | T39 |
+| T46 | Contract parity test and seed command | T45 |
+| T48 | Alembic initial migration | T47 |
+| T53 | http services: clients, articles, documents, payments, dashboard, public | T52 |

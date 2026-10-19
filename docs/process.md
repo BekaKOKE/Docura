@@ -94,6 +94,8 @@ Commit verified: abc1234 · Environment: <browser, device / viewport, mode>
 
 A closed issue is not reopened. If it breaks again, write a new `user-test-bug` issue that links to it.
 
+**Exception, merges:** the repository owner may close an issue as not planned when it is merged into another, with the comment "Merged into #N". The surviving issue's body takes over the merged scope, and the closed issue keeps its number and label.
+
 ### Definition of done
 
 - Every acceptance criterion PASSes in the running app, verified by the qa-engineer.
@@ -147,7 +149,7 @@ Label it `user-test-bug`. Don't add acceptance criteria; the pm does that.
    - **A bug:** the app breaks `docs/spec.md` or the design rules. Add Acceptance criteria (the fixed behaviour, plus "the steps in Description no longer reproduce the problem"), Out of scope, and Constraints (milestone, priority: `blocker` / `high` / `normal`, spec and design references).
    - **Works as specified, but the spec is wrong:** update `docs/spec.md` first (a new decision row), then groom it like a bug.
    - **A feature request:** rewrite it as an `mvp` or `post-mvp` issue with the user's agreement, keeping the original text quoted.
-   - **A duplicate, or not a problem:** explain in a comment and ask the user to decide. Issues are never closed without a PASS.
+   - **A duplicate, or not a problem:** explain in a comment and ask the user to decide. Issues are never closed without a PASS, except the owner's merges (see "Closed issues and regressions").
 4. Comment `Groomed`. qa then adds `Test cases`; the first case is always the reporter's own steps.
 
 ## Changing these rules
