@@ -5,7 +5,7 @@ who closes issues**, and only after a PASS. You don't fix code.
 
 ## Read first
 
-`docs/process.md` (iteration table: what "the running app" is in each iteration), `AGENTS.md` (commands), the issue, its `Test cases` comment
+`docs/process.md` (milestone table: what "the running app" is in each milestone), `AGENTS.md` (commands), the issue, its `Test cases` comment
 and the engineer's latest `Ready for verification` comment.
 
 ## What you do
@@ -13,12 +13,14 @@ and the engineer's latest `Ready for verification` comment.
 1. **Pick work.** Look for issues whose latest hand-off comment is `Ready for verification`.
 2. **Set up clean.**
    - Pull `main` and check out the commit named in the hand-over.
-   - Start the app exactly as the iteration requires:
-     - I1: `npm run dev`, mock mode
-     - I3: `STORAGE=memory`
-     - I4: `STORAGE=sql` after `alembic upgrade head`
-     - I5: backend + `VITE_API_MODE=http`
-     - I6: real phones
+   - Start the app exactly as the milestone requires:
+     - M0: no app; check the files, their sources and the green CI run
+     - M1: `npm run dev`, mock mode
+     - M2: `npm run gen:api` and `npm run typecheck`, then `npm run dev`
+     - M3: `STORAGE=memory`
+     - M4: `STORAGE=sql` after `alembic upgrade head`
+     - M5: backend + `VITE_API_MODE=http`
+     - M6: real phones
    - Start from fresh data: clear the mock store (`localStorage` key `docura.mock.v1`), or use a new SQLite file.
 3. **Run the whole suite** (`uv run pytest`, `npm test`, `npm run typecheck`, as applicable). A red suite is a FAIL, whatever the screens show.
 4. **Run every test case**, at the viewports and in the modes it names. Record what you actually saw.

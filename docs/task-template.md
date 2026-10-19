@@ -19,7 +19,7 @@ Every `mvp` and `post-mvp` issue uses this body. The pm writes **Goal, Acceptanc
 - <What this issue deliberately does not do, and the issue or spec section where it lives instead>
 
 ## Constraints
-- Iteration: I<n> — <name> (docs/process.md)
+- Milestone: M<n> — <name> (docs/process.md)
 - Priority: blocker | high | normal
 - Spec: docs/spec.md §<n>; Design: replica/design/components.md §<n>; Architecture: replica/architecture.md <section>
 - <Technical limits: services layer only, no new dependencies, money in tiyn, wording rules, …>
@@ -35,14 +35,14 @@ is good; "add a Switch component" is not.
 
 **Acceptance criteria.**
 - Numbered, so the PASS/FAIL table can point to them.
-- Each criterion is one behaviour that a person can check in the running app of the issue's iteration. Avoid "works well", "fast" or "correct" without a number or an example.
+- Each criterion is one behaviour that a person can check in the running app of the issue's milestone. Avoid "works well", "fast" or "correct" without a number or an example.
 - Include the states that apply: empty, loading, error, offline, version conflict, long Russian labels, Kazakh letters, ₸ amounts, 360 px with no horizontal scroll.
 - Name exact texts when the wording matters ("Подпись на экране", "Без НДС").
 - Keep it to about 3–8 criteria. More than that means split the issue.
 
-**Out of scope.** Name the nearby things people will assume are included (post-MVP features, the next iteration's work) and say where they live.
+**Out of scope.** Name the nearby things people will assume are included (post-MVP features, the next milestone's work) and say where they live.
 
-**Constraints.** Always the iteration and the priority. Then the documents that govern the issue, and any limits:
+**Constraints.** Always the milestone and the priority. Then the documents that govern the issue, and any limits:
 - "mock services only; no backend code"
 - "no new dependencies"
 - "amounts in tiyn, formatted with Intl ru-KZ"
@@ -84,10 +84,10 @@ Environment: <viewport(s), browser, mode — e.g. 360×800 Chrome device mode, m
 >
 > ## Out of scope
 > - Line discounts and other rates (spec §4 post-MVP).
-> - Saving to the backend (I3+); the mock keeps the value.
+> - Saving to the backend (M3+); the mock keeps the value.
 >
 > ## Constraints
-> - Iteration: I1 — Frontend with mock services
+> - Milestone: M1 — Frontend with mock services
 > - Priority: high
 > - Spec §6; components.md §2 (Quote editor); architecture "Domain rules"
 > - Totals come from `src/domain` and are tested against `contracts/test-vectors/totals.json`; no new dependencies

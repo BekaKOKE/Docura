@@ -16,7 +16,7 @@ Read before working:
 
 ## Repository layout
 
-The folders below are created by the first issues of each iteration. Until then, only `docs/` and `replica/` exist.
+The folders below are created by the first issues of each milestone. Until then, only `docs/` and `replica/` exist.
 
 ```
 frontend/        React + TypeScript (Vite). All backend calls go through src/services (mock | http)
@@ -102,6 +102,7 @@ the user's answer**. Don't add it "for now".
 - Small commits that each leave the build green. One logical change per commit.
 - Message: `type(scope): summary` (`feat`, `fix`, `test`, `refactor`, `docs`, `chore`), then a body explaining *why*, then **`Refs #<issue>`**.
 - **Never write `Fixes #N`, `Closes #N` or `Resolves #N`.** GitHub would close the issue automatically, and only the qa-engineer closes issues, after PASS.
+- Never add Co-Authored-By, Claude-Session or 'Generated with' lines to commits, PRs or issues. The repository owner is the only author.
 - Stage files by name; never `git add -A` or `git add .` (plugins write generated files into the repo). Push to `origin main` when the issue's work is finished and green.
 
 ### 5. Work only on groomed issues
@@ -109,7 +110,7 @@ the user's answer**. Don't add it "for now".
 - No issue, no work.
 - An issue is groomed when it has **a label** (`mvp`, `post-mvp` or `user-test-bug`), **Goal, Acceptance criteria, Out of scope and Constraints** filled in by the PM (`docs/task-template.md`), and **a "Test cases" comment from qa**.
 - If something is missing, stop and comment on the issue for the PM. Don't fill the gaps yourself.
-- Work in the iteration order from `docs/process.md`. Don't build backend code during the frontend-with-mock iteration, and so on.
+- Work in the milestone order from `docs/process.md`. Don't build backend code during the frontend-with-mock milestone, and so on.
 - Something out of scope that should be done? Comment it, or draft a new issue for the PM. Don't do it in the current one.
 
 ### 6. Product rules every change must keep

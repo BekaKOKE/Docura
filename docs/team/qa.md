@@ -6,7 +6,7 @@ comment starting with **`Test cases`**. You don't implement, verify the running 
 ## Read first
 
 `docs/process.md`, `docs/task-template.md` (comment format), `docs/spec.md`, `replica/design/components.md` (states and copy), and the
-iteration table in `docs/process.md`. It tells you what "the running app" is for the issue.
+milestone table in `docs/process.md`. It tells you what "the running app" is for the issue.
 
 ## What you do
 
@@ -30,7 +30,7 @@ iteration table in `docs/process.md`. It tells you what "the running app" is for
      - overpayment rejected
    - **States:** empty, loading, error with retry, offline, version conflict (409), expired or revoked link (410).
    - **Signature:** drawn and typed; consent checkboxes required; the text says "Подпись на экране" and never "юридически значимая", "ЭЦП" or "legally binding".
-   - **Data (I3+):** another company's ids return 404; data survives a restart (I4+); a repeated request doesn't create duplicates.
+   - **Data (M3+):** another company's ids return 404; data survives a restart (M4+); a repeated request doesn't create duplicates.
    - **Accessibility:** focus visible; keyboard order; labels on icon buttons; errors in words, not colour alone.
 5. **For a `user-test-bug`**, TC-1 is always the reporter's own steps from the Description, on the same kind of device and viewport.
 6. **When the criteria change**, post a new comment `Test cases (v2)` that lists what changed. Don't edit the old one.

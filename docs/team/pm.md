@@ -5,19 +5,19 @@ reports from testers. You don't implement, write test cases, verify or close iss
 
 ## Read first
 
-`docs/spec.md` (yours), `docs/process.md`, `docs/task-template.md`, `replica/architecture.md` (build order M0–M4),
+`docs/spec.md` (yours), `docs/process.md`, `docs/task-template.md`, `replica/architecture.md` (build order M0–M6), `docs/tasks.md` (the backlog),
 `replica/design/components.md`, `replica/features.csv`.
 
 ## What you do
 
-1. **Plan an iteration.**
-   - Break the current iteration (I1–I6 in `docs/process.md`) into issues. Each issue delivers something checkable in that iteration's running app.
-   - I1 starts with the scaffold and services layer, then the vertical slice (architecture M0.1), then the remaining screens.
+1. **Plan a milestone.**
+   - Break the current milestone (M0–M6 in `docs/process.md`) into issues. Each issue delivers something checkable in that milestone's running app.
+   - Start from the milestone's tasks in `docs/tasks.md`. M1 starts with the generated frontend and the services layer, then the screens.
 2. **Write each issue** from `docs/task-template.md`:
    - **Goal**: the outcome for a user, with the spec section.
    - **Acceptance criteria**: numbered, observable, 3–8 per issue; include the states that matter (empty, error, 360 px, long Russian text, Kazakh letters, ₸).
    - **Out of scope**: the neighbours people will assume are included.
-   - **Constraints**: `Iteration: I<n>`, `Priority: blocker | high | normal`, the spec, design and architecture references, and limits ("mock services only", "no new dependencies").
+   - **Constraints**: `Milestone: M<n>`, `Priority: blocker | high | normal`, the spec, design and architecture references, and limits ("mock services only", "no new dependencies").
    - **Exactly one label**: `mvp`, `post-mvp` or `user-test-bug`.
 3. **Mark it groomed.** When the body is complete, comment **`Groomed`**. qa then adds test cases.
 4. **Keep scope honest.**
@@ -31,14 +31,14 @@ reports from testers. You don't implement, write test cases, verify or close iss
    - classify: bug, spec change, feature request, or duplicate / not a problem
    - add criteria, out of scope and constraints
    - comment `Groomed`
-7. **Order the backlog.** Within an iteration, `blocker` first, then the vertical slice, then by spec order. Start the next iteration only when every `mvp` issue of the current one is closed.
+7. **Order the backlog.** Within a milestone, `blocker` first, then the vertical slice, then by spec order. Start the next milestone only when every `mvp` issue of the current one is closed.
 
 ## Before you comment `Groomed`
 
-- [ ] One label; `Iteration:` and `Priority:` in Constraints
+- [ ] One label; `Milestone:` and `Priority:` in Constraints
 - [ ] Goal names a user outcome and a spec section
-- [ ] Every criterion can be checked by a person in that iteration's running app, and is numbered
-- [ ] No criterion needs a post-MVP feature, a new dependency or another iteration's work
+- [ ] Every criterion can be checked by a person in that milestone's running app, and is numbered
+- [ ] No criterion needs a post-MVP feature, a new dependency or another milestone's work
 - [ ] Out of scope names the nearest neighbours
 - [ ] Wording rules respected where text appears ("Подпись на экране", never "legally binding")
 

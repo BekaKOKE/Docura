@@ -73,7 +73,7 @@ These assumptions come from the recon and the reference product's positioning. V
 
 ### Post-MVP
 
-Not built in the MVP. The suggested order follows `replica/architecture.md` (M5–M9); the PM may reorder.
+Not built in the MVP. The suggested order follows `replica/architecture.md` (P1–P5); the PM may reorder.
 
 | feature | note |
 | --- | --- |

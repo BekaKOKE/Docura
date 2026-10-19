@@ -24,7 +24,7 @@ Every issue has **exactly one** of:
 | `post-mvp` | in the post-MVP list of `docs/spec.md` §4; not worked on until the MVP is done, unless the user says otherwise |
 | `user-test-bug` | a problem found while using the running app, usually in real testing |
 
-The iteration (I1–I6, below) and the priority are written in the issue's **Constraints** section.
+The milestone (M0–M6, below) and the priority are written in the issue's **Constraints** section.
 
 ## Lifecycle
 
@@ -39,7 +39,7 @@ The iteration (I1–I6, below) and the priority are written in the issue's **Con
 ### 1. pm grooms
 
 The pm fills the issue body from `docs/task-template.md`:
-- **Goal**, **Acceptance criteria** (numbered, each one checkable in the running app), **Out of scope**, **Constraints** (iteration, priority, the spec and design sections that apply).
+- **Goal**, **Acceptance criteria** (numbered, each one checkable in the running app), **Out of scope**, **Constraints** (milestone, priority, the spec and design sections that apply).
 - One label.
 
 The pm makes sure the issue fits `docs/spec.md`; if it changes scope, the spec is updated first. Then the pm comments, starting with **`Groomed`**.
@@ -58,14 +58,14 @@ If a criterion can't be tested as written, qa asks the pm in a comment instead.
 
 The engineer:
 1. Assigns themselves and comments **`In progress`**.
-2. Implements in the current iteration's scope, with tests, in small green commits whose messages end with **`Refs #<n>`**. Never `Fixes`/`Closes`/`Resolves`: those would close the issue automatically.
+2. Implements in the current milestone's scope, with tests, in small green commits whose messages end with **`Refs #<n>`**. Never `Fixes`/`Closes`/`Resolves`: those would close the issue automatically.
 3. Runs the test cases themselves against the running app before handing over.
 4. Pushes to `origin main`, then comments **`Ready for verification`**:
 
 ```
 Ready for verification
 Commits: abc1234, def5678
-How to run: <exact commands for this iteration>
+How to run: <exact commands for this milestone>
 Tests added: <files / test names>
 Notes: <anything the qa-engineer must know; deviations from the issue and why>
 ```
@@ -75,7 +75,7 @@ Notes: <anything the qa-engineer must know; deviations from the issue and why>
 ### 4. qa-engineer verifies
 
 The qa-engineer:
-1. Pulls `main`, starts the app the way the current iteration runs it (table below), and runs **every** test case.
+1. Pulls `main`, starts the app the way the current milestone runs it (table below), and runs **every** test case.
 2. Checks **every** acceptance criterion in the running app; tests passing in CI is not enough.
 3. Comments:
 
@@ -101,25 +101,26 @@ A closed issue is not reopened. If it breaks again, write a new `user-test-bug` 
 - Commits reference the issue.
 - `docs/spec.md` and `replica/architecture.md` (or `contracts/openapi.yaml`) are updated if the behaviour or the contract changed.
 
-## Iteration order
+## Milestones
 
-Issues are worked in this order. An iteration starts when every `mvp` issue of the previous one is closed. `post-mvp` issues wait
-until I6 is done, unless the user decides otherwise.
+The tasks for each milestone are drafted in `docs/tasks.md`. Issues are worked in this order. A milestone starts when every `mvp` issue of the previous one is closed. `post-mvp` issues wait
+until M6 is done, unless the user decides otherwise.
 
-| # | iteration | builds | "running app" for verification |
+| # | milestone | builds | "running app" for verification |
 | --- | --- | --- | --- |
-| I1 | **Frontend with mock services** | all MVP screens in React + TypeScript; every call through `src/services` with the mock implementation; vertical slice first (architecture M0) | `npm run dev` (mock mode), Chrome device mode at 360 px and 1280 px, plus a real phone on the LAN |
-| I2 | **openapi.yaml** | `contracts/openapi.yaml` written from the services interface; generated TS types; the mock compiles against them (M1) | `npm run gen:api` + `npm run typecheck` pass; every services method maps to one operation; `npm run dev` still works |
-| I3 | **Backend in memory** | FastAPI routes, domain logic, in-memory repositories, API tests, contract parity test (M2) | `uv run uvicorn …` with `STORAGE=memory`, exercised through `/docs` and the test cases; `uv run pytest` green |
-| I4 | **Backend on SQLite** | SQLAlchemy models, Alembic migration matching `replica/schema.sql`, SQL repositories; the same tests on both storages (M3) | `STORAGE=sql` server after `alembic upgrade head`; data survives a restart; `uv run pytest` green on memory and sql |
-| I5 | **Frontend connected to the backend** | the http services implementation, Vite proxy, auth token (M4) | backend on SQLite + `VITE_API_MODE=http npm run dev`; the vertical slice end to end on a real phone, the public link opened from WhatsApp |
-| I6 | **Real testing** | sessions with real tradespeople and their clients on their own phones | the I5 setup reachable from the testers' phones; findings become `user-test-bug` issues |
+| M0 | **Repo and tooling** | Kazakhstan rules verified against official sources; shared test vectors and seed data in `contracts/`; CI; issue templates; repo hygiene | no app yet: the files and their sources are checked, and the CI run on GitHub is green |
+| M1 | **Frontend with mock services** | all MVP screens in React + TypeScript from the design brief; every call through `src/services` with the mock implementation | `npm run dev` (mock mode), Chrome device mode at 360 px and 1280 px, plus a real phone on the LAN |
+| M2 | **openapi.yaml** | `contracts/openapi.yaml` written from the services interface; generated TS types; the mock compiles against them | `npm run gen:api` + `npm run typecheck` pass; every services method maps to one operation; `npm run dev` still works |
+| M3 | **Backend in memory** | FastAPI routes, domain logic, in-memory repositories, API tests, contract parity test | `uv run uvicorn …` with `STORAGE=memory`, exercised through `/docs` and the test cases; `uv run pytest` green |
+| M4 | **SQLite with SQLAlchemy and Alembic** | SQLAlchemy models, Alembic migration matching `replica/schema.sql`, SQL repositories; the same tests on both storages | `STORAGE=sql` server after `alembic upgrade head`; data survives a restart; `uv run pytest` green on memory and sql |
+| M5 | **Frontend connected to the backend** | the http services implementation, Vite proxy, auth token | backend on SQLite + `VITE_API_MODE=http npm run dev`; the vertical slice end to end on a real phone, the public link opened from WhatsApp |
+| M6 | **Hardening and real testing** | security limits, printing, performance, data safety; then sessions with real tradespeople and their clients on their own phones | the M5 setup reachable from the testers' phones; findings become `user-test-bug` issues |
 
 ## `user-test-bug` issues
 
 ### How one is written
 
-Anyone who hits a problem in the running app writes it, testers in I6 most of all. Two sections only, in plain words, Russian or English:
+Anyone who hits a problem in the running app writes it, testers in M6 most of all. Two sections only, in plain words, Russian or English:
 
 ```
 Title: <the symptom, short>  e.g. "Сумма в счёте разрывается на две строки"
@@ -143,7 +144,7 @@ Label it `user-test-bug`. Don't add acceptance criteria; the pm does that.
 1. **Keep `Goal` and `Description` exactly as written** at the top: they're the tester's evidence.
 2. Reproduce it in the running app, or ask the reporter for what's missing in a comment.
 3. Decide what it is:
-   - **A bug:** the app breaks `docs/spec.md` or the design rules. Add Acceptance criteria (the fixed behaviour, plus "the steps in Description no longer reproduce the problem"), Out of scope, and Constraints (iteration, priority: `blocker` / `high` / `normal`, spec and design references).
+   - **A bug:** the app breaks `docs/spec.md` or the design rules. Add Acceptance criteria (the fixed behaviour, plus "the steps in Description no longer reproduce the problem"), Out of scope, and Constraints (milestone, priority: `blocker` / `high` / `normal`, spec and design references).
    - **Works as specified, but the spec is wrong:** update `docs/spec.md` first (a new decision row), then groom it like a bug.
    - **A feature request:** rewrite it as an `mvp` or `post-mvp` issue with the user's agreement, keeping the original text quoted.
    - **A duplicate, or not a problem:** explain in a comment and ask the user to decide. Issues are never closed without a PASS.

@@ -20,7 +20,7 @@ As set by the user. Screen, flow and feature IDs refer to `recon.md`.
 | Simple dashboard | S04 | F10 |
 | Russian UI | all | — |
 
-Post-MVP, in build order (see M5–M9): SMS codes, Kazakh language, team roles + accountant access, Kaspi, ЭЦП/NCALayer, ЭСФ.
+Post-MVP, in build order (see P1–P5): SMS codes, Kazakh language, team roles + accountant access, Kaspi, ЭЦП/NCALayer, ЭСФ.
 
 **Recon must-haves that ride along at no extra cost.** These go beyond your list, so veto any you don't want:
 
@@ -64,11 +64,11 @@ Repository layout:
 
 ```
 contracts/
-  openapi.yaml                      the API contract (M1)
+  openapi.yaml                      the API contract (M2)
   test-vectors/                     shared JSON cases: totals, prepayment split, ИИН/БИН, amount in words
 frontend/
   src/services/contracts.ts         the Services interface: auth, company, clients, articles, documents, payments, dashboard, public
-  src/services/types.ts             domain types (hand-written in M0, checked against generated api-types.ts from M1)
+  src/services/types.ts             domain types (hand-written in M1, checked against generated api-types.ts from M2)
   src/services/mock/                in-memory state in localStorage ("docura.mock.v1"), fixtures, 150–400 ms latency, error injection
   src/services/http/                fetch client, bearer token, error mapping
   src/services/index.ts             export const services = VITE_API_MODE === 'http' ? http : mock
@@ -293,7 +293,7 @@ Never Khosmos's endpoints.
   - The payload is whitelisted: no internal notes, no other documents.
   - Links can be rotated. Viewing never expires; signing stops at `valid_until`.
   - **`PUBLIC_BASE_URL` must be reachable from the client's phone.** A link to `localhost` won't open over WhatsApp. For tests on a real phone, run `uvicorn --host 0.0.0.0` and `vite --host` on the LAN.
-- **Legal weight of the signature.** In the MVP a drawn signature with an IP, user agent, timestamp and document hash is evidence of acceptance, not an ЭЦП. The UI says "Подпись на экране" and never "юридически значимая ЭЦП". SMS codes (M5) and ЭЦП (M9) strengthen it. Have a KZ lawyer review this before any marketing.
+- **Legal weight of the signature.** In the MVP a drawn signature with an IP, user agent, timestamp and document hash is evidence of acceptance, not an ЭЦП. The UI says "Подпись на экране" and never "юридически значимая ЭЦП". SMS codes (P1) and ЭЦП (P5) strengthen it. Have a KZ lawyer review this before any marketing.
 - **Personal data (KZ).** The public page asks for consent to process personal data (name, signature, IP) before signing. Deleting an account cascades the tenant. A client with documents is archived, not deleted, because documents are accounting records. Production hosting must be in Kazakhstan.
 - **Multi-tenancy.** The company id in the path, a membership check, and `company_id` passed into every repository call. The API suite runs every route with another company's ids and expects 404.
 - **SQLite → Postgres.**
@@ -301,14 +301,19 @@ Never Khosmos's endpoints.
   - Use batch-mode Alembic.
   - No JSON queries, no SQLite-only functions.
   - Run the suite against Postgres before calling it portable: `DATABASE_URL=postgresql+psycopg://…`, dev dependency `psycopg[binary]`. PostgreSQL 18 is already installed on this machine.
-- **Mock drift.** The mock has to be retired as the source of truth once `openapi.yaml` exists. From M1 on, the TS types come from the contract and the backend has a parity test (`contracts/openapi.yaml` vs `app.openapi()`: paths, methods, status codes). Anything the UI uses that the contract lacks fails the build.
+- **Mock drift.** The mock has to be retired as the source of truth once `openapi.yaml` exists. From M2 on, the TS types come from the contract and the backend has a parity test (`contracts/openapi.yaml` vs `app.openapi()`: paths, methods, status codes). Anything the UI uses that the contract lacks fails the build.
 - **Printing.** `window.print()` output differs between mobile Chrome and Safari. Test the three A4 layouts on both. If they fall short, server-side PDF (e.g. WeasyPrint or fpdf2) is the fallback, post-MVP.
 
 ## Build order
 
-Your order, with the skill's vertical-slice-first rule inside M0. Each milestone ends with something you can click.
+Your order, with the skill's vertical-slice-first rule inside M1. The milestones match `docs/process.md`; the task-level
+breakdown is `docs/tasks.md`.
 
-**M0: frontend with the mock service**
+**M0: repo and tooling** (nothing to click yet)
+- Kazakhstan tax and document rules verified against official sources (`docs/kz-rules.md`).
+- Shared `contracts/test-vectors/` and `contracts/fixtures/seed.json`, CI, issue templates, repo hygiene.
+
+**M1: frontend with the mock service**
 1. *Vertical slice, ugly, end to end on mock data.*
    - Screens: S01 → S03 → S07 (one client created inline, lines typed by hand) → S09 (copy link) → S11 (sign) → S13 (status "signed") → S14 (convert, full) → S16 (record payment) → S04 (numbers change).
    - Services used: `auth`, `company.create`, `clients.create`, `documents.create/get/issue/convert`, `public.get/sign`, `payments.create`, `dashboard.get`.
@@ -325,38 +330,42 @@ Your order, with the skill's vertical-slice-first rule inside M0. Each milestone
    - Every error state (`version_conflict`, `link_expired`, `exceeds_quote_total`, `overpayment`, `validation_error`) and empty state.
    - Exit: every MVP flow is clickable on a phone, and the domain tests pass on the shared vectors.
 
-**M1: `contracts/openapi.yaml`**
+**M2: `contracts/openapi.yaml`**
 - Write it from `services/contracts.ts` and `types.ts`: 38 operations, the schemas, the error codes.
 - Generate `src/services/api-types.ts`, then make the mock and the hand-written types compile against it.
 - Tables: none. Routes: all 38, on paper.
 
-**M2: backend, in memory (`STORAGE=memory`)**
+**M3: backend, in memory (`STORAGE=memory`)**
 - FastAPI app, routers, Pydantic schemas, `app/domain`, services with the unit of work, memory repositories.
 - Auth and the rate limiter.
 - pytest API suite: the flows, tenant isolation, version races, idempotent replays, the contract parity test.
 - Tables: none, dicts shaped like the 12 tables. Routes: all 38.
 
-**M3: backend on SQLite (`STORAGE=sql`)**
+**M4: backend on SQLite (`STORAGE=sql`)**
 - SQLAlchemy models, the `UTCDateTime` type, the FK pragma.
 - Alembic initial migration matching `schema.sql`.
 - SQL repositories.
 - The same suite, parametrised over memory and SQLite; one manual run on Postgres.
 - Tables: all 12. Routes: unchanged.
 
-**M4: connect the frontend**
+**M5: connect the frontend**
 - `http` services, the bearer token, error mapping, a Vite proxy for `/api`. Set `VITE_API_MODE=http`.
-- Rerun the M0 vertical slice by hand on a real phone over the LAN, with the public link opened from WhatsApp.
-- Exit: MVP done. Mark `clone = yes` in `features.csv` for the rows shipped.
+- Rerun the M1 vertical slice by hand on a real phone over the LAN, with the public link opened from WhatsApp.
+- Exit: every MVP feature works end to end. Mark `clone = yes` in `features.csv` for the rows shipped.
+
+**M6: hardening and real testing**
+- Security limits, a printing check on phones and desktop, a performance budget, data safety and the consent texts.
+- Sessions with real tradespeople and their clients on their own phones; every problem becomes a `user-test-bug` issue.
 
 **Post-MVP, in this order:**
-- **M5 SMS codes:** `sign_challenges`, a KZ SMS provider and its delivery webhook, `signatures.method = 'sms'`. Strengthens remote signing first.
-- **M6 Kazakh:** `kk` strings, `users.locale`, bilingual document templates.
-- **M7 Team roles + accountant access:**
+- **P1 SMS codes:** `sign_challenges`, a KZ SMS provider and its delivery webhook, `signatures.method = 'sms'`. Strengthens remote signing first.
+- **P2 Kazakh:** `kk` strings, `users.locale`, bilingual document templates.
+- **P3 Team roles + accountant access:**
   - `invitations`, plus the permission flags on `memberships`.
   - Repository checks for: own documents only, client base hidden, locked prices.
   - A read-only accountant role with CSV `exports`.
-- **M8 Kaspi:** a Kaspi Pay link or QR stored on the invoice and shown on the public page. No public API was found, so payments stay manual, with method `kaspi`.
-- **M9 ЭЦП and ЭСФ:**
+- **P4 Kaspi:** a Kaspi Pay link or QR stored on the invoice and shown on the public page. No public API was found, so payments stay manual, with method `kaspi`.
+- **P5 ЭЦП and ЭСФ:**
   - NCALayer: the browser talks to the local NCALayer websocket, desktop only, to sign the АВР.
   - Then ЭСФ through the official IS ESF API: `esf_records`, a status poll job, buyer confirmation for corrections.
   - Read MinFin order No. 629 and the API spec first.
@@ -365,4 +374,4 @@ Your order, with the skill's vertical-slice-first rule inside M0. Each milestone
 **Riskiest parts of the MVP:**
 1. Money maths written twice, in TS and Python. Shared test vectors from day one.
 2. Signing integrity: version races, evidence and the honest legal wording.
-3. Keeping SQLite and Postgres equivalent. Test on both in M3.
+3. Keeping SQLite and Postgres equivalent. Test on both in M4.
