@@ -223,7 +223,9 @@ create table signatures (
   company_id         uuid         not null references companies (id) on delete cascade,
   document_id        uuid         not null references documents (id) on delete cascade,
   share_link_id      uuid         references share_links (id) on delete set null,
-  method             varchar(10)  not null default 'drawn' check (method in ('drawn')),  -- later: 'sms', 'ecp', 'egov_qr'
+  -- 'drawn' = finger signature, 'typed' = the signer typed their name (rendered to PNG by the client).
+  -- Both are a "signature on screen", never "legally binding" (docs/spec.md, D1). Later: 'sms', 'ecp', 'egov_qr'.
+  method             varchar(10)  not null default 'drawn' check (method in ('drawn', 'typed')),
   signer_role        varchar(10)  not null default 'client' check (signer_role in ('client')),
   signer_name        varchar(200) not null,
   image              bytea        not null,   -- PNG, ≤ 200 KB
