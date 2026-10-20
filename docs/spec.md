@@ -82,7 +82,7 @@ Not built in the MVP. The suggested order follows `replica/architecture.md` (P1�
 | Accountant access | read-only role with CSV exports |
 | Kaspi | a Kaspi Pay link or QR on the invoice and public page; no public API found, so payments stay manual |
 | ЭЦП / NCALayer | signing the АВР with an ЭЦП, desktop only |
-| ЭСФ | electronic invoices through the official IS ESF API, for VAT payers; depends on ЭЦП |
+| ЭСФ | electronic invoices through the official IS ESF API, for VAT payers and for non-payers in the cases of Tax Code art. 208 (e.g. the simplified-declaration regime; `docs/kz-rules.md` R1); depends on ЭЦП |
 | Open tracking | "opened ×N" on quotes. The `share_links` view columns exist in the schema and stay at their defaults in the MVP |
 | Line discounts | per-line discount in %. `document_lines.discount_bp` exists and stays `0`; the MVP API doesn't expose it |
 | Photos | up to 10 photos on a document; needs file storage |
@@ -125,7 +125,8 @@ Those transitions come after the MVP. The schema already allows their states, so
 - Prints the seller's bank details, Кбе, КНП and the amount in words.
 
 **АВР (act of completed works)**
-- Created from a signed КП, with its lines and a work date per line, laid out after form Р-1. One active act per КП in the MVP.
+- Created from a signed КП, with its lines and a work date per line, laid out after form Р-1 (MinFin order No. 562, appendix 50; columns in `docs/kz-rules.md` row 5). One active act per КП in the MVP.
+- Form Р-1 doesn't apply to строительно-монтажные работы, so the act is for repair, finishing, installation and service jobs; construction contracts on the construction-sector forms are out of scope (D7).
 - States: `draft → issued → signed`, plus `cancelled`.
 - In the MVP both sides sign the printed act on paper. The client signing it on screen through the public link comes after the MVP (D5); ЭЦП comes later still.
 
@@ -146,7 +147,7 @@ Those transitions come after the MVP. The schema already allows their states, so
   - If the company is **not a VAT payer**, the switch is off and locked, and documents print **"Без НДС"**.
   - If it is, the switch defaults to on and can be turned off per document.
 - **Prepayment invoices:** the gross amount is exact, and VAT is split back out: `vat = round(gross × 16 / 116)`.
-- **Amount in words:** the счёт and the АВР print the total in words in Russian, with тенге and тиын declined correctly.
+- **Amount in words:** the счёт and the АВР print the total in words in Russian, with тенге and тиын declined correctly. Tiyn are written as two digits, as on payment documents (NB resolution No. 208, p. 7): «Триста двадцать три тысячи девятьсот тридцать тенге 00 тиын».
 
 ## 7. Signature on screen
 
@@ -214,8 +215,8 @@ The MVP does **not**:
 ## 11. Open questions
 
 1. Legal review of the signature on screen (drawn and typed) for B2C quotes and for the АВР.
-2. The ИИН/БИН checksum algorithm, verified against the official specification.
-3. The current edition of form Р-1 (MinFin order No. 562 and its amendments).
+2. The ИИН/БИН checksum algorithm. **Updated 20.10.2026:** the ИИН algorithm is verified against MVD order No. 521 (`docs/kz-rules.md` row 6); the separate БИН rules are still to be found in an official source, and the same algorithm is applied meanwhile.
+3. ~~The current edition of form Р-1 (MinFin order No. 562 and its amendments).~~ **Closed 20.10.2026:** appendix 50 in the edition of order No. 458 of 27.10.2014 (`docs/kz-rules.md` row 5).
 4. ЭСФ rules from 2026-01-01 (MinFin order No. 629), before post-MVP work starts.
 
 ## Decisions
@@ -228,3 +229,4 @@ The MVP does **not**:
 | D4 | 2026-10-19 | In the MVP, invoices and acts are created **only from a signed КП** | `POST …/documents` with `type=invoice` or `act` and no source is not used by the MVP UI |
 | D5 | 2026-10-19 | **MVP cut to 40 issues** for the deadline. **Cancel, duplicate, the typed signature, decline, hand-over mode and the client signing the act** move to post-MVP, along with CI (#6), security hardening (#56), the printing check (#57) and the performance budget (#58). 15 small tasks merge into neighbours. The act is still created from the signed quote, and prepayment invoices stay. The Postgres run in #51 becomes optional ("if time allows") | §3, §4, §5 and §7 updated; supersedes the cancel and duplicate part of D3; `docs/tasks.md` lists the merges. The schema is unchanged: `'typed'`, `declined` and `cancelled` stay allowed for later |
 | D6 | 2026-10-20 | The **tap count to send a quote** becomes a measured value instead of a pass/fail target (≤ 6 taps): the designed flow needs about 10 taps (client 2, two catalogue lines 2 each, create, send, WhatsApp). The **company phone** joins the company requisites, because the public page shows it as a call link | §3 and §4.1 updated; #22 AC 5 records the count in #55; #15 collects the phone, #24 shows it; `companies.phone` already exists in `replica/schema.sql` |
+| D7 | 2026-10-20 | Rules checked against official sources (`docs/kz-rules.md`, #1): form Р-1 excludes строительно-монтажные работы; tiyn in an amount in words are written as digits; some non-VAT payers must issue ЭСФ (Tax Code art. 208) | §4 post-MVP ЭСФ row, §5 (АВР) and §6 (amount in words) updated; §11 questions 2 and 3 updated and closed |
