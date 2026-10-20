@@ -68,17 +68,17 @@ Values come from T01 and spec §6; test data from `docs/team/qa.md`; no real per
 
 ## M1 · Frontend with mock services
 
-The design agent generates all the MVP screens at once from `replica/design/brief.md` (T07). The rest of M1 wires each screen to the
-mock services and brings it up to `replica/design/components.md`.
+T07 builds the frontend by hand from the design references in `replica/design/` (the references route, `docs/design-approach.md`),
+with a route for every MVP screen. The rest of M1 builds each screen on the mock services and brings it up to `replica/design/components.md`.
 
-### T07 · Generate the frontend from the design brief, import it and align it with AGENTS.md · `mvp`
-**Goal:** a first React + TypeScript version of every MVP screen exists in `frontend/` and follows the repo's commands, folders and dependency rules.
+### T07 · Build the frontend from the design references and align it with AGENTS.md · `mvp`
+**Goal:** a React + TypeScript project exists in `frontend/`, built from the design references, with a route for every MVP screen, and it follows the repo's commands, folders and dependency rules.
 **Description:**
-- Run `replica/design/brief.md` in the chosen tool (Claude Design, v0 or Lovable), export the code into `frontend/` and commit it as generated. List any screens the tool skipped as follow-ups in the issue.
+- Build the project from `replica/design/brief.md`, `tokens.css`, `components.md` and `specimen/specimen.html` instead of exporting it from a design agent; `docs/design-approach.md` records the files and skills used. List any screens not built here as follow-ups in the issue.
 - Add the npm scripts from AGENTS.md: `dev`, `test`, `typecheck`, `lint`, `build`; `gen:api` stays a stub until T34.
 - Create `src/services`, `src/domain`, `src/documents` and `src/i18n`.
 - Audit `package.json` against the agreed list. Remove what isn't needed, and ask about anything else.
-- Remove direct `fetch` calls and external services.
+- No direct `fetch` calls and no external services.
 
 Merged from T08.
 

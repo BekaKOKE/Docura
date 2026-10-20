@@ -12,7 +12,7 @@ reports from testers. You don't implement, write test cases, verify or close iss
 
 1. **Plan a milestone.**
    - Break the current milestone (M0–M6 in `docs/process.md`) into issues. Each issue delivers something checkable in that milestone's running app.
-   - Start from the milestone's tasks in `docs/tasks.md`. M1 starts with the generated frontend and the services layer, then the screens.
+   - Start from the milestone's tasks in `docs/tasks.md`. M1 starts with the frontend built from the design references and the services layer, then the screens.
 2. **Write each issue** from `docs/task-template.md`:
    - **Goal**: the outcome for a user, with the spec section.
    - **Acceptance criteria**: numbered, observable, 3–8 per issue; include the states that matter (empty, error, 360 px, long Russian text, Kazakh letters, ₸).

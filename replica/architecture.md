@@ -46,7 +46,7 @@ Fixed by the course assignment. Additions stay inside that stack and are marked 
 
 | layer | choice | why |
 | --- | --- | --- |
-| web | React + TypeScript, generated with a design agent. *(added)* Vite, React Router, TanStack Query, `signature_pad` | Your stack. TanStack Query gives caching and the polling that the "quote signed?" check needs. `signature_pad` is a small, proven canvas pad |
+| web | React + TypeScript, built from the design references in `replica/design/` (`docs/design-approach.md`). *(added)* Vite, React Router, TanStack Query, `signature_pad` | Your stack. TanStack Query gives caching and the polling that the "quote signed?" check needs. `signature_pad` is a small, proven canvas pad |
 | services layer | `frontend/src/services/`: one interface, two implementations, `mock` and `http`, picked by `VITE_API_MODE` | Your rule: every backend call goes through it. The mock lets the whole UI be built before the API exists |
 | API contract | `contracts/openapi.yaml` (OpenAPI 3.1), written by hand from the services interface. *(added)* `openapi-typescript` generates the TS types | Build order step 2. One contract shared by the mock, the http client and FastAPI |
 | backend | Python 3.12, FastAPI, uv. *(added)* `pydantic-settings`, `fastapi[standard]` (uvicorn, multipart) | Your stack. Sync endpoints with SQLAlchemy's sync engine are simpler and fast enough for one tenant per phone |
@@ -111,7 +111,7 @@ export interface Services {
 Rules for the mock:
 
 1. It runs the same state machine and the same `src/domain` totals the backend has, so the UI can't depend on behaviour the API won't have.
-2. It can raise every error code above. A dev-only toggle forces `version_conflict`, `link_expired` and so on, so the design agent builds those states.
+2. It can raise every error code above. A dev-only toggle forces `version_conflict`, `link_expired` and so on, so every one of those states can be built and checked.
 3. `/p/:token` works in mock mode, in the same browser.
 
 Wire format: JSON in camelCase (Pydantic `alias_generator=to_camel`). Money is integer tiyn in fields named `…Tiyn`. Dates are `YYYY-MM-DD`, timestamps ISO 8601 UTC (`Z`), ids UUID strings. Lists return `{items, total}` with `limit`/`offset`.
