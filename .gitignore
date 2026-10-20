@@ -4,3 +4,7 @@ ruvector.db
 
 # Plugin state written by ruflo / claude-flow (generated)
 .claude-flow/
+
+# AgentDB store written by the ruflo plugin (generated)
+agentdb.rvf
+agentdb.rvf.lock
