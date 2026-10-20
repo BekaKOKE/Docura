@@ -38,8 +38,8 @@ milestone table in `docs/process.md`. It tells you what "the running app" is for
 ## Test data
 
 Use these so everyone sees the same thing:
-- **Company:** ИП Сейткали Б., БИН 123456789012, Алматы, VAT payer. For non-VAT cases: ИП Нурланов А.
-- **Clients:** Қайрат Әбілқасымов (person, +7 701 123 45 67) · ТОО «Алатау Құрылыс Сервис» (company, БИН 987654321098) · Ирина Ёлкина (person).
+- **Company:** ИП Сейткали Б., ИИН 850312300121, ИИК KZ75998KZT1001300335, Алматы, VAT payer. For non-VAT cases: ИП Нурланов А., ИИН 900101350043. Dev logins: `contracts/README.md`.
+- **Clients:** Қайрат Әбілқасымов (person, +7 701 123 45 67) · ТОО «Алатау Құрылыс Сервис» (company, БИН 080540001238) · Ирина Ёлкина (person).
 - **Catalogue:** Укладка ламината 18 500 ₸/м² · Плинтус, монтаж 1 500 ₸/п.м. · Замена смесителя 12 000 ₸/шт.
 - **Reference totals:** 12,5 м² ламината + 32 п.м. плинтуса = Без НДС 279 250 ₸ · НДС 44 680 ₸ · Итого 323 930 ₸.
 

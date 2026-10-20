@@ -1,0 +1,84 @@
+{
+  "description": "ИИН/БИН: 12 digits; a12 = Σ aᵢ·i mod 11; if 10, weights 3,4,5,6,7,8,9,10,11,1,2; still 10 = invalid.",
+  "source": "docs/kz-rules.md row 6 (MVD order No. 521); БИН rules unverified, same algorithm",
+  "cases": [
+    {
+      "id": "seitkali-iin",
+      "value": "850312300121",
+      "valid": true,
+      "reason": "ИИН of ИП Сейткали Б. (seed)"
+    },
+    {
+      "id": "nurlanov-iin",
+      "value": "900101350043",
+      "valid": true,
+      "reason": "ИИН of ИП Нурланов А. (seed)"
+    },
+    {
+      "id": "kairat-iin",
+      "value": "880715301453",
+      "valid": true,
+      "reason": "ИИН of client Қайрат Әбілқасымов (seed)"
+    },
+    {
+      "id": "alatau-bin",
+      "value": "080540001238",
+      "valid": true,
+      "reason": "БИН of ТОО «Алатау Құрылыс Сервис» (seed)"
+    },
+    {
+      "id": "second-cycle",
+      "value": "870600000303",
+      "valid": true,
+      "reason": "first cycle gives 10, second cycle gives the control digit"
+    },
+    {
+      "id": "wrong-check-digit",
+      "value": "850312300122",
+      "valid": false,
+      "reason": "checksum: control digit should be 1"
+    },
+    {
+      "id": "eleven-digits",
+      "value": "85031230012",
+      "valid": false,
+      "reason": "length 11"
+    },
+    {
+      "id": "thirteen-digits",
+      "value": "8503123001211",
+      "valid": false,
+      "reason": "length 13"
+    },
+    {
+      "id": "letter",
+      "value": "85031230012A",
+      "valid": false,
+      "reason": "contains a letter"
+    },
+    {
+      "id": "empty",
+      "value": "",
+      "valid": false,
+      "reason": "empty"
+    },
+    {
+      "id": "both-cycles-ten",
+      "value": "910400000620",
+      "valid": false,
+      "reason": "both cycles give 10: no valid control digit, never issued"
+    },
+    {
+      "id": "qa-md-old-1",
+      "value": "123456789012",
+      "valid": false,
+      "reason": "old docs/team/qa.md value; control digit should be 3"
+    },
+    {
+      "id": "qa-md-old-2",
+      "value": "987654321098",
+      "valid": false,
+      "reason": "old docs/team/qa.md value; control digit should be 0"
+    }
+  ]
+}

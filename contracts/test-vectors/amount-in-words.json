@@ -1,0 +1,116 @@
+{
+  "description": "Total in words for the счёт and the АВР: words in Russian, first letter capital, “тенге” never changes, tiyn as two digits followed by тиын / тиына / тиынов.",
+  "source": "spec §6; docs/kz-rules.md row 4 (tiyn as digits, NB resolution No. 208 p. 7)",
+  "cases": [
+    {
+      "id": "zero",
+      "amountTiyn": 0,
+      "expected": "Ноль тенге 00 тиын"
+    },
+    {
+      "id": "one-tenge",
+      "amountTiyn": 100,
+      "expected": "Один тенге 00 тиын"
+    },
+    {
+      "id": "two-tenge",
+      "amountTiyn": 200,
+      "expected": "Два тенге 00 тиын"
+    },
+    {
+      "id": "five-tenge",
+      "amountTiyn": 500,
+      "expected": "Пять тенге 00 тиын"
+    },
+    {
+      "id": "twenty-one-tenge",
+      "amountTiyn": 2100,
+      "expected": "Двадцать один тенге 00 тиын"
+    },
+    {
+      "id": "one-million",
+      "amountTiyn": 100000000,
+      "expected": "Один миллион тенге 00 тиын"
+    },
+    {
+      "id": "tiyn-56",
+      "amountTiyn": 123456,
+      "expected": "Одна тысяча двести тридцать четыре тенге 56 тиынов"
+    },
+    {
+      "id": "one-tiyn",
+      "amountTiyn": 1,
+      "expected": "Ноль тенге 01 тиын"
+    },
+    {
+      "id": "two-tiyn",
+      "amountTiyn": 2,
+      "expected": "Ноль тенге 02 тиына"
+    },
+    {
+      "id": "five-tiyn",
+      "amountTiyn": 5,
+      "expected": "Ноль тенге 05 тиынов"
+    },
+    {
+      "id": "twenty-one-tiyn",
+      "amountTiyn": 21,
+      "expected": "Ноль тенге 21 тиын"
+    },
+    {
+      "id": "eleven-tiyn",
+      "amountTiyn": 11,
+      "expected": "Ноль тенге 11 тиынов"
+    },
+    {
+      "id": "twenty-two-tiyn",
+      "amountTiyn": 22,
+      "expected": "Ноль тенге 22 тиына"
+    },
+    {
+      "id": "reference-quote",
+      "amountTiyn": 32393000,
+      "expected": "Триста двадцать три тысячи девятьсот тридцать тенге 00 тиын"
+    },
+    {
+      "id": "prepayment-50",
+      "amountTiyn": 16196500,
+      "expected": "Сто шестьдесят одна тысяча девятьсот шестьдесят пять тенге 00 тиын"
+    },
+    {
+      "id": "two-million",
+      "amountTiyn": 200000000,
+      "expected": "Два миллиона тенге 00 тиын"
+    },
+    {
+      "id": "five-million",
+      "amountTiyn": 500000000,
+      "expected": "Пять миллионов тенге 00 тиын"
+    },
+    {
+      "id": "one-thousand",
+      "amountTiyn": 100000,
+      "expected": "Одна тысяча тенге 00 тиын"
+    },
+    {
+      "id": "two-thousand",
+      "amountTiyn": 200000,
+      "expected": "Две тысячи тенге 00 тиын"
+    },
+    {
+      "id": "twenty-one-thousand",
+      "amountTiyn": 2100000,
+      "expected": "Двадцать одна тысяча тенге 00 тиын"
+    },
+    {
+      "id": "eleven-thousand",
+      "amountTiyn": 1100000,
+      "expected": "Одиннадцать тысяч тенге 00 тиын"
+    },
+    {
+      "id": "max-below-10-billion",
+      "amountTiyn": 999999999999,
+      "expected": "Девять миллиардов девятьсот девяносто девять миллионов девятьсот девяносто девять тысяч девятьсот девяносто девять тенге 99 тиынов"
+    }
+  ]
+}

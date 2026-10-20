@@ -1,0 +1,60 @@
+{
+  "description": "ИИК: 20 characters, starts with KZ, IBAN mod-97 (ISO 13616).",
+  "source": "replica/architecture.md (Validators); docs/kz-rules.md row 4 (format unverified in NB rules)",
+  "cases": [
+    {
+      "id": "seitkali-iik",
+      "value": "KZ75998KZT1001300335",
+      "valid": true,
+      "reason": "ИИК of ИП Сейткали Б. (seed)"
+    },
+    {
+      "id": "nurlanov-iik",
+      "value": "KZ24722KZT0000123456",
+      "valid": true,
+      "reason": "ИИК of ИП Нурланов А. (seed)"
+    },
+    {
+      "id": "digits-only-account",
+      "value": "KZ909980000000012345",
+      "valid": true,
+      "reason": "account part all digits"
+    },
+    {
+      "id": "wrong-check-digits",
+      "value": "KZ76998KZT1001300335",
+      "valid": false,
+      "reason": "mod-97 check fails"
+    },
+    {
+      "id": "nineteen-chars",
+      "value": "KZ75998KZT100130033",
+      "valid": false,
+      "reason": "length 19"
+    },
+    {
+      "id": "twenty-one-chars",
+      "value": "KZ75998KZT10013003355",
+      "valid": false,
+      "reason": "length 21"
+    },
+    {
+      "id": "wrong-country",
+      "value": "RU75998KZT1001300335",
+      "valid": false,
+      "reason": "does not start with KZ"
+    },
+    {
+      "id": "lower-case",
+      "value": "kz75998kzt1001300335",
+      "valid": false,
+      "reason": "lower case is not accepted as stored; the UI upper-cases before validating"
+    },
+    {
+      "id": "space-inside",
+      "value": "KZ75 998KZT100130033",
+      "valid": false,
+      "reason": "contains a space"
+    }
+  ]
+}

@@ -1,0 +1,178 @@
+{
+  "description": "One-line invoices from a signed quote: gross is exact, VAT is split back out with round(gross × rate / (10000 + rate)); the invoices from one quote never exceed its total.",
+  "cases": [
+    {
+      "id": "percent-50",
+      "description": "Предоплата 50 % of 323 930 ₸",
+      "source": "spec §5, §6; replica/architecture.md (Conversions)",
+      "quoteGrossTiyn": 32393000,
+      "vatEnabled": true,
+      "vatRateBp": 1600,
+      "alreadyInvoicedTiyn": 0,
+      "basis": "percent",
+      "basisValue": 5000,
+      "basisUnit": "bp",
+      "expected": {
+        "grossTiyn": 16196500,
+        "vatTiyn": 2234000,
+        "netTiyn": 13962500
+      }
+    },
+    {
+      "id": "percent-30",
+      "description": "Предоплата 30 % of 323 930 ₸",
+      "source": "spec §5, §6; replica/architecture.md (Conversions)",
+      "quoteGrossTiyn": 32393000,
+      "vatEnabled": true,
+      "vatRateBp": 1600,
+      "alreadyInvoicedTiyn": 0,
+      "basis": "percent",
+      "basisValue": 3000,
+      "basisUnit": "bp",
+      "expected": {
+        "grossTiyn": 9717900,
+        "vatTiyn": 1340400,
+        "netTiyn": 8377500
+      }
+    },
+    {
+      "id": "percent-rounds-half-up",
+      "description": "33,33 % of 323 930 ₸: 10796586,9 tiyn rounds up",
+      "source": "spec §5, §6; replica/architecture.md (Conversions)",
+      "quoteGrossTiyn": 32393000,
+      "vatEnabled": true,
+      "vatRateBp": 1600,
+      "alreadyInvoicedTiyn": 0,
+      "basis": "percent",
+      "basisValue": 3333,
+      "basisUnit": "bp",
+      "expected": {
+        "grossTiyn": 10796587,
+        "vatTiyn": 1489184,
+        "netTiyn": 9307403
+      }
+    },
+    {
+      "id": "amount-100000",
+      "description": "Предоплата 100 000 ₸ on a fresh quote",
+      "source": "spec §5, §6; replica/architecture.md (Conversions)",
+      "quoteGrossTiyn": 32393000,
+      "vatEnabled": true,
+      "vatRateBp": 1600,
+      "alreadyInvoicedTiyn": 0,
+      "basis": "amount",
+      "basisValue": 10000000,
+      "basisUnit": "tiyn",
+      "expected": {
+        "grossTiyn": 10000000,
+        "vatTiyn": 1379310,
+        "netTiyn": 8620690
+      }
+    },
+    {
+      "id": "remaining-after-both",
+      "description": "Остаток after 50 % and 100 000 ₸",
+      "source": "spec §5, §6; replica/architecture.md (Conversions)",
+      "quoteGrossTiyn": 32393000,
+      "vatEnabled": true,
+      "vatRateBp": 1600,
+      "alreadyInvoicedTiyn": 26196500,
+      "basis": "remaining",
+      "expected": {
+        "grossTiyn": 6196500,
+        "vatTiyn": 854690,
+        "netTiyn": 5341810
+      }
+    },
+    {
+      "id": "remaining-after-50",
+      "description": "Остаток after 50 %",
+      "source": "spec §5, §6; replica/architecture.md (Conversions)",
+      "quoteGrossTiyn": 32393000,
+      "vatEnabled": true,
+      "vatRateBp": 1600,
+      "alreadyInvoicedTiyn": 16196500,
+      "basis": "remaining",
+      "expected": {
+        "grossTiyn": 16196500,
+        "vatTiyn": 2234000,
+        "netTiyn": 13962500
+      }
+    },
+    {
+      "id": "remaining-nothing-invoiced",
+      "description": "Остаток with nothing invoiced is the whole quote",
+      "source": "spec §5, §6; replica/architecture.md (Conversions)",
+      "quoteGrossTiyn": 32393000,
+      "vatEnabled": true,
+      "vatRateBp": 1600,
+      "alreadyInvoicedTiyn": 0,
+      "basis": "remaining",
+      "expected": {
+        "grossTiyn": 32393000,
+        "vatTiyn": 4468000,
+        "netTiyn": 27925000
+      }
+    },
+    {
+      "id": "over-total-amount",
+      "description": "1 tiyn more than what is left after 50 % and 100 000 ₸",
+      "source": "spec §5, §6; replica/architecture.md (Conversions)",
+      "quoteGrossTiyn": 32393000,
+      "vatEnabled": true,
+      "vatRateBp": 1600,
+      "alreadyInvoicedTiyn": 26196500,
+      "basis": "amount",
+      "basisValue": 6196501,
+      "basisUnit": "tiyn",
+      "expected": {
+        "error": "exceeds_quote_total"
+      }
+    },
+    {
+      "id": "over-total-percent",
+      "description": "60 % after a 50 % invoice",
+      "source": "spec §5, §6; replica/architecture.md (Conversions)",
+      "quoteGrossTiyn": 32393000,
+      "vatEnabled": true,
+      "vatRateBp": 1600,
+      "alreadyInvoicedTiyn": 16196500,
+      "basis": "percent",
+      "basisValue": 6000,
+      "basisUnit": "bp",
+      "expected": {
+        "error": "exceeds_quote_total"
+      }
+    },
+    {
+      "id": "remaining-when-fully-invoiced",
+      "description": "Остаток when the quote is fully invoiced",
+      "source": "spec §5, §6; replica/architecture.md (Conversions)",
+      "quoteGrossTiyn": 32393000,
+      "vatEnabled": true,
+      "vatRateBp": 1600,
+      "alreadyInvoicedTiyn": 32393000,
+      "basis": "remaining",
+      "expected": {
+        "error": "exceeds_quote_total"
+      }
+    },
+    {
+      "id": "non-vat-percent-50",
+      "description": "50 % of a non-VAT quote of 279 250 ₸: no VAT",
+      "source": "spec §5, §6; replica/architecture.md (Conversions)",
+      "quoteGrossTiyn": 27925000,
+      "vatEnabled": false,
+      "vatRateBp": 1600,
+      "alreadyInvoicedTiyn": 0,
+      "basis": "percent",
+      "basisValue": 5000,
+      "basisUnit": "bp",
+      "expected": {
+        "grossTiyn": 13962500,
+        "vatTiyn": 0,
+        "netTiyn": 13962500
+      }
+    }
+  ]
+}

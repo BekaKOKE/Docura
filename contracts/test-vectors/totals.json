@@ -1,0 +1,314 @@
+{
+  "description": "Line and document totals: integer tiyn, half up per line, VAT per line (spec §6; replica/architecture.md, Domain rules).",
+  "cases": [
+    {
+      "id": "reference-vat-on",
+      "description": "Reference quote: 12,5 м² × 18 500 ₸ + 32 п.м. × 1 500 ₸, VAT on",
+      "source": "spec §6; docs/team/qa.md reference totals",
+      "vatEnabled": true,
+      "vatRateBp": 1600,
+      "lines": [
+        {
+          "qtyText": "12,5",
+          "qtyMilli": 12500,
+          "unitPriceTiyn": 1850000,
+          "discountBp": 0
+        },
+        {
+          "qtyText": "32",
+          "qtyMilli": 32000,
+          "unitPriceTiyn": 150000,
+          "discountBp": 0
+        }
+      ],
+      "expected": {
+        "lines": [
+          {
+            "netTiyn": 23125000,
+            "vatTiyn": 3700000,
+            "grossTiyn": 26825000
+          },
+          {
+            "netTiyn": 4800000,
+            "vatTiyn": 768000,
+            "grossTiyn": 5568000
+          }
+        ],
+        "netTiyn": 27925000,
+        "vatTiyn": 4468000,
+        "grossTiyn": 32393000
+      }
+    },
+    {
+      "id": "reference-vat-off",
+      "description": "The same lines with VAT off (non-VAT payer or switch off)",
+      "source": "spec §6",
+      "vatEnabled": false,
+      "vatRateBp": 1600,
+      "lines": [
+        {
+          "qtyText": "12,5",
+          "qtyMilli": 12500,
+          "unitPriceTiyn": 1850000,
+          "discountBp": 0
+        },
+        {
+          "qtyText": "32",
+          "qtyMilli": 32000,
+          "unitPriceTiyn": 150000,
+          "discountBp": 0
+        }
+      ],
+      "expected": {
+        "lines": [
+          {
+            "netTiyn": 23125000,
+            "vatTiyn": 0,
+            "grossTiyn": 23125000
+          },
+          {
+            "netTiyn": 4800000,
+            "vatTiyn": 0,
+            "grossTiyn": 4800000
+          }
+        ],
+        "netTiyn": 27925000,
+        "vatTiyn": 0,
+        "grossTiyn": 27925000
+      }
+    },
+    {
+      "id": "half-tiyn-rounds-up",
+      "description": "1,5 ч × 1 001,01 ₸: net 150151,5 tiyn rounds up to 150152; VAT 24024,32 rounds to 24024",
+      "source": "spec §6 (half up to the tiyn)",
+      "vatEnabled": true,
+      "vatRateBp": 1600,
+      "lines": [
+        {
+          "qtyText": "1,5",
+          "qtyMilli": 1500,
+          "unitPriceTiyn": 100101,
+          "discountBp": 0
+        }
+      ],
+      "expected": {
+        "lines": [
+          {
+            "netTiyn": 150152,
+            "vatTiyn": 24024,
+            "grossTiyn": 174176
+          }
+        ],
+        "netTiyn": 150152,
+        "vatTiyn": 24024,
+        "grossTiyn": 174176
+      }
+    },
+    {
+      "id": "three-decimals",
+      "description": "A quantity with 3 decimals: 0,125 × 12 000 ₸",
+      "source": "spec §6 (up to 3 decimals, comma accepted)",
+      "vatEnabled": true,
+      "vatRateBp": 1600,
+      "lines": [
+        {
+          "qtyText": "0,125",
+          "qtyMilli": 125,
+          "unitPriceTiyn": 1200000,
+          "discountBp": 0
+        }
+      ],
+      "expected": {
+        "lines": [
+          {
+            "netTiyn": 150000,
+            "vatTiyn": 24000,
+            "grossTiyn": 174000
+          }
+        ],
+        "netTiyn": 150000,
+        "vatTiyn": 24000,
+        "grossTiyn": 174000
+      }
+    },
+    {
+      "id": "comma-and-dot",
+      "description": "12,5 and 12.5 are the same quantity",
+      "source": "replica/architecture.md (comma and dot accepted)",
+      "vatEnabled": true,
+      "vatRateBp": 1600,
+      "lines": [
+        {
+          "qtyText": "12.5",
+          "qtyMilli": 12500,
+          "unitPriceTiyn": 1850000,
+          "discountBp": 0
+        }
+      ],
+      "expected": {
+        "lines": [
+          {
+            "netTiyn": 23125000,
+            "vatTiyn": 3700000,
+            "grossTiyn": 26825000
+          }
+        ],
+        "netTiyn": 23125000,
+        "vatTiyn": 3700000,
+        "grossTiyn": 26825000
+      }
+    },
+    {
+      "id": "tiyn-price",
+      "description": "Price with tiyn: 3 × 333,33 ₸",
+      "source": "spec §6",
+      "vatEnabled": true,
+      "vatRateBp": 1600,
+      "lines": [
+        {
+          "qtyText": "3",
+          "qtyMilli": 3000,
+          "unitPriceTiyn": 33333,
+          "discountBp": 0
+        }
+      ],
+      "expected": {
+        "lines": [
+          {
+            "netTiyn": 99999,
+            "vatTiyn": 16000,
+            "grossTiyn": 115999
+          }
+        ],
+        "netTiyn": 99999,
+        "vatTiyn": 16000,
+        "grossTiyn": 115999
+      }
+    },
+    {
+      "id": "vat-rounds-down",
+      "description": "VAT 16 % of 100,03 ₸ = 16,0048 ₸ rounds down to 16,00 ₸",
+      "source": "spec §6",
+      "vatEnabled": true,
+      "vatRateBp": 1600,
+      "lines": [
+        {
+          "qtyText": "1",
+          "qtyMilli": 1000,
+          "unitPriceTiyn": 10003,
+          "discountBp": 0
+        }
+      ],
+      "expected": {
+        "lines": [
+          {
+            "netTiyn": 10003,
+            "vatTiyn": 1600,
+            "grossTiyn": 11603
+          }
+        ],
+        "netTiyn": 10003,
+        "vatTiyn": 1600,
+        "grossTiyn": 11603
+      }
+    },
+    {
+      "id": "large-amount",
+      "description": "1 000 шт × 9 999 999 ₸ stays exact in integers",
+      "source": "spec §6 (integer tiyn, no floats)",
+      "vatEnabled": true,
+      "vatRateBp": 1600,
+      "lines": [
+        {
+          "qtyText": "1000",
+          "qtyMilli": 1000000,
+          "unitPriceTiyn": 999999900,
+          "discountBp": 0
+        }
+      ],
+      "expected": {
+        "lines": [
+          {
+            "netTiyn": 999999900000,
+            "vatTiyn": 159999984000,
+            "grossTiyn": 1159999884000
+          }
+        ],
+        "netTiyn": 999999900000,
+        "vatTiyn": 159999984000,
+        "grossTiyn": 1159999884000
+      }
+    },
+    {
+      "id": "many-lines",
+      "description": "Five lines summed line by line",
+      "source": "spec §6 (VAT per line, then summed)",
+      "vatEnabled": true,
+      "vatRateBp": 1600,
+      "lines": [
+        {
+          "qtyText": "2",
+          "qtyMilli": 2000,
+          "unitPriceTiyn": 1200000,
+          "discountBp": 0
+        },
+        {
+          "qtyText": "40",
+          "qtyMilli": 40000,
+          "unitPriceTiyn": 250000,
+          "discountBp": 0
+        },
+        {
+          "qtyText": "40",
+          "qtyMilli": 40000,
+          "unitPriceTiyn": 690000,
+          "discountBp": 0
+        },
+        {
+          "qtyText": "40",
+          "qtyMilli": 40000,
+          "unitPriceTiyn": 65000,
+          "discountBp": 0
+        },
+        {
+          "qtyText": "1",
+          "qtyMilli": 1000,
+          "unitPriceTiyn": 1500000,
+          "discountBp": 0
+        }
+      ],
+      "expected": {
+        "lines": [
+          {
+            "netTiyn": 2400000,
+            "vatTiyn": 384000,
+            "grossTiyn": 2784000
+          },
+          {
+            "netTiyn": 10000000,
+            "vatTiyn": 1600000,
+            "grossTiyn": 11600000
+          },
+          {
+            "netTiyn": 27600000,
+            "vatTiyn": 4416000,
+            "grossTiyn": 32016000
+          },
+          {
+            "netTiyn": 2600000,
+            "vatTiyn": 416000,
+            "grossTiyn": 3016000
+          },
+          {
+            "netTiyn": 1500000,
+            "vatTiyn": 240000,
+            "grossTiyn": 1740000
+          }
+        ],
+        "netTiyn": 44100000,
+        "vatTiyn": 7056000,
+        "grossTiyn": 51156000
+      }
+    }
+  ]
+}
