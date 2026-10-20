@@ -165,10 +165,10 @@ Post-MVP tables are listed at the bottom of `schema.sql`: `sign_challenges`, `es
   For one-line invoices, `gross` is exact and VAT is split back out: `vat = round(gross × rate / (10000 + rate))`, `net = gross − vat`. The sum of the invoices can never exceed the quote total. An act copies the quote lines; one active act per quote in the MVP.
 - **Numbering.** `КП-2026-0001`, `СЧ-2026-0001`, `АВР-2026-0001`, per company, type and year of `issue_date`. A number is assigned when the document leaves draft, from `document_counters` in the same transaction, so abandoned drafts leave no gaps.
 - **Validators.**
-  - ИИН/БИН: 12 digits, weights 1–11 mod 11; if the result is 10, weights 3–11,1,2; still 10 means invalid. ИИН verified against MVD order No. 521 (`docs/kz-rules.md` row 6); the БИН rules are still to be checked.
+  - ИИН/БИН: 12 digits, weights 1–11 mod 11; if the result is 10, weights 3–11,1,2; still 10 means invalid. ИИН verified against MVD order No. 521 ([docs/kz-rules.md, row 6](../docs/kz-rules.md#the-seven-rules)); the БИН rules are still to be checked.
   - ИИК: 20 characters, `KZ`, IBAN mod-97.
   - КНП: 3 digits. Кбе: 2 digits.
-- **Amount in words.** The счёт and АВР print "сумма прописью" in tenge and tiyn, Russian declension, tiyn as two digits (`docs/kz-rules.md` row 4). Lives in `src/domain/amountInWords.ts`, with test vectors.
+- **Amount in words.** The счёт and АВР print "сумма прописью" in tenge and tiyn, Russian declension, tiyn as two digits ([docs/kz-rules.md, row 4](../docs/kz-rules.md#the-seven-rules)). Lives in `src/domain/amountInWords.ts`, with test vectors.
 - **Locking.**
   - A quote can be edited while `draft` or `sent`; every save bumps `version`. It's frozen once signed, declined or cancelled.
   - Invoices and acts can be edited only as drafts. After that, cancel and re-issue.

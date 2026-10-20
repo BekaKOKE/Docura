@@ -215,8 +215,8 @@ The MVP does **not**:
 ## 11. Open questions
 
 1. Legal review of the signature on screen (drawn and typed) for B2C quotes and for the АВР.
-2. The ИИН/БИН checksum algorithm. **Updated 20.10.2026:** the ИИН algorithm is verified against MVD order No. 521 (`docs/kz-rules.md` row 6); the separate БИН rules are still to be found in an official source, and the same algorithm is applied meanwhile.
-3. ~~The current edition of form Р-1 (MinFin order No. 562 and its amendments).~~ **Closed 20.10.2026:** appendix 50 in the edition of order No. 458 of 27.10.2014 (`docs/kz-rules.md` row 5).
+2. The ИИН/БИН checksum algorithm. **Updated 20.10.2026:** the ИИН algorithm is verified against MVD order No. 521 ([docs/kz-rules.md, row 6](kz-rules.md#the-seven-rules)); the separate БИН rules are still to be found in an official source, and the same algorithm is applied meanwhile.
+3. ~~The current edition of form Р-1 (MinFin order No. 562 and its amendments).~~ **Closed 20.10.2026:** appendix 50 in the edition of order No. 458 of 27.10.2014 ([docs/kz-rules.md, row 5](kz-rules.md#the-seven-rules)).
 4. ЭСФ rules from 2026-01-01 (MinFin order No. 629), before post-MVP work starts.
 
 ## Decisions
