@@ -189,7 +189,7 @@ Routes: 38.
 | `POST /api/auth/register` | create a user, return a token | public, rate-limited | `{email, password, fullName}` | `{accessToken, user}` | F01 |
 | `POST /api/auth/login` | check the password | public, rate-limited | `{email, password}` (also form-encoded for Swagger) | `{accessToken, user}` | F01 |
 | `GET /api/me` | current user and their companies | user | — | `{user, companies[]}` | F01 |
-| `POST /api/companies` | create a company and the owner membership | user | `CompanyInput` (legal form, name, ИИН/БИН, address, director, VAT payer, bank, ИИК, БИК, Кбе, КНП) | `Company` | F01 |
+| `POST /api/companies` | create a company and the owner membership | user | `CompanyInput` (legal form, name, ИИН/БИН, address, phone, director, VAT payer, bank, ИИК, БИК, Кбе, КНП) | `Company` | F01 |
 | `GET /api/companies/{cid}` | read | member | — | `Company` | F14 |
 | `PATCH /api/companies/{cid}` | update requisites, VAT, defaults | owner | `Partial<CompanyInput>` | `Company` | F14 |
 | `PUT /api/companies/{cid}/logo` | upload a logo (PNG/JPEG ≤ 300 KB) | owner | multipart `file` | 204 | F14 |

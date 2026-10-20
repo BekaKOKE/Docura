@@ -46,7 +46,7 @@ These assumptions come from the recon and the reference product's positioning. V
 
 | goal | measure, checked in user tests |
 | --- | --- |
-| A quote signed on the spot | a trained user creates a КП with an existing client and 2 catalogue lines and sends its link in **≤ 6 taps** (typing excluded) and **under 60 s**; the client signs it from that link on the spot |
+| A quote signed on the spot | a trained user creates a КП with an existing client and 2 catalogue lines and sends its link **under 60 s**; the number of taps (typing excluded) is counted and recorded in the phone test (#55), with no pass/fail threshold (D6); the client signs it from that link on the spot |
 | No retyping | signed КП → счёт на оплату in **≤ 3 taps**; signed КП → АВР in **≤ 3 taps** |
 | Know who owes what | record a payment in **≤ 3 taps**; the dashboard answers "how much came in, how much is owed" without scrolling on a 360 px phone |
 | Clients can sign alone | a first-time client signs from a WhatsApp link on a 360 px Android phone without help |
@@ -58,7 +58,7 @@ These assumptions come from the recon and the reference product's positioning. V
 
 | # | feature | what it means in the MVP |
 | --- | --- | --- |
-| 1 | **Account and company** | sign up and log in with email and password; one company per account with its requisites: legal form, ИИН/БИН, address, director, VAT payer yes/no, bank, ИИК, БИК, Кбе, КНП; logo |
+| 1 | **Account and company** | sign up and log in with email and password; one company per account with its requisites: legal form, ИИН/БИН, address, phone, director, VAT payer yes/no, bank, ИИК, БИК, Кбе, КНП; logo |
 | 2 | **Clients** | create, search, edit and archive; a person or a company; name, phone, email, address, ИИН/БИН (optional) |
 | 3 | **Item catalogue** | services and materials with a unit, a price in ₸ and a kind (work/material); picked into documents; archived, never deleted |
 | 4 | **Quote (КП) with a VAT toggle** | client, lines (title, qty, unit, unit price), validity, note; a per-document **НДС 16 %** switch (see §6) |
@@ -227,3 +227,4 @@ The MVP does **not**:
 | D3 | 2026-10-19 | **Live preview, drafts and numbering, cancel and duplicate** are confirmed in the MVP | as described in §4 and §5 |
 | D4 | 2026-10-19 | In the MVP, invoices and acts are created **only from a signed КП** | `POST …/documents` with `type=invoice` or `act` and no source is not used by the MVP UI |
 | D5 | 2026-10-19 | **MVP cut to 40 issues** for the deadline. **Cancel, duplicate, the typed signature, decline, hand-over mode and the client signing the act** move to post-MVP, along with CI (#6), security hardening (#56), the printing check (#57) and the performance budget (#58). 15 small tasks merge into neighbours. The act is still created from the signed quote, and prepayment invoices stay. The Postgres run in #51 becomes optional ("if time allows") | §3, §4, §5 and §7 updated; supersedes the cancel and duplicate part of D3; `docs/tasks.md` lists the merges. The schema is unchanged: `'typed'`, `declined` and `cancelled` stay allowed for later |
+| D6 | 2026-10-20 | The **tap count to send a quote** becomes a measured value instead of a pass/fail target (≤ 6 taps): the designed flow needs about 10 taps (client 2, two catalogue lines 2 each, create, send, WhatsApp). The **company phone** joins the company requisites, because the public page shows it as a call link | §3 and §4.1 updated; #22 AC 5 records the count in #55; #15 collects the phone, #24 shows it; `companies.phone` already exists in `replica/schema.sql` |

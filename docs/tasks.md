@@ -60,7 +60,7 @@ Merged from T03.
   - `bin-iin.json`: valid and invalid
   - `iik.json`: mod-97
   - `amount-in-words.json`: 0, 1, 2, 5, 21, 1 000 000, tiyn declension
-- `contracts/fixtures/seed.json`: a VAT-payer company (ИП Сейткали Б.) and a non-VAT company, 3 clients with Kazakh and Russian names, 8 catalogue items, and documents in every MVP status (draft, sent, signed, expired, invoice partly paid and overdue, act issued).
+- `contracts/fixtures/seed.json`: a VAT-payer company (ИП Сейткали Б.) and a non-VAT company, 3 clients with Kazakh and Russian names, 8 catalogue items, and documents in every MVP status (draft, sent, signed, expired, invoice partly paid and overdue, act issued); one dev login per seed company, with the dev password in `contracts/README.md`.
 
 Values come from T01 and spec §6; test data from `docs/team/qa.md`; no real personal data. Merged from T05. Depends on T01.
 
@@ -122,7 +122,7 @@ Depends on T04 and T11.
 **Goal:** a new user creates an account, enters the requisites every document prints, and can log back in.
 **Description:**
 - Register and login forms with validation and error states; mock auth with a fake token; a logged-out guard on app routes; logout under "Ещё".
-- The company onboarding form, reused as settings: legal form, name, ИИН/БИН, address, director, VAT payer, bank, ИИК, БИК, Кбе, default КНП, validity days.
+- The company onboarding form, reused as settings: legal form, name, ИИН/БИН, address, phone, director, VAT payer, bank, ИИК, БИК, Кбе, default КНП, validity days.
 - The logo is stored in the mock as a data URL.
 - ИИН/БИН and ИИК are validated inline (T12).
 
