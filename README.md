@@ -17,9 +17,9 @@ Done:
 - **Backlog:** 82 issues in [the issue list](https://github.com/BekaKOKE/Docura/issues): 67 groomed (40 `mvp`, 27 `post-mvp`) and 15 merged
   into others (closed as not planned). Task TNN in [docs/tasks.md](docs/tasks.md) is issue #NN.
 - **Test cases:** 253 qa test cases, posted as a “Test cases:” comment on each of the 40 `mvp` issues.
-- **M0, repo and tooling:** #2 (repo hygiene, README, issue templates) and #4 (shared test vectors and seed data in `contracts/`) are
-  closed after a QA PASS. #1 (Kazakhstan rules checked against official sources, [docs/kz-rules.md](docs/kz-rules.md)) is implemented
-  and pushed, and stays open until its QA verdict.
+- **M0, repo and tooling:** all three issues are closed after a QA PASS comment: #1 (Kazakhstan rules checked against official
+  sources, [docs/kz-rules.md](docs/kz-rules.md)), #2 (repo hygiene, README, issue templates) and #4 (shared test vectors and seed data
+  in `contracts/`).
 
 Not done yet:
 - M1 frontend with mock services
@@ -29,7 +29,7 @@ Not done yet:
 - M5 frontend connected to the backend
 - M6 hardening and real testing
 
-**Next step:** finish M0 (the QA verdict on #1), then start M1 with #7 (generate the frontend from the design brief) and #11 (the
+**Next step:** start M1 with #7 (generate the frontend from the design brief) and #11 (the
 services layer), following [docs/process.md](docs/process.md).
 
 ## Start here
