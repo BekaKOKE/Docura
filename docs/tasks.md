@@ -1,6 +1,6 @@
 # Docura: draft backlog
 
-Status: **draft**, cut to 40 mvp tasks on 2026-10-19 (spec decision D5): 5 tasks moved to post-MVP and 15 merged into others. Milestones M0–M6 are the same as in `docs/process.md` and `replica/architecture.md`. Each task is GitHub issue #N with the same number. When a task becomes an issue, the pm grooms it into `docs/task-template.md`
+Status: **groomed** on 2026-10-20 (the GitHub issues now hold the acceptance criteria and win over this file); cut to 40 mvp tasks on 2026-10-19 (spec decision D5): 5 tasks moved to post-MVP and 15 merged into others. Milestones M0–M6 are the same as in `docs/process.md` and `replica/architecture.md`. Each task is GitHub issue #N with the same number. When a task becomes an issue, the pm grooms it into `docs/task-template.md`
 (acceptance criteria, out of scope, constraints) and qa adds test cases (`docs/process.md`). Scope follows `docs/spec.md`.
 
 Each task is sized for **one session**: one person or agent can implement it and the qa-engineer can verify it in the running app of its milestone.
@@ -116,7 +116,7 @@ Merged from T13. Depends on T04.
 - 150–400 ms latency.
 - A dev-only panel to force any ApiError code, and a "reset data" action.
 
-Depends on T05 and T11.
+Depends on T04 and T11.
 
 ### T15 · Account and company onboarding on mock (S01, S02, S03, S28) · `mvp`
 **Goal:** a new user creates an account, enters the requisites every document prints, and can log back in.
@@ -142,7 +142,7 @@ Depends on T05 and T11.
 ### T18 · Mock documents service: quote lifecycle · `mvp`
 **Goal:** quotes follow the real state machine even in mock mode.
 **Description:**
-- Mock `documents` for quotes: create a draft; update with a `version` check (409); `issue` (number КП-YYYY-NNNN with no gaps, snapshots, share token); cancel; duplicate; delete drafts.
+- Mock `documents` for quotes: create a draft; update with a `version` check (409); `issue` (number КП-YYYY-NNNN with no gaps, snapshots, share token); delete drafts. Cancel and duplicate are post-MVP (spec D5).
 - "Expired" is derived from `valid_until`.
 
 Vitest covers the transitions and numbering. Spec §5.
