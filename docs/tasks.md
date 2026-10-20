@@ -21,8 +21,8 @@ Format of each task:
 | M4 | SQLite with SQLAlchemy and Alembic | T47, T49, T50, T51 | 4 | 0 |
 | M5 | Connect frontend and backend | T52, T54, T55 | 3 | 0 |
 | M6 | Hardening and real testing | T59, T60 | 2 | 0 |
-| P | Post-MVP (after M6) | T06, T26, T56, T57, T58, T61, T62, T63, T64, T65, T66, T67, T68, T69, T70, T71, T72, T73, T74, T75, T76, T77, T78 | 0 | 23 |
-| | **open total** | **63** | **40** | **23** |
+| P | Post-MVP (after M6) | T06, T26, T56, T57, T58, T61, T62, T63, T64, T65, T66, T67, T68, T69, T70, T71, T72, T73, T74, T75, T76, T77, T78, T79, T80, T81, T82 | 0 | 27 |
+| | **open total** | **67** | **40** | **27** |
 | — | Merged into other tasks (closed as not planned) | 15 | | |
 
 ---
@@ -548,6 +548,22 @@ Depends on T75.
 ### T78 · ЭСФ status sync and buyer confirmation · `post-mvp`
 **Goal:** the owner sees the real ЭСФ status, including corrections awaiting confirmation.
 **Description:** a background job polls IS ESF every 10 minutes for pending submissions and maps the statuses (delivered, confirmed, revoked, error). The flow for corrected or revoked ЭСФ that need the buyer's confirmation (2026 rules) is shown on the invoice.
+
+### T79 · Cancel and duplicate documents · `post-mvp`
+**Goal:** a document sent or issued by mistake can be cancelled, and any document can start a new draft without retyping.
+**Description:** `cancel` (an invoice only when it has no payments) and `duplicate`; Аннулировать and Дублировать in the ⋯ menu; [Продлить] on an expired quote. Added 2026-10-20 for the spec §4 post-MVP row (D5).
+
+### T80 · Decline a quote from the public link (S11) · `post-mvp`
+**Goal:** a client who doesn't accept a quote can say so, with a reason.
+**Description:** "Отказаться" sheet with an optional reason, `POST /public/{token}/decline`, the declined state for the client and the owner. Added 2026-10-20 (D5).
+
+### T81 · Hand-over mode: sign on the owner's phone (S10) · `post-mvp`
+**Goal:** the owner hands their phone to the client to sign on site.
+**Description:** "Подписать сейчас", `/p/{token}?handover=1` full screen, no view counted, the hand-over recorded on the signed event. Added 2026-10-20 (D5).
+
+### T82 · Client signs the act on screen (S11, S18) · `post-mvp`
+**Goal:** the client confirms the completed work by signing the issued АВР from a link.
+**Description:** a share link for issued acts, the act on the public page, signing with an act consent text, the signature printed in the Принял block. Added 2026-10-20 (D5).
 
 ---
 
