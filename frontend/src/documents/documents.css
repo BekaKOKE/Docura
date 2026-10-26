@@ -1,0 +1,145 @@
+/* The A4 document renderers (QuoteDoc, InvoiceDoc): the sheet, the lines table, the totals. Tokens only, no raw
+   colours. Type sizes are points, as tokens.json `font._print` asks (body 10/13, table 9/12, title 14/18 bold):
+   a document is set in pt, not px. Amounts, numbers and dates never wrap (components.md §0, rules 2 and 3). */
+
+.doc-sheet {
+  --doc-text: 10pt;
+  --doc-leading: 13pt;
+  --doc-table: 9pt;
+  --doc-table-leading: 12pt;
+  --doc-title: 14pt;
+  --doc-title-leading: 18pt;
+  --doc-margin: 40pt;
+  --doc-gap: 12pt;
+
+  position: relative;
+  box-sizing: border-box;
+  width: 595pt;
+  min-height: 842pt;
+  padding: var(--doc-margin);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: var(--doc-gap);
+  background: var(--dc-color-surface);
+  color: var(--dc-color-text);
+  border: var(--dc-border-hairline) solid var(--dc-color-border);
+  font: var(--dc-weight-base) var(--doc-text) / var(--doc-leading) var(--dc-font-sans);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: break-word;
+}
+.doc-sheet h2,
+.doc-sheet h3,
+.doc-sheet p { margin: 0; }
+
+/* Money, identifiers and dates stay on one line. */
+.doc-nowrap { white-space: nowrap; }
+.doc-email { overflow-wrap: anywhere; }
+
+/* Read out by a screen reader, drawn nowhere (and left out of the print). */
+.doc-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.doc-head { display: grid; gap: 4pt; }
+.doc-title {
+  font-size: var(--doc-title);
+  line-height: var(--doc-title-leading);
+  font-weight: var(--dc-weight-xl);
+}
+.doc-draft { font-weight: var(--dc-weight-base); color: var(--dc-color-text-muted); }
+.doc-meta { display: flex; flex-wrap: wrap; gap: 0 12pt; }
+.doc-meta-item { color: var(--dc-color-text-muted); }
+.doc-meta-item b { color: var(--dc-color-text); font-weight: var(--dc-weight-lg); }
+
+.doc-parties { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16pt; }
+.doc-party { display: grid; gap: 2pt; align-content: start; }
+.doc-label {
+  font-size: var(--doc-table);
+  line-height: var(--doc-table-leading);
+  font-weight: var(--dc-weight-lg);
+  color: var(--dc-color-text-muted);
+}
+.doc-party-name { font-weight: var(--dc-weight-lg); }
+.doc-fact-label { color: var(--dc-color-text-muted); }
+
+/* The lines. Rows never split across pages in print (see the print block); a long name wraps inside its cell. */
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--doc-table);
+  line-height: var(--doc-table-leading);
+}
+.doc-table th,
+.doc-table td {
+  padding: 4pt 5pt;
+  border-bottom: var(--dc-border-hairline) solid var(--dc-color-border);
+  vertical-align: top;
+  text-align: left;
+}
+.doc-table thead th {
+  background: var(--dc-color-surface-sunken);
+  border-top: var(--dc-border-hairline) solid var(--dc-color-border-input);
+  border-bottom: var(--dc-border-hairline) solid var(--dc-color-border-input);
+  font-weight: var(--dc-weight-lg);
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.doc-table .doc-col-n { width: 20pt; text-align: center; }
+.doc-col-title { overflow-wrap: anywhere; }
+.doc-table .doc-col-num { text-align: right; white-space: nowrap; }
+.doc-col-unit { white-space: nowrap; }
+.doc-line-note { display: block; color: var(--dc-color-text-muted); }
+
+/* Без НДС / НДС 16 % / Итого, flush right under the lines. */
+.doc-totals {
+  justify-self: end;
+  min-width: 55%;
+  border-collapse: collapse;
+  font-size: var(--doc-table);
+  line-height: var(--doc-table-leading);
+}
+.doc-totals th,
+.doc-totals td { padding: 2pt 5pt; }
+.doc-totals th { text-align: left; font-weight: var(--dc-weight-base); color: var(--dc-color-text-muted); }
+.doc-totals td { text-align: right; white-space: nowrap; }
+.doc-total-gross th,
+.doc-total-gross td {
+  padding-top: 4pt;
+  border-top: var(--dc-border-hairline) solid var(--dc-color-border-input);
+  color: var(--dc-color-text);
+  font-size: var(--doc-text);
+  line-height: var(--doc-leading);
+  font-weight: var(--dc-weight-lg);
+}
+
+.doc-free { display: grid; gap: 2pt; }
+.doc-free-text { white-space: pre-line; }
+
+/* The executor's line, and the client's signature on screen under it. */
+.doc-signatures { display: grid; gap: 12pt; align-content: start; margin-top: 8pt; }
+.doc-sign-executor {
+  display: grid;
+  grid-template-columns: auto minmax(40pt, 1fr) auto;
+  gap: 2pt 8pt;
+  align-items: end;
+}
+.doc-sign-executor > .doc-label { grid-column: 1 / -1; }
+.doc-sign-rule { height: 14pt; border-bottom: var(--dc-border-hairline) solid var(--dc-color-text); }
+.doc-sign-caption {
+  grid-column: 2;
+  text-align: center;
+  font-size: var(--doc-table);
+  line-height: var(--doc-table-leading);
+  color: var(--dc-color-text-muted);
+}
+.doc-sign-screen { display: grid; gap: 2pt; justify-items: start; }
+.doc-sign-image { display: block; max-width: 160pt; max-height: 60pt; }
