@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "referenceDate": "2026-10-20",
   "note": "Made-up demo data, no real people. States are as of referenceDate in Asia/Almaty; sent quotes and unpaid invoices stay valid until 2027-06-30.",
   "users": [
@@ -827,7 +827,8 @@
         "bankName": "АО «Тест Банк»",
         "iik": "KZ75998KZT1001300335",
         "bik": "DCRAKZKA",
-        "kbe": "19"
+        "kbe": "19",
+        "defaultKnp": "859"
       },
       "sourceDocumentId": "80d4b85c-1ffc-5f26-8508-935eb54bb95b",
       "basis": "full",
@@ -910,7 +911,8 @@
         "bankName": "АО «Тест Банк»",
         "iik": "KZ75998KZT1001300335",
         "bik": "DCRAKZKA",
-        "kbe": "19"
+        "kbe": "19",
+        "defaultKnp": "859"
       },
       "sourceDocumentId": "79a5ed9b-5c27-5a4b-a00b-010f7074de38",
       "basis": "percent",
@@ -978,7 +980,8 @@
         "bankName": "АО «Тест Банк»",
         "iik": "KZ75998KZT1001300335",
         "bik": "DCRAKZKA",
-        "kbe": "19"
+        "kbe": "19",
+        "defaultKnp": "859"
       },
       "sourceDocumentId": "15f4e89c-4afd-5c78-bc35-439e6c726f62",
       "basis": "percent",
@@ -1046,7 +1049,8 @@
         "bankName": "АО «Тест Банк»",
         "iik": "KZ75998KZT1001300335",
         "bik": "DCRAKZKA",
-        "kbe": "19"
+        "kbe": "19",
+        "defaultKnp": "859"
       },
       "sourceDocumentId": "da9c3547-3a18-5c32-906b-27c107ea702c",
       "basis": "full",
@@ -1129,7 +1133,8 @@
         "bankName": "АО «Тест Банк»",
         "iik": "KZ75998KZT1001300335",
         "bik": "DCRAKZKA",
-        "kbe": "19"
+        "kbe": "19",
+        "defaultKnp": "859"
       },
       "sourceDocumentId": "80d4b85c-1ffc-5f26-8508-935eb54bb95b",
       "basis": null,
