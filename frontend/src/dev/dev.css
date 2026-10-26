@@ -1,0 +1,59 @@
+/* The development panel (src/dev). Tokens only, no raw colours. Imported by DevTools.tsx, so a production
+   build that drops the panel drops these rules too. */
+
+/* In the TopBar the launcher is a plain icon button; an error waiting in the queue fills it with the accent. */
+.dev-launcher[data-armed='true'] { background: var(--dc-color-accent); color: var(--dc-color-on-accent); }
+
+/* Bare screens (sign-in, onboarding, the public page) have no TopBar: the launcher sits in the top corner. */
+.dev-launcher[data-floating='true'] {
+  position: fixed;
+  top: calc(var(--dc-space-2) + env(safe-area-inset-top));
+  right: var(--dc-space-2);
+  z-index: var(--dc-z-sticky);
+  background: var(--dc-color-surface);
+  border: var(--dc-border-hairline) solid var(--dc-color-border-input);
+}
+.dev-launcher[data-floating='true'][data-armed='true'] { background: var(--dc-color-accent); }
+
+.dev-panel { display: grid; gap: var(--dc-space-5); padding: var(--dc-space-2) var(--dc-space-4) var(--dc-space-6); min-width: 0; }
+.dev-panel p, .dev-panel h3, .dev-panel ul { margin: 0; }
+.dev-section { display: grid; gap: var(--dc-space-3); min-width: 0; }
+.dev-section h3 { font-size: var(--dc-text-lg); line-height: var(--dc-leading-lg); font-weight: var(--dc-weight-lg); }
+
+.dev-list, .dev-facts { list-style: none; padding: 0; }
+.dev-list { border: var(--dc-border-hairline) solid var(--dc-color-border); border-radius: var(--dc-radius-md); overflow: hidden; }
+.dev-list li + li { border-top: var(--dc-border-hairline) solid var(--dc-color-border); }
+.dev-facts { display: grid; gap: var(--dc-space-2); }
+.dev-facts li { display: grid; gap: var(--dc-space-1); min-width: 0; overflow-wrap: anywhere; }
+
+/* One error code per row, a full-width 56 px target. The code is not a document number: it may wrap. */
+.dev-row {
+  display: grid;
+  gap: var(--dc-space-1);
+  width: 100%;
+  min-height: var(--dc-size-control-lg);
+  padding: var(--dc-space-3) var(--dc-space-4);
+  border: 0;
+  background: var(--dc-color-surface);
+  color: var(--dc-color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.dev-row:active { background: var(--dc-color-surface-sunken); }
+.dev-row-text { display: grid; gap: var(--dc-space-1); min-width: 0; }
+.dev-row-code { font-weight: var(--dc-weight-lg); white-space: normal; overflow-wrap: anywhere; }
+.dev-row-hint { font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); color: var(--dc-color-text-muted); }
+.dev-row-count {
+  justify-self: start;
+  padding: var(--dc-space-1) var(--dc-space-2);
+  border-radius: var(--dc-radius-pill);
+  background: var(--dc-color-accent);
+  color: var(--dc-color-on-accent);
+  font-size: var(--dc-text-caption);
+  line-height: var(--dc-leading-caption);
+  font-weight: var(--dc-weight-caption);
+}
+
+.dev-login-email, .dev-login-password { white-space: normal; overflow-wrap: anywhere; }
+.dev-panel .btn:disabled { opacity: 0.5; }

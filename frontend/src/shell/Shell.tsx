@@ -9,6 +9,7 @@ import {
   tabOf,
 } from '../app/nav'
 import { pickScreen, titleKey, type Screen } from '../app/screens'
+import { DevToolsLauncher } from '../dev/DevTools'
 import { t, type MessageKey } from '../i18n/t'
 import { CreateSheet, MoreSheet } from './ActionSheets'
 import { DocumentSegments } from './DocumentSegments'
@@ -57,7 +58,9 @@ export function Shell() {
       </a>
       <Sidebar current={section} />
       <div className="shell-main">
-        <TopBar title={title} onBack={onBack} />
+        <TopBar title={title} onBack={onBack}>
+          {import.meta.env.DEV && <DevToolsLauncher />}
+        </TopBar>
         {segment && <DocumentSegments current={segment} />}
         <main id="main" className="shell-content">
           <Outlet />
