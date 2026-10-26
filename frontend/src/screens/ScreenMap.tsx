@@ -10,7 +10,7 @@ export function ScreenMap() {
   }, [])
 
   return (
-    <main className="page" data-screen="map">
+    <div className="page" data-screen="map">
       <h1>{t('map.title')}</h1>
       <p className="muted">{t('map.lead')}</p>
       {screenGroups.map((group) => (
@@ -44,6 +44,6 @@ export function ScreenMap() {
           </ul>
         </section>
       ))}
-    </main>
+    </div>
   )
 }

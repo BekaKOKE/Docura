@@ -1,6 +1,7 @@
 /* replica/design/tokens.css is the only source of colours, type, spacing, radius and sizes (--dc-*).
    It is imported as is; this file only uses the tokens and holds no raw colour values. */
 @import '../../../replica/design/tokens.css';
+@import './shell.css';
 
 *, *::before, *::after { box-sizing: border-box; }
 

@@ -6,7 +6,7 @@ import { formatIssues, t } from '../i18n/t'
 export function Placeholder({ screen, path }: { screen: Screen; path: string }) {
   const Icon = screen.icon
   return (
-    <main className="page" data-screen={screen.id}>
+    <div className="page" data-screen={screen.id}>
       <span className="screen-id dc-code">{screen.id}</span>
       <h1>{t(titleKey(screen.id))}</h1>
       <p className="muted">{t(purposeKey(screen.id))}</p>
@@ -29,6 +29,6 @@ export function Placeholder({ screen, path }: { screen: Screen; path: string }) 
       <Link className="btn btn-secondary btn-block" to={SCREEN_MAP_PATH}>
         <span className="dc-label">{t('placeholder.allScreens')}</span>
       </Link>
-    </main>
+    </div>
   )
 }

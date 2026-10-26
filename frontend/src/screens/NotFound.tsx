@@ -9,7 +9,7 @@ export function NotFound() {
   }, [])
 
   return (
-    <main className="page" data-screen="not-found">
+    <div className="page" data-screen="not-found">
       <h1>{t('notFound.title')}</h1>
       <p className="muted">{t('notFound.text')}</p>
       <Link className="btn btn-primary btn-block" to="/">
@@ -18,6 +18,6 @@ export function NotFound() {
       <Link className="btn btn-secondary btn-block" to={SCREEN_MAP_PATH}>
         <span className="dc-label">{t('placeholder.allScreens')}</span>
       </Link>
-    </main>
+    </div>
   )
 }
