@@ -1,9 +1,14 @@
 import { readFileSync } from 'node:fs'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import type { ReactNode } from 'react'
 import { renderToString } from 'react-dom/server'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { describe, expect, it } from 'vitest'
 import { routes } from '../../app/routes'
 import { t } from '../../i18n/t'
+import type { Article } from '../../services'
+import { ArchiveConfirm } from './ArchiveConfirm'
+import { CatalogForm } from './CatalogForm'
 
 function render(url: string): string {
   return renderToString(<RouterProvider router={createMemoryRouter(routes, { initialEntries: [url] })} />)
@@ -79,6 +84,56 @@ describe('"?new=1" from the [+] sheet opens the create form', () => {
   it('turns native validation and autofill off, so the app’s own messages are the ones shown', () => {
     expect(html).toContain('noValidate')
     expect(html).toContain('autoComplete="off"')
+  })
+})
+
+describe('editing and archiving an item', () => {
+  const kazakh: Article = {
+    id: 'a1',
+    companyId: 'co',
+    kind: 'service',
+    title: 'Қабырғаны сылау',
+    searchTitle: 'қабырғаны сылау',
+    description: null,
+    unit: 'м²',
+    unitPriceTiyn: 1850050,
+    archivedAt: null,
+  }
+  const inClient = (node: ReactNode) =>
+    renderToString(<QueryClientProvider client={new QueryClient()}>{node}</QueryClientProvider>)
+
+  it('fills the form with the stored item: Kazakh title unchanged, price as «18 500,50», unit selected (TC-3, TC-6)', () => {
+    const html = inClient(<CatalogForm article={kazakh} onSaved={() => {}} onCancel={() => {}} />)
+    expect(html).toContain('value="Қабырғаны сылау"')
+    expect(html).toContain('value="18 500,50"')
+    expect(html).toMatch(/<option value="м²" selected/)
+    expect(text(html)).toContain(t('catalogForm.save'))
+  })
+
+  it('offers the archive action only when editing, with the reason it is not a delete (AC 1)', () => {
+    const editing = inClient(<CatalogForm article={kazakh} onSaved={() => {}} onCancel={() => {}} onArchive={() => {}} />)
+    expect(text(editing)).toContain(t('catalogForm.archive'))
+    expect(text(editing)).toContain(t('catalogForm.archive.why'))
+    const creating = inClient(<CatalogForm onSaved={() => {}} onCancel={() => {}} />)
+    expect(text(creating)).not.toContain(t('catalogForm.archive'))
+    expect(text(editing)).not.toMatch(/Удалить|Удалён/)
+  })
+
+  it('still has Отмена and Сохранить as the only side-by-side buttons', () => {
+    const html = inClient(<CatalogForm article={kazakh} onSaved={() => {}} onCancel={() => {}} onArchive={() => {}} />)
+    const bar = /<div class="cl-actions cl-actions-bar">([\s\S]*?)<\/div>/.exec(html)?.[1] ?? ''
+    const buttons = [...bar.matchAll(/<button\b[^>]*>(.*?)<\/button>/g)].map((m) => text(m[1] ?? ''))
+    expect(buttons).toEqual([t('catalogForm.cancel'), t('catalogForm.save')])
+  })
+
+  it('asks before archiving, names the item, promises the documents stay, and offers Отмена', () => {
+    const html = inClient(<ArchiveConfirm article={kazakh} onArchived={() => {}} onCancel={() => {}} />)
+    const visible = text(html)
+    expect(visible).toContain('«Қабырғаны сылау»')
+    expect(visible).toContain('не изменятся')
+    const buttons = [...html.matchAll(/<button\b[^>]*>(.*?)<\/button>/g)].map((m) => text(m[1] ?? ''))
+    expect(buttons).toEqual([t('catalogArchive.confirm'), t('catalogArchive.cancel')])
+    expect(html).not.toContain('role="alert"')
   })
 })
 

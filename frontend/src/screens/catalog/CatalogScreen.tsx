@@ -7,6 +7,7 @@ import { services, type Article, type ArticleKind } from '../../services'
 import { errorText } from '../clients/errorText'
 import { BottomSheet } from '../../shell/BottomSheet'
 import { Banner, EmptyState, ListSkeleton, Money } from '../clients/parts'
+import { ArchiveConfirm } from './ArchiveConfirm'
 import { CatalogForm } from './CatalogForm'
 import './catalog.css'
 
@@ -51,6 +52,7 @@ export function CatalogScreen() {
   const [params, setParams] = useSearchParams()
   const createOpen = params.get('new') === '1'
   const [editing, setEditing] = useState<Article | null>(null)
+  const [archiving, setArchiving] = useState<Article | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
   const [text, setText] = useState('')
@@ -95,6 +97,12 @@ export function CatalogScreen() {
     void queryClient.invalidateQueries({ queryKey: ['articles'] })
     setNotice(t('catalog.updated', { title: article.title }))
     setEditing(null)
+  }
+
+  function onArchived(article: Article) {
+    void queryClient.invalidateQueries({ queryKey: ['articles'] })
+    setNotice(t('catalog.archived', { title: article.title }))
+    setArchiving(null)
   }
 
   const data = list.data
@@ -240,7 +248,21 @@ export function CatalogScreen() {
       </BottomSheet>
 
       <BottomSheet open={editing !== null} title={t('catalogForm.title.edit')} onClose={() => setEditing(null)}>
-        {editing && <CatalogForm article={editing} onSaved={onUpdated} onCancel={() => setEditing(null)} />}
+        {editing && (
+          <CatalogForm
+            article={editing}
+            onSaved={onUpdated}
+            onCancel={() => setEditing(null)}
+            onArchive={() => {
+              setArchiving(editing)
+              setEditing(null)
+            }}
+          />
+        )}
+      </BottomSheet>
+
+      <BottomSheet open={archiving !== null} title={t('catalogArchive.title')} onClose={() => setArchiving(null)}>
+        {archiving && <ArchiveConfirm article={archiving} onArchived={onArchived} onCancel={() => setArchiving(null)} />}
       </BottomSheet>
     </div>
   )

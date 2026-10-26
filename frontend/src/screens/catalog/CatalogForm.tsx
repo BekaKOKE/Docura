@@ -14,6 +14,8 @@ interface CatalogFormProps {
   article?: Article
   onSaved: (article: Article) => void
   onCancel: () => void
+  /** Editing only: asks to archive the item (the screen opens the confirmation). */
+  onArchive?: () => void
 }
 
 type FormField = 'title' | 'unit' | 'price'
@@ -61,7 +63,7 @@ function Field({ label, hint, error, children }: FieldProps) {
 
 // S24 form: kind, title, unit and price of one catalogue item. The rules are the ones the mock service applies
 // (domain/article.ts), so a mistake shows up here first, in the same words.
-export function CatalogForm({ article, onSaved, onCancel }: CatalogFormProps) {
+export function CatalogForm({ article, onSaved, onCancel, onArchive }: CatalogFormProps) {
   const [kind, setKind] = useState<ArticleKind>(article?.kind ?? 'service')
   const [title, setTitle] = useState(article?.title ?? '')
   const [unit, setUnit] = useState<string>(article?.unit ?? ARTICLE_UNITS[0])
@@ -224,6 +226,15 @@ export function CatalogForm({ article, onSaved, onCancel }: CatalogFormProps) {
           />
         )}
       </Field>
+
+      {article && onArchive && (
+        <section className="ct-archive">
+          <p className="cl-hint">{t('catalogForm.archive.why')}</p>
+          <button type="button" className="btn btn-secondary btn-block" onClick={onArchive}>
+            <span className="dc-label">{t('catalogForm.archive')}</span>
+          </button>
+        </section>
+      )}
 
       <div className="cl-actions cl-actions-bar">
         <button type="button" className="btn btn-secondary" onClick={onCancel}>

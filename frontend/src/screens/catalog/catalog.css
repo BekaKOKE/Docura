@@ -21,6 +21,7 @@
 .ct-row:active { background: var(--dc-color-surface-sunken); }
 /* The native unit list: the same 48 px control as the other fields, with room for the arrow. */
 .ct-select { padding-right: var(--dc-space-8); }
+.ct-archive { display: grid; gap: var(--dc-space-2); min-width: 0; }
 .ct-row-text { display: grid; gap: var(--dc-space-1); min-width: 0; }
 .ct-row-title {
   display: -webkit-box;
