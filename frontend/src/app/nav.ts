@@ -107,6 +107,8 @@ export interface SheetItem {
   label: MessageKey
   hint?: MessageKey
   icon: LucideIcon
+  /** An entry that does something instead of opening a page (the sheet draws a button, not a link). */
+  action?: 'logout'
 }
 
 // The [+] sheet. The issue names the three entries: КП, Клиент, Работа в каталог.
@@ -123,14 +125,14 @@ export const createItems: readonly SheetItem[] = [
   },
 ]
 
-/** Where "Выйти" goes. Real sign-out arrives with the auth screens (#15); until then it opens the sign-in screen. */
+/** Where "Выйти" lands once the session is closed (services.auth.logout). */
 export const LOGOUT_PATH = '/login'
 
 // The Ещё sheet: Каталог, Компания, Выйти.
 export const moreItems: readonly SheetItem[] = [
   { id: 'catalog', to: '/catalog', label: 'nav.catalog', icon: Package },
   { id: 'company', to: '/settings/company', label: 'nav.company', icon: Building2 },
-  { id: 'logout', to: LOGOUT_PATH, label: 'nav.logout', icon: LogOut },
+  { id: 'logout', to: LOGOUT_PATH, label: 'nav.logout', icon: LogOut, action: 'logout' },
 ]
 
 /**

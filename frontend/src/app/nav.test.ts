@@ -109,6 +109,10 @@ describe('menus', () => {
     expect(moreItems.map((item) => t(item.label))).toEqual(['Каталог', 'Компания', 'Выйти'])
   })
 
+  it('makes Выйти an action, and the other Ещё entries links', () => {
+    expect(moreItems.filter((item) => item.action).map((item) => [item.id, item.action])).toEqual([['logout', 'logout']])
+  })
+
   it('points every menu entry at a route that exists', () => {
     const known = new Set(screens.flatMap((s) => s.paths))
     for (const item of [...sidebarItems, ...createItems, ...moreItems]) {

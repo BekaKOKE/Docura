@@ -183,3 +183,14 @@
 @media (min-width: 1024px) {
   .banner-action { flex: 0 0 auto; }
 }
+
+/* A row of a bottom sheet that is a button (Выйти) looks like the rows that are links. */
+button.sheet-row {
+  width: 100%;
+  border: 0;
+  border-top: var(--dc-border-hairline) solid var(--dc-color-border);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}

@@ -162,6 +162,8 @@ describe('sheets', () => {
     expect(labels).toEqual([t('nav.catalog'), t('nav.company'), t('nav.logout')])
     expect(html).toContain('href="/catalog"')
     expect(html).toContain('href="/settings/company"')
-    expect(html).toContain('href="/login"')
+    // Выйти is a button that ends the session (#15), no longer a link to the sign-in screen.
+    expect(html).not.toContain('href="/login"')
+    expect(html).toMatch(new RegExp(`<button[^>]*class="sheet-row"[^>]*>(?:(?!</button>).)*${t('nav.logout')}`))
   })
 })
