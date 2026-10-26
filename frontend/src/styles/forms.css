@@ -166,7 +166,11 @@
 .text-link {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  /* 48 x 48 at least, also for a short word such as «Войти» (components.md rule 6). */
+  min-width: var(--dc-size-touch-min);
   min-height: var(--dc-size-touch-min);
+  padding-inline: var(--dc-space-2);
   color: var(--dc-color-accent-text);
   font-weight: var(--dc-weight-button);
   text-decoration: underline;

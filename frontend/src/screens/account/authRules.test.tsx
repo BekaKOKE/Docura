@@ -1,3 +1,5 @@
+/// <reference types="node" />
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { t } from '../../i18n/t'
 import { renderApp } from '../../test/renderApp'
@@ -61,6 +63,27 @@ describe('serverProblem', () => {
     const limited = new ApiError({ code: 'rate_limited', message: t('apiError.rate_limited') })
     expect(serverProblem(limited, fields)).toMatchObject({ banner: 'Слишком много попыток. Подождите минуту.', retryable: true })
     expect(serverProblem(new Error('boom'), fields)).toMatchObject({ banner: t('error.generic'), retryable: true })
+  })
+})
+
+// vite's ?raw import of a .css file gives an empty string under vitest, so the stylesheet is read from disk.
+const formsCss = readFileSync(new URL('../../styles/forms.css', import.meta.url), 'utf8')
+
+describe('touch targets of the links under the forms (#15 AC 6, TC-7)', () => {
+  const ruleBody = (selector: string) => {
+    const start = formsCss.indexOf(`\n${selector} {`)
+    return start < 0 ? '' : formsCss.slice(start, formsCss.indexOf('}', start))
+  }
+
+  it('gives .text-link a 48 px minimum in both directions, so a short word like «Войти» is not narrower', () => {
+    const body = ruleBody('.text-link')
+    expect(body).toContain('min-width: var(--dc-size-touch-min)')
+    expect(body).toContain('min-height: var(--dc-size-touch-min)')
+  })
+
+  it('uses that class for both links: «Войти» under sign-up and «Создать аккаунт» under sign-in', () => {
+    expect(renderApp('/register', null)).toMatch(/<a class="text-link" href="\/login"[^>]*>Войти<\/a>/)
+    expect(renderApp('/login', null)).toMatch(/<a class="text-link" href="\/register"[^>]*>Создать аккаунт<\/a>/)
   })
 })
 
