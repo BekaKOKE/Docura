@@ -24,8 +24,8 @@ export interface ShellHandle {
 
 type SheetKind = 'create' | 'more'
 
-// The app chrome around every signed-in screen: Sidebar (desktop), TopBar, the Документы segmented control,
-// TabBar (phone), and the [+] and Ещё sheets. Screens render into <Outlet />; they only draw their own content.
+// The app chrome around every signed-in screen: Sidebar (desktop), TopBar, the Documents segmented control,
+// TabBar (phone), and the [+] and More sheets. Screens render into <Outlet />; they only draw their own content.
 export function Shell() {
   const location = useLocation()
   const navigate = useNavigate()

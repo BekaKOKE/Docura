@@ -26,7 +26,7 @@ function region(html: string, tag: string, name: string): string {
 }
 
 describe('TabBar', () => {
-  it('shows Главная, Документы, [+], Клиенты, Ещё in this order', () => {
+  it('shows home, documents, [+], clients, more in this order', () => {
     const bar = region(render('/'), 'nav', 'tabbar')
     const order = [t('nav.home'), t('nav.documents'), `aria-label="${t('nav.create')}"`, t('nav.clients'), t('nav.more')]
     const positions = order.map((part) => bar.indexOf(part))
@@ -34,14 +34,14 @@ describe('TabBar', () => {
     expect(positions).toEqual([...positions].sort((a, b) => a - b))
   })
 
-  it('marks the current tab, and Ещё for Каталог and Компания', () => {
+  it('marks the current tab, and More for catalogue and company', () => {
     expect(current(region(render('/'), 'nav', 'tabbar'))).toEqual([t('nav.home')])
     expect(current(region(render('/documents/invoices'), 'nav', 'tabbar'))).toEqual([t('nav.documents')])
     expect(current(region(render('/clients/demo'), 'nav', 'tabbar'))).toEqual([t('nav.clients')])
     expect(region(render('/catalog'), 'nav', 'tabbar')).toMatch(/class="tab tab-current"/)
   })
 
-  it('lets the Документы tab reopen the segment the user is in', () => {
+  it('lets the Documents tab reopen the segment the user is in', () => {
     const bar = region(render('/invoices/demo'), 'nav', 'tabbar')
     expect(bar).toContain('href="/documents/invoices"')
     expect(region(render('/'), 'nav', 'tabbar')).toContain('href="/documents/quotes"')
@@ -71,8 +71,8 @@ describe('Sidebar', () => {
   })
 })
 
-describe('Документы segmented control', () => {
-  it('shows КП, Счета, Акты on each list screen and selects the one in the address', () => {
+describe('Documents segmented control', () => {
+  it('shows all three segments on each list screen and selects the one in the address', () => {
     for (const [url, selected] of [
       ['/documents/quotes', 'segments.quotes'],
       ['/documents/invoices', 'segments.invoices'],
@@ -144,7 +144,7 @@ describe('sheets', () => {
     expect(sheet(<MoreSheet open={false} onClose={() => {}} />)).toBe('')
   })
 
-  it('opens the [+] sheet as a labelled modal dialog with КП, Клиент, Работа в каталог', () => {
+  it('opens the [+] sheet as a labelled modal dialog with quote, client, catalogue item', () => {
     const html = sheet(<CreateSheet open onClose={() => {}} />)
     expect(html).toContain('role="dialog"')
     expect(html).toContain('aria-modal="true"')
@@ -157,7 +157,7 @@ describe('sheets', () => {
     expect(html).toContain('href="/catalog?new=1"')
   })
 
-  it('opens the Ещё sheet with Каталог, Компания, Выйти', () => {
+  it('opens the More sheet with catalogue, company, sign out', () => {
     const html = sheet(<MoreSheet open onClose={() => {}} />)
     const labels = [...html.matchAll(/class="sheet-row-label dc-label">(.*?)<\/span>/g)].map((m) => m[1])
     expect(labels).toEqual([t('nav.catalog'), t('nav.company'), t('nav.logout')])

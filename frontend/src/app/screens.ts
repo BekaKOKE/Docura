@@ -81,6 +81,8 @@ export const screens: readonly Screen[] = [
 export const screenGroups: readonly ScreenGroup[] = ['account', 'home', 'quotes', 'public', 'invoices', 'acts', 'clients']
 
 export const SCREEN_MAP_PATH = '/screens'
+/** A service page for checking fonts and 360 px wrapping by eye. It is not an MVP screen. */
+export const DESIGN_CHECK_PATH = '/screens/check'
 
 export const titleKey = (id: ScreenId) => `screen.${id}.title` as const satisfies MessageKey
 export const purposeKey = (id: ScreenId) => `screen.${id}.purpose` as const satisfies MessageKey

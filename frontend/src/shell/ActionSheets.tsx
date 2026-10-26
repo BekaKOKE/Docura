@@ -26,7 +26,7 @@ function SheetLinks({ items, onClose }: { items: readonly SheetItem[]; onClose: 
   )
 }
 
-// The centre [+] of the TabBar: КП, Клиент, Работа в каталог.
+// The centre [+] of the TabBar: quote, client, catalogue item.
 export function CreateSheet({ open, onClose }: SheetProps) {
   return (
     <BottomSheet open={open} title={t('create.title')} onClose={onClose}>
@@ -35,7 +35,7 @@ export function CreateSheet({ open, onClose }: SheetProps) {
   )
 }
 
-// The last tab of the TabBar: Каталог, Компания, Выйти.
+// The last tab of the TabBar: catalogue, company, sign out.
 export function MoreSheet({ open, onClose }: SheetProps) {
   return (
     <BottomSheet open={open} title={t('more.title')} onClose={onClose}>

@@ -1,0 +1,20 @@
+/* Styles of the service page that checks fonts and 360 px wrapping. Tokens only. */
+.check-glyphs {
+  font-size: var(--dc-text-2xl);
+  line-height: var(--dc-leading-2xl);
+  font-weight: var(--dc-weight-2xl);
+  overflow-wrap: anywhere;
+}
+
+/* An invoice row like the specimen: the name wraps, the amount and the number never do. */
+.check-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--dc-space-1) var(--dc-space-3);
+  padding: var(--dc-space-4);
+}
+.check-row-title { font-weight: var(--dc-weight-lg); min-width: 0; }
+.check-row-amount { font-weight: var(--dc-weight-figure); text-align: right; }
+
+/* Two buttons side by side is the most a phone gets. */
+.check-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--dc-space-2); }

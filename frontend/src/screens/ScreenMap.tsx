@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router'
-import { displayPath, groupKey, screenGroups, screens, titleKey } from '../app/screens'
+import { DESIGN_CHECK_PATH, displayPath, groupKey, screenGroups, screens, titleKey } from '../app/screens'
 import { formatIssues, t } from '../i18n/t'
 
 // Lists every MVP screen with its address, so the whole scaffold can be walked without knowing the routes.
@@ -44,6 +44,9 @@ export function ScreenMap() {
           </ul>
         </section>
       ))}
+      <Link className="btn btn-secondary btn-block" to={DESIGN_CHECK_PATH}>
+        <span className="dc-label">{t('check.title')}</span>
+      </Link>
     </div>
   )
 }

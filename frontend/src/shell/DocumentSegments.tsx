@@ -8,8 +8,8 @@ const labels = {
   acts: 'segments.acts',
 } as const satisfies Record<DocumentSection, MessageKey>
 
-// The Документы segmented control: КП · Счета · Акты. The address decides which segment is selected,
-// so a deep link such as /documents/invoices opens with Счета selected. Each segment is a link, not a stateful tab.
+// The Documents segmented control: quotes, invoices, acts. The address decides which segment is selected,
+// so a deep link such as /documents/invoices opens with invoices selected. Each segment is a link, not a stateful tab.
 export function DocumentSegments({ current }: { current: DocumentSection }) {
   return (
     <div className="segments-wrap">

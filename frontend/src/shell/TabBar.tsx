@@ -14,7 +14,7 @@ interface TabBarProps {
   onMore: () => void
 }
 
-// Phone navigation (below 1024 px): Главная · Документы · [+] · Клиенты · Ещё. 64 px plus the safe area.
+// Phone navigation (below 1024 px): home, documents, [+], clients, more. 64 px plus the safe area.
 export function TabBar({
   current,
   homeTo,

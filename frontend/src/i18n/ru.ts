@@ -98,6 +98,27 @@ export const ru = {
 
   'more.title': 'Ещё',
 
+  'check.title': 'Проверка шрифтов и вёрстки',
+  'check.lead': 'Образцы для проверки глазами: знак ₸, казахские буквы, суммы и номера в одну строку, длинные подписи кнопок. Служебная страница, в готовом приложении её не будет.',
+  'check.glyphs': 'Знаки и буквы',
+  'check.tenge': 'Знак тенге',
+  'check.tengeSample': '₸',
+  'check.kazakh': 'Казахские буквы',
+  'check.kazakhSample': 'ә ғ қ ң ө ұ ү һ і',
+  'check.yoNumero': 'Ё и знак номера',
+  'check.yoNumeroSample': 'Ёё №',
+  'check.names': 'Имена и названия',
+  'check.nameKazakh': 'Қайрат Әбілқасымов',
+  'check.nameYo': 'Ирина Ёлкина',
+  'check.nameCompany': 'ТОО «Алатау Құрылыс Сервис»',
+  'check.numbers': 'Суммы и номера',
+  'check.documentNumber': 'КП-2026-0012',
+  'check.buttons': 'Кнопки на 360 px',
+  'check.buttonLong': 'Зарегистрироваться',
+  'check.buttonWrap': 'Отправить на подпись клиенту',
+  'check.buttonPair1': 'Отправить',
+  'check.buttonPair2': 'Подписать сейчас',
+
   // Counted nouns: one key per Intl.PluralRules('ru') category, read through tCount().
   'count.invoice.one': '{n} счёт',
   'count.invoice.few': '{n} счёта',

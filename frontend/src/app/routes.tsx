@@ -1,11 +1,12 @@
 import { redirect, type RouteObject } from 'react-router'
+import { DesignCheck } from '../screens/DesignCheck'
 import { NotFound } from '../screens/NotFound'
 import { ScreenMap } from '../screens/ScreenMap'
 import { ScreenRoute } from '../screens/ScreenRoute'
 import { BareLayout } from '../shell/BareLayout'
 import { Shell, type ShellHandle } from '../shell/Shell'
 import { documentListPath, shellModeOf } from './nav'
-import { screens, SCREEN_MAP_PATH, type Screen } from './screens'
+import { DESIGN_CHECK_PATH, screens, SCREEN_MAP_PATH, type Screen } from './screens'
 
 export interface ScreenRouteHandle {
   screens: readonly Screen[]
@@ -42,6 +43,11 @@ export const routes: RouteObject[] = [
         path: SCREEN_MAP_PATH,
         element: <ScreenMap />,
         handle: { titleKey: 'map.title' } satisfies ShellHandle,
+      },
+      {
+        path: DESIGN_CHECK_PATH,
+        element: <DesignCheck />,
+        handle: { titleKey: 'check.title' } satisfies ShellHandle,
       },
       {
         path: '*',
