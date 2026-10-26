@@ -232,6 +232,6 @@ textarea.cl-control { resize: vertical; min-height: calc(var(--dc-size-control-m
 .cl-confirm p { margin: 0; overflow-wrap: anywhere; }
 
 @media (min-width: 1024px) {
-  .cl-add { width: auto; justify-self: start; }
+  .btn.cl-add { width: auto; justify-self: start; }
   .cl-toolbar { grid-template-columns: minmax(0, 480px) auto; align-items: center; }
 }
