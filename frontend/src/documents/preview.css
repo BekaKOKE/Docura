@@ -1,0 +1,36 @@
+/* Where an A4 sheet is shown on screen: the scaling box, and the editor's form + preview split. Tokens only, no raw
+   colours. Every grid is minmax(0, 1fr) and every flex child has min-width: 0, so the 595 pt sheet can never widen
+   the page at 360 px (components.md section 0). */
+
+/* The box. `fit` clips: the sheet is scaled to its width. `actual` scrolls inside the box, never the page. */
+.doc-viewport { min-width: 0; max-width: 100%; }
+.doc-viewport[data-zoom='fit'] { overflow: hidden; }
+.doc-viewport[data-zoom='actual'] { overflow-x: auto; overscroll-behavior-x: contain; }
+
+.doc-scaler { position: relative; margin-inline: auto; max-width: 100%; }
+.doc-viewport[data-zoom='actual'] .doc-scaler { margin-inline: 0; max-width: none; }
+.doc-scaled { width: max-content; transform-origin: 0 0; }
+
+/* The editor and its live preview. Below 1024 px the preview pane is not shown: the phone has the S08 screen. */
+.doc-split { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--dc-space-4); }
+.doc-split-form { min-width: 0; }
+.doc-split-pane { display: none; }
+
+@media (min-width: 1024px) {
+  .doc-split {
+    grid-template-columns: minmax(0, 640px) var(--dc-layout-preview-pane);
+    gap: var(--dc-space-6);
+    align-items: start;
+    padding-inline: var(--dc-layout-gutter-desktop);
+  }
+  /* Stays in view while the form scrolls. Exactly 520 px wide: the sheet is scaled to it. */
+  .doc-split-pane {
+    display: block;
+    position: sticky;
+    top: calc(var(--dc-layout-header-desktop) + var(--dc-space-4));
+    width: var(--dc-layout-preview-pane);
+    max-height: calc(100dvh - var(--dc-layout-header-desktop) - var(--dc-space-8));
+    overflow-y: auto;
+  }
+  .doc-pane { width: var(--dc-layout-preview-pane); }
+}
