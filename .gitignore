@@ -8,3 +8,6 @@ ruvector.db
 # AgentDB store written by the ruflo plugin (generated)
 agentdb.rvf
 agentdb.rvf.lock
+
+# Vitest output (generated)
+frontend/.vitest/
