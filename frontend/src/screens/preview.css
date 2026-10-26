@@ -53,7 +53,7 @@
   background: var(--dc-color-surface);
   box-shadow: var(--dc-shadow-bar);
 }
-.pv-bar .btn { min-height: var(--dc-size-control-lg); }
+.pv-bar .btn { min-height: var(--dc-size-control-lg); padding-inline: var(--dc-space-2); }
 
 @media (min-width: 1024px) {
   .pv-stage { padding-inline: var(--dc-layout-gutter-desktop); }
@@ -68,6 +68,6 @@
     background: none;
     box-shadow: none;
   }
-  .pv-bar .btn { min-height: var(--dc-size-control-md); }
-  .pv-zoom { display: none; }
+  .pv-bar .btn { min-height: var(--dc-size-control-md); padding-inline: var(--dc-space-4); }
+  .pv-bar .pv-zoom { display: none; }
 }
