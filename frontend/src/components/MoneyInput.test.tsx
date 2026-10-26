@@ -3,7 +3,7 @@ import { renderToString } from 'react-dom/server'
 import { describe, expect, it } from 'vitest'
 import { parsePriceTiyn } from '../domain/money'
 import { MoneyInput } from './MoneyInput'
-import { formatMoneyInputText } from './moneyInputText'
+import { formatMoneyInputText, moneyInputTextFromTiyn } from './moneyInputText'
 
 // Read from disk: Vitest turns a `?raw` stylesheet import into an empty string, which would make the checks vacuous.
 const cssSource = readFileSync(new URL('./moneyInput.css', import.meta.url), 'utf8')
@@ -37,6 +37,21 @@ describe('formatMoneyInputText: the text after blur', () => {
 
   it('never puts the ₸ into the value', () => {
     expect(formatMoneyInputText('18500')).not.toContain('₸')
+  })
+})
+
+describe('moneyInputTextFromTiyn: the text an edit form starts with', () => {
+  it('shows a stored price the way the field shows it after blur (TC-1: 19 000, TC-3: 18 500,50)', () => {
+    expect(moneyInputTextFromTiyn(1900000)).toBe('19 000')
+    expect(moneyInputTextFromTiyn(1850050)).toBe('18 500,50')
+    expect(moneyInputTextFromTiyn(0)).toBe('0')
+    expect(moneyInputTextFromTiyn(5)).toBe('0,05')
+  })
+
+  it('round-trips through the parser to the same tiyn', () => {
+    for (const tiyn of [0, 5, 100, 1850000, 1850050, 123456789]) {
+      expect(parsePriceTiyn(moneyInputTextFromTiyn(tiyn))).toBe(tiyn)
+    }
   })
 })
 

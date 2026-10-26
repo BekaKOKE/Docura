@@ -10,3 +10,8 @@ export function formatMoneyInputText(text: string): string {
   // formatMoney is the one place that groups digits; the ₸ is drawn next to the field, not typed into it.
   return formatMoney(tiyn).replace(/\s*₸$/, '')
 }
+
+/** The text a MoneyInput starts with for a stored price: 1850000 → "18 500", 1850050 → "18 500,50". */
+export function moneyInputTextFromTiyn(tiyn: number): string {
+  return formatMoney(tiyn).replace(/\s*₸$/, '')
+}

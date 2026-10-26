@@ -32,6 +32,56 @@ describe('S24 catalogue: first paint', () => {
   })
 })
 
+describe('"?new=1" from the [+] sheet opens the create form', () => {
+  const html = render('/catalog?new=1')
+
+  it('as a dialog titled "Новая позиция"', () => {
+    expect(html).toContain('role="dialog"')
+    expect(html).toContain(t('catalogForm.title.new'))
+  })
+
+  it('with every field labelled and tied to its control', () => {
+    const visible = text(html)
+    for (const label of ['catalogForm.name', 'catalogForm.unit', 'catalogForm.price'] as const) {
+      expect(visible, label).toContain(t(label))
+    }
+    expect(html).toContain(t('catalog.kind.service'))
+    expect(html).toContain(t('catalog.kind.material'))
+    expect(html).toContain('type="radio"')
+    // Every <label for> has a control with that id.
+    for (const [, id] of html.matchAll(/<label[^>]*for="([^"]+)"/g)) expect(html).toContain(`id="${id}"`)
+  })
+
+  it('offers exactly the twelve units, in order (AC 2, TC-2)', () => {
+    const select = /<select[^>]*>(.*?)<\/select>/.exec(html)
+    expect(select).not.toBeNull()
+    const options = [...(select?.[1] ?? '').matchAll(/<option[^>]*>(.*?)<\/option>/g)].map((m) => m[1])
+    expect(options).toEqual(['шт', 'м', 'м²', 'м³', 'п.м.', 'кг', 'т', 'л', 'ч', 'смена', 'компл.', 'услуга'])
+  })
+
+  it('takes the price in a decimal keypad field with a ₸ suffix and an example', () => {
+    expect(html).toContain('inputMode="decimal"')
+    expect(html).toContain('class="mi-suffix"')
+    expect(text(html)).toContain(t('catalogForm.price.hint'))
+  })
+
+  it('does not validate on its own: no error text before the user acts', () => {
+    expect(html).not.toContain('aria-invalid')
+    expect(html).not.toContain('class="cl-error"')
+  })
+
+  it('has two buttons side by side at most: Отмена and Добавить', () => {
+    const form = /<form[\s\S]*<\/form>/.exec(html)?.[0] ?? ''
+    const buttons = [...form.matchAll(/<button\b[^>]*>(.*?)<\/button>/g)].map((m) => text(m[1] ?? ''))
+    expect(buttons).toEqual([t('catalogForm.cancel'), t('catalogForm.add')])
+  })
+
+  it('turns native validation and autofill off, so the app’s own messages are the ones shown', () => {
+    expect(html).toContain('noValidate')
+    expect(html).toContain('autoComplete="off"')
+  })
+})
+
 describe('catalog.css', () => {
   const css = read('./catalog.css')
 

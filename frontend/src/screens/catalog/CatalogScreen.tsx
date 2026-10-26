@@ -1,10 +1,13 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { Check, Package, Search, SearchX, X } from 'lucide-react'
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Check, Package, Plus, Search, SearchX, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { t } from '../../i18n/t'
 import { services, type Article, type ArticleKind } from '../../services'
 import { errorText } from '../clients/errorText'
+import { BottomSheet } from '../../shell/BottomSheet'
 import { Banner, EmptyState, ListSkeleton, Money } from '../clients/parts'
+import { CatalogForm } from './CatalogForm'
 import './catalog.css'
 
 const PAGE_SIZE = 50
@@ -22,10 +25,10 @@ function useDebounced<T>(value: T, delay: number): T {
   return settled
 }
 
-function ArticleRow({ article }: { article: Article }) {
+function ArticleRow({ article, onOpen }: { article: Article; onOpen: (article: Article) => void }) {
   return (
     <li>
-      <div className="ct-row">
+      <button type="button" className="ct-row" aria-haspopup="dialog" onClick={() => onOpen(article)}>
         <span className="ct-row-text">
           <span className="ct-row-title">{article.title}</span>
           <span className="ct-row-meta">
@@ -36,7 +39,7 @@ function ArticleRow({ article }: { article: Article }) {
           <Money tiyn={article.unitPriceTiyn} />
           <span className="ct-per ct-nowrap">/ {article.unit}</span>
         </span>
-      </div>
+      </button>
     </li>
   )
 }
@@ -44,6 +47,12 @@ function ArticleRow({ article }: { article: Article }) {
 // S24: the catalogue. A list of works and materials with search and a kind filter; the form that creates,
 // edits and archives an item is opened from here.
 export function CatalogScreen() {
+  const queryClient = useQueryClient()
+  const [params, setParams] = useSearchParams()
+  const createOpen = params.get('new') === '1'
+  const [editing, setEditing] = useState<Article | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
+
   const [text, setText] = useState('')
   const [kind, setKind] = useState<ArticleKind | undefined>(undefined)
   const [limit, setLimit] = useState(PAGE_SIZE)
@@ -55,6 +64,39 @@ export function CatalogScreen() {
     placeholderData: keepPreviousData,
   })
 
+  useEffect(() => {
+    if (!notice) return
+    const timer = setTimeout(() => setNotice(null), 6000)
+    return () => clearTimeout(timer)
+  }, [notice])
+
+  const setCreateOpen = (open: boolean) =>
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current)
+        if (open) next.set('new', '1')
+        else next.delete('new')
+        return next
+      },
+      { replace: !open },
+    )
+
+  function onCreated(article: Article) {
+    void queryClient.invalidateQueries({ queryKey: ['articles'] })
+    // Show the new item: a search or a filter left on could hide it.
+    setText('')
+    setKind(undefined)
+    setLimit(PAGE_SIZE)
+    setNotice(t('catalog.created', { title: article.title }))
+    setCreateOpen(false)
+  }
+
+  function onUpdated(article: Article) {
+    void queryClient.invalidateQueries({ queryKey: ['articles'] })
+    setNotice(t('catalog.updated', { title: article.title }))
+    setEditing(null)
+  }
+
   const data = list.data
   const searching = q !== ''
   const nothingYet = data?.total === 0 && !searching && kind === undefined
@@ -62,6 +104,13 @@ export function CatalogScreen() {
     data && (searching || kind !== undefined) && data.total > 0
       ? t('catalog.found', { count: String(data.total) })
       : ''
+
+  const addButton = (
+    <button type="button" className="btn btn-primary btn-block cl-add" onClick={() => setCreateOpen(true)}>
+      <Plus aria-hidden="true" />
+      <span className="dc-label">{t('catalog.add')}</span>
+    </button>
+  )
 
   // A failed refetch keeps the rows already on screen and shows the banner above them (components.md, "error").
   const errorBanner = list.isError ? (
@@ -82,7 +131,9 @@ export function CatalogScreen() {
   if (!data) {
     body = errorBanner ? null : <ListSkeleton rows={SKELETON_ROWS} label={t('catalog.loading')} />
   } else if (nothingYet) {
-    body = <EmptyState icon={Package} title={t('catalog.empty.title')} text={t('catalog.empty.text')} />
+    body = (
+      <EmptyState icon={Package} title={t('catalog.empty.title')} text={t('catalog.empty.text')} action={addButton} />
+    )
   } else if (data.total === 0 && searching) {
     body = (
       <EmptyState
@@ -114,7 +165,7 @@ export function CatalogScreen() {
       <>
         <ul className="card cl-list" aria-busy={list.isPlaceholderData || undefined}>
           {data.items.map((article) => (
-            <ArticleRow key={article.id} article={article} />
+            <ArticleRow key={article.id} article={article} onOpen={setEditing} />
           ))}
         </ul>
         {data.total > data.items.length && (
@@ -129,6 +180,9 @@ export function CatalogScreen() {
   return (
     <div className="page" data-screen="S24">
       <h1 className="cl-sr-only">{t('screen.S24.title')}</h1>
+
+      {notice && <Banner tone="success">{notice}</Banner>}
+      {data && !nothingYet && addButton}
 
       {!nothingYet && (
         <div className="cl-toolbar">
@@ -180,6 +234,14 @@ export function CatalogScreen() {
 
       {errorBanner}
       {body}
+
+      <BottomSheet open={createOpen} title={t('catalogForm.title.new')} onClose={() => setCreateOpen(false)}>
+        <CatalogForm onSaved={onCreated} onCancel={() => setCreateOpen(false)} />
+      </BottomSheet>
+
+      <BottomSheet open={editing !== null} title={t('catalogForm.title.edit')} onClose={() => setEditing(null)}>
+        {editing && <CatalogForm article={editing} onSaved={onUpdated} onCancel={() => setEditing(null)} />}
+      </BottomSheet>
     </div>
   )
 }
