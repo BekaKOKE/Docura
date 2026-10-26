@@ -2,7 +2,7 @@
 // Kept in their own file and spread into ru.ts, so the dictionary of one issue stays in one place.
 export const catalogRu = {
   'catalog.search.label': 'Поиск по каталогу',
-  'catalog.search.placeholder': 'Название работы или материала',
+  'catalog.search.placeholder': 'Найти работу или материал',
   'catalog.search.clear': 'Очистить поиск',
   'catalog.filter.label': 'Показать',
   'catalog.filter.service': 'Работы',
@@ -42,7 +42,7 @@ export const catalogRu = {
   'catalogForm.saveError': 'Не удалось сохранить позицию',
   'catalogForm.archive': 'Убрать в архив',
   'catalogForm.archive.why':
-    'Позицию нельзя удалить: в архиве её нет в каталоге, а в уже составленных документах она остаётся как была.',
+    'Позиции не удаляются, их убирают в архив: из каталога она пропадёт, а в уже составленных документах останется как была.',
 
   'catalogArchive.title': 'Убрать позицию в архив?',
   'catalogArchive.text':
