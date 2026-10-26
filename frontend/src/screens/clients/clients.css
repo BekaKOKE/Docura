@@ -1,0 +1,231 @@
+/* The clients screens (S22, S23) and their form. Tokens only, no raw colours. Every grid is minmax(0, 1fr)
+   and every flex child has min-width: 0, so nothing widens the page at 360 px (components.md section 0). */
+
+.cl-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Search and the archive filter. */
+.cl-toolbar { display: grid; gap: var(--dc-space-2); min-width: 0; }
+.cl-search { position: relative; min-width: 0; }
+.cl-search > svg {
+  position: absolute;
+  top: 50%;
+  left: var(--dc-space-3);
+  width: var(--dc-size-icon-sm);
+  height: var(--dc-size-icon-sm);
+  transform: translateY(-50%);
+  color: var(--dc-color-text-muted);
+  pointer-events: none;
+}
+.cl-search .cl-control { padding-left: calc(var(--dc-space-3) + var(--dc-size-icon-sm) + var(--dc-space-2)); padding-right: var(--dc-size-touch-min); }
+.cl-search .icon-btn { position: absolute; top: 0; right: 0; }
+.cl-search input[type='search']::-webkit-search-cancel-button { display: none; }
+
+.cl-chips { display: flex; flex-wrap: wrap; gap: var(--dc-space-2); align-items: center; }
+.cl-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--dc-space-2);
+  min-height: var(--dc-size-touch-min);
+  padding: 0 var(--dc-space-4);
+  border: var(--dc-border-input) solid var(--dc-color-border-input);
+  border-radius: var(--dc-radius-pill);
+  background: var(--dc-color-surface);
+  color: var(--dc-color-text);
+  font: var(--dc-weight-button) var(--dc-text-button) / var(--dc-leading-button) var(--dc-font-sans);
+  cursor: pointer;
+}
+.cl-chip svg { width: var(--dc-size-icon-sm); height: var(--dc-size-icon-sm); }
+.cl-chip[aria-pressed='true'] { background: var(--dc-color-ink); border-color: var(--dc-color-ink); color: var(--dc-color-on-ink); }
+.cl-count { margin: 0; color: var(--dc-color-text-muted); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); }
+
+/* List rows: [name and contacts] [chevron]; the whole row is one link, 72 px minimum. */
+.cl-list { list-style: none; margin: 0; padding: 0; overflow: hidden; }
+.cl-list > li + li { border-top: var(--dc-border-hairline) solid var(--dc-color-border); }
+.cl-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--dc-space-3);
+  align-items: center;
+  min-height: 72px;
+  padding: var(--dc-space-3) var(--dc-space-4);
+  color: inherit;
+  text-decoration: none;
+}
+.cl-row:active { background: var(--dc-color-surface-sunken); }
+.cl-row > svg { width: var(--dc-size-icon-sm); height: var(--dc-size-icon-sm); color: var(--dc-color-text-muted); }
+.cl-row-text { display: grid; gap: var(--dc-space-1); min-width: 0; }
+.cl-row-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  font-weight: var(--dc-weight-lg);
+}
+.cl-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--dc-space-3);
+  min-width: 0;
+  color: var(--dc-color-text-muted);
+  font-size: var(--dc-text-sm);
+  line-height: var(--dc-leading-sm);
+}
+.cl-row-meta > span { min-width: 0; }
+.cl-wrap { overflow-wrap: anywhere; }
+.cl-nowrap { white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* Banner, empty state, skeleton. */
+.cl-banner {
+  display: grid;
+  grid-template-columns: var(--dc-size-icon-sm) minmax(0, 1fr);
+  gap: var(--dc-space-3);
+  align-items: start;
+  padding: var(--dc-space-3) var(--dc-space-4);
+  border-radius: var(--dc-radius-lg);
+  background: var(--dc-color-surface-sunken);
+  color: var(--dc-color-text);
+}
+.cl-banner > svg { width: var(--dc-size-icon-sm); height: var(--dc-size-icon-sm); margin-top: var(--dc-space-1); }
+.cl-banner-text { display: grid; gap: var(--dc-space-1); min-width: 0; overflow-wrap: anywhere; }
+.cl-banner > .btn { grid-column: 1 / -1; }
+.cl-banner[data-tone='danger'] { background: var(--dc-color-danger-bg); }
+.cl-banner[data-tone='danger'] > svg { color: var(--dc-color-danger); }
+.cl-banner[data-tone='success'] { background: var(--dc-color-success-bg); }
+.cl-banner[data-tone='success'] > svg { color: var(--dc-color-success); }
+
+.cl-empty { display: grid; justify-items: center; gap: var(--dc-space-3); padding: var(--dc-space-8) var(--dc-space-2); text-align: center; }
+.cl-empty > svg { width: 48px; height: 48px; color: var(--dc-color-text-muted); }
+.cl-empty h2 { margin: 0; }
+.cl-empty p { max-width: 36ch; color: var(--dc-color-text-muted); }
+.cl-empty .btn { width: 100%; max-width: 320px; }
+
+.cl-skeleton { display: grid; gap: var(--dc-space-2); }
+.cl-skeleton-row {
+  display: grid;
+  gap: var(--dc-space-2);
+  min-height: 72px;
+  padding: var(--dc-space-4);
+  border-radius: var(--dc-radius-lg);
+  background: var(--dc-color-surface-sunken);
+}
+.cl-skeleton-line { height: var(--dc-space-3); border-radius: var(--dc-radius-sm); background: var(--dc-color-border); }
+.cl-skeleton-short { width: 40%; }
+
+.btn-danger { background: var(--dc-color-danger); color: var(--dc-color-on-danger); }
+.btn-ghost { background: transparent; color: var(--dc-color-accent-text); }
+.btn[disabled] { background: var(--dc-color-surface-sunken); color: var(--dc-color-text-muted); }
+
+/* Form fields (components.md "Field"): label above, 48 px control, 16 px text, errors in words. */
+.cl-form { display: grid; gap: var(--dc-space-4); padding: var(--dc-space-2) var(--dc-space-4) var(--dc-space-4); min-width: 0; }
+.cl-field { display: grid; gap: var(--dc-space-1); min-width: 0; }
+.cl-label { font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); font-weight: var(--dc-weight-button); }
+.cl-optional { margin-left: var(--dc-space-2); color: var(--dc-color-text-muted); font-weight: var(--dc-weight-base); }
+.cl-control {
+  width: 100%;
+  min-height: var(--dc-size-control-md);
+  padding: var(--dc-space-3);
+  border: var(--dc-border-input) solid var(--dc-color-border-input);
+  border-radius: var(--dc-radius-md);
+  background: var(--dc-color-surface);
+  color: var(--dc-color-text);
+  font: var(--dc-weight-base) var(--dc-text-base) / var(--dc-leading-base) var(--dc-font-sans);
+}
+textarea.cl-control { resize: vertical; min-height: calc(var(--dc-size-control-md) * 2); }
+.cl-control:focus-visible { border-color: var(--dc-color-focus); outline: var(--dc-border-focus) solid var(--dc-color-focus); outline-offset: 0; }
+.cl-control[aria-invalid='true'] { border-color: var(--dc-color-danger); }
+.cl-hint, .cl-error { margin: 0; font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); }
+.cl-hint { color: var(--dc-color-text-muted); }
+.cl-error { display: flex; gap: var(--dc-space-2); color: var(--dc-color-danger); }
+.cl-error svg { flex: none; width: var(--dc-size-icon-sm); height: var(--dc-size-icon-sm); }
+
+/* A choice of two (person or company): a radiogroup drawn as a segmented control. */
+.cl-segments {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--dc-space-1);
+  margin: 0;
+  padding: var(--dc-space-1);
+  border: 0;
+  border-radius: var(--dc-radius-lg);
+  background: var(--dc-color-surface-sunken);
+}
+.cl-segment { position: relative; min-width: 0; }
+.cl-segment input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.cl-segment span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--dc-size-control-md);
+  padding: 0 var(--dc-space-2);
+  border: var(--dc-border-input) solid transparent;
+  border-radius: var(--dc-radius-md);
+  color: var(--dc-color-text-muted);
+  font-weight: var(--dc-weight-button);
+  text-align: center;
+}
+.cl-segment input:checked + span { background: var(--dc-color-surface); border-color: var(--dc-color-border-input); color: var(--dc-color-text); }
+.cl-segment input:focus-visible + span { outline: var(--dc-border-focus) solid var(--dc-color-focus); outline-offset: 2px; }
+
+.cl-actions { display: grid; gap: var(--dc-space-2); }
+/* The form's actions stay at the bottom of the sheet while the fields scroll (two buttons side by side, no more). */
+.cl-actions-bar {
+  position: sticky;
+  bottom: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding-block: var(--dc-space-3);
+  background: var(--dc-color-surface);
+}
+
+/* The client card. */
+.cl-head { display: grid; gap: var(--dc-space-1); min-width: 0; }
+.cl-head h1 { overflow-wrap: anywhere; }
+.cl-kind { margin: 0; color: var(--dc-color-text-muted); }
+.cl-facts { display: grid; gap: var(--dc-space-3); margin: 0; }
+.cl-fact { display: grid; gap: var(--dc-space-1); min-width: 0; }
+.cl-fact dt { color: var(--dc-color-text-muted); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); }
+.cl-fact dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.cl-section { display: grid; gap: var(--dc-space-2); }
+
+.cl-doc { grid-template-columns: minmax(0, 1fr) auto; }
+.cl-doc-main { display: grid; gap: var(--dc-space-1); min-width: 0; }
+.cl-doc-line { display: flex; flex-wrap: wrap; align-items: center; gap: var(--dc-space-1) var(--dc-space-3); min-width: 0; }
+.cl-doc-kind { color: var(--dc-color-text-muted); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); }
+.cl-doc-side { display: grid; justify-items: end; gap: var(--dc-space-1); }
+.cl-doc-amount { font-weight: var(--dc-weight-lg); }
+
+.cl-badge {
+  display: inline-block;
+  max-width: 100%;
+  padding: 0 var(--dc-space-2);
+  border-radius: var(--dc-radius-pill);
+  background: var(--dc-color-surface-sunken);
+  color: var(--dc-color-text);
+  font-size: var(--dc-text-caption);
+  line-height: var(--dc-leading-caption);
+  font-weight: var(--dc-weight-caption);
+  white-space: nowrap;
+}
+.cl-badge[data-tone='info'] { background: var(--dc-color-info-bg); color: var(--dc-color-info); }
+.cl-badge[data-tone='success'] { background: var(--dc-color-success-bg); color: var(--dc-color-success); }
+.cl-badge[data-tone='warning'] { background: var(--dc-color-warning-bg); color: var(--dc-color-warning); }
+.cl-badge[data-tone='danger'] { background: var(--dc-color-danger-bg); color: var(--dc-color-danger); }
+
+.cl-confirm { display: grid; gap: var(--dc-space-4); padding: var(--dc-space-2) var(--dc-space-4) var(--dc-space-4); }
+.cl-confirm p { margin: 0; overflow-wrap: anywhere; }
+
+@media (min-width: 1024px) {
+  .cl-add { width: auto; justify-self: start; }
+  .cl-toolbar { grid-template-columns: minmax(0, 480px) auto; align-items: center; }
+}

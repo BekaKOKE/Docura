@@ -7,6 +7,7 @@ export const clientsRu = {
   'clients.filter.label': 'Показать клиентов',
   'clients.filter.archive': 'Архив',
   'clients.add': 'Добавить клиента',
+  'clients.more': 'Показать ещё',
   'clients.found': 'Найдено: {count}',
   'clients.loading': 'Загружаем клиентов…',
   'clients.empty.title': 'Клиентов пока нет',
@@ -43,7 +44,6 @@ export const clientsRu = {
   'clientForm.saving': 'Сохраняем…',
   'clientForm.cancel': 'Отмена',
   'clientForm.saveError': 'Не удалось сохранить клиента',
-  'clientForm.fixErrors': 'Проверьте поля, отмеченные ниже.',
 
   // Field errors. The mock service raises the same texts in `fields`, so a screen shows one wording.
   'client.error.nameRequired': 'Укажите имя',

@@ -5,6 +5,7 @@ import { ScreenMap } from '../screens/ScreenMap'
 import { ScreenRoute } from '../screens/ScreenRoute'
 import { BareLayout } from '../shell/BareLayout'
 import { Shell, type ShellHandle } from '../shell/Shell'
+import { QueryProvider } from './QueryProvider'
 import { documentListPath, shellModeOf } from './nav'
 import { DESIGN_CHECK_PATH, screens, SCREEN_MAP_PATH, type Screen } from './screens'
 
@@ -30,7 +31,7 @@ const entries = [...byPath]
 // Screens that share a path share a layout (S15 and S21), so the first one decides.
 const isBare = ([, candidates]: [string, Screen[]]) => shellModeOf(candidates[0].id) === 'bare'
 
-export const routes: RouteObject[] = [
+const appRoutes: RouteObject[] = [
   // Sign-up, sign-in, onboarding and the client's public page: no navigation around them.
   { element: <BareLayout />, children: entries.filter(isBare).map(screenRoute) },
   {
@@ -57,3 +58,6 @@ export const routes: RouteObject[] = [
     ],
   },
 ]
+
+// Every route sits under the query cache provider (./QueryProvider).
+export const routes: RouteObject[] = [{ element: <QueryProvider />, children: appRoutes }]
