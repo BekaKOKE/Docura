@@ -1,0 +1,87 @@
+/* Print: "Скачать PDF" is window.print() on an A4 page (spec §4, row 5). Tokens only, no raw colours.
+   The sheet loses its screen frame (width, padding, border, scale) and the app around it disappears; the page
+   margins come from @page, so every printed page has them, not only the first.
+
+   Rows of the lines table never split across pages and the header row repeats on each page. Break polish for long
+   documents and print checks on a phone are #57 (post-MVP). */
+
+@page {
+  size: A4;
+  margin: 40pt; /* the sheet's --doc-margin on screen */
+}
+
+@media print {
+  html,
+  body { background: var(--dc-color-surface); }
+  body { min-height: 0; }
+
+  /* The app chrome and anything marked as screen-only. */
+  .sidebar,
+  .topbar,
+  .tabbar,
+  .skip-link,
+  .segments-wrap,
+  .dev-launcher,
+  .sheet-root,
+  .no-print { display: none !important; }
+
+  .shell,
+  .shell-main,
+  .bare { min-height: 0; }
+  .shell-main { margin-left: 0; }
+  .shell-content { width: auto; max-width: none; margin: 0; padding: 0 !important; }
+
+  /* Screens that show a sheet: nothing around it. */
+  .pv,
+  .pv-stage { display: block; margin: 0; padding: 0; background: none; }
+
+  /* The editor's split: only the preview prints. */
+  .doc-split { display: block; padding: 0; }
+  .doc-split-form { display: none; }
+  .doc-split-pane { display: block; position: static; width: auto; max-height: none; overflow: visible; }
+  .doc-pane { width: auto; }
+
+  /* The scaling box is gone: the sheet prints at 100 %, whatever the screen showed. */
+  .doc-viewport,
+  .doc-scaler,
+  .doc-scaled {
+    display: block;
+    position: static;
+    width: auto !important;
+    height: auto !important;
+    max-width: none;
+    margin: 0;
+    overflow: visible;
+    transform: none !important;
+  }
+
+  /* Block layout, not grid: a block breaks across pages in every browser. */
+  .doc-sheet {
+    display: block;
+    width: auto;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+  }
+  .doc-sheet > * + * { margin-top: var(--doc-gap); }
+
+  .doc-table thead { display: table-header-group; }
+  .doc-table tr,
+  .doc-totals,
+  .doc-pay,
+  .doc-party,
+  .doc-parties,
+  .doc-words,
+  .doc-free,
+  .doc-signatures,
+  .doc-sign-screen { break-inside: avoid; page-break-inside: avoid; }
+  .doc-title,
+  .doc-head,
+  .doc-label { break-after: avoid; page-break-after: avoid; }
+  /* Never a lone Итого at the top of a page: it keeps company with the last lines. */
+  .doc-table + .doc-totals { break-before: avoid; }
+
+  /* The screen reader's "тенге" is not printed (and not copied out of the PDF). */
+  .doc-sr-only { display: none; }
+}
