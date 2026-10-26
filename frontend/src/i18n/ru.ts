@@ -66,6 +66,38 @@ export const ru = {
   'notFound.text': 'Такого адреса в Docura нет. Проверьте ссылку или откройте список экранов.',
   'notFound.home': 'На главную',
 
+  'nav.main': 'Основная навигация',
+  'nav.skip': 'Перейти к содержимому',
+  'nav.home': 'Главная',
+  'nav.documents': 'Документы',
+  'nav.clients': 'Клиенты',
+  'nav.more': 'Ещё',
+  'nav.create': 'Создать',
+  'nav.createQuote': 'Создать КП',
+  'nav.quotes': 'Коммерческие предложения',
+  'nav.invoices': 'Счета',
+  'nav.acts': 'Акты',
+  'nav.catalog': 'Каталог',
+  'nav.company': 'Компания',
+  'nav.logout': 'Выйти',
+  'nav.back': 'Назад',
+  'nav.close': 'Закрыть',
+
+  'segments.label': 'Разделы документов',
+  'segments.quotes': 'КП',
+  'segments.invoices': 'Счета',
+  'segments.acts': 'Акты',
+
+  'create.title': 'Создать',
+  'create.quote': 'КП',
+  'create.quote.hint': 'Новое коммерческое предложение',
+  'create.client': 'Клиент',
+  'create.client.hint': 'Имя, телефон и реквизиты',
+  'create.catalogItem': 'Работа в каталог',
+  'create.catalogItem.hint': 'Работа или материал с ценой',
+
+  'more.title': 'Ещё',
+
   // Counted nouns: one key per Intl.PluralRules('ru') category, read through tCount().
   'count.invoice.one': '{n} счёт',
   'count.invoice.few': '{n} счёта',
