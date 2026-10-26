@@ -65,6 +65,24 @@ export const ru = {
   'notFound.title': 'Страница не найдена',
   'notFound.text': 'Такого адреса в Docura нет. Проверьте ссылку или откройте список экранов.',
   'notFound.home': 'На главную',
+
+  // Counted nouns: one key per Intl.PluralRules('ru') category, read through tCount().
+  'count.invoice.one': '{n} счёт',
+  'count.invoice.few': '{n} счёта',
+  'count.invoice.many': '{n} счетов',
+  'count.invoice.other': '{n} счёта',
+  'count.act.one': '{n} акт',
+  'count.act.few': '{n} акта',
+  'count.act.many': '{n} актов',
+  'count.act.other': '{n} акта',
+  'count.client.one': '{n} клиент',
+  'count.client.few': '{n} клиента',
+  'count.client.many': '{n} клиентов',
+  'count.client.other': '{n} клиента',
+  'count.day.one': '{n} день',
+  'count.day.few': '{n} дня',
+  'count.day.many': '{n} дней',
+  'count.day.other': '{n} дня',
 } as const
 
 export type MessageKey = keyof typeof ru

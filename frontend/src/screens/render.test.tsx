@@ -3,7 +3,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router'
 import { describe, expect, it } from 'vitest'
 import { routes } from '../app/routes'
 import { screens, SCREEN_MAP_PATH, titleKey } from '../app/screens'
-import { t } from '../i18n/t'
+import { formatIssues, t } from '../i18n/t'
 
 function render(url: string): string {
   return renderToString(<RouterProvider router={createMemoryRouter(routes, { initialEntries: [url] })} />)
@@ -18,7 +18,7 @@ describe('screen placeholders', () => {
 
   it('names the M1 issue that builds the content', () => {
     expect(render('/quotes/new')).toContain('#19')
-    expect(render('/invoices/demo')).toContain('#28 и #30')
+    expect(render('/invoices/demo')).toContain(formatIssues([28, 30]))
   })
 
   it('lists every screen on the screen map', () => {

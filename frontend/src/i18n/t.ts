@@ -20,3 +20,15 @@ const issueList = new Intl.ListFormat('ru', { style: 'long', type: 'conjunction'
 export function formatIssues(issues: readonly number[]): string {
   return issueList.format(issues.map((n) => `#${n}`))
 }
+
+type CountBase<K> = K extends `${infer Base}.one` ? Base : never
+/** The counted nouns in the dictionary, e.g. 'count.invoice'. */
+export type CountKey = CountBase<MessageKey>
+
+const pluralRules = new Intl.PluralRules('ru')
+const numberFormat = new Intl.NumberFormat('ru')
+
+// tCount('count.invoice', 5) → "5 счетов". The form comes from Intl.PluralRules('ru'): 1 счёт, 2 счёта, 5 счетов, 21 счёт.
+export function tCount(key: CountKey, n: number): string {
+  return t(`${key}.${pluralRules.select(n)}` as MessageKey, { n: numberFormat.format(n) })
+}
