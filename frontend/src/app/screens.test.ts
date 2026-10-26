@@ -27,7 +27,8 @@ describe('screens', () => {
 
   it('opens each screen from its example link through the real route table', () => {
     for (const s of screens) {
-      const url = new URL(s.example, 'http://docura.test')
+      const [pathname, query = ''] = s.example.split('?')
+      const url = { pathname, searchParams: new URLSearchParams(query) }
       const match = matchRoutes(routes, url.pathname)?.at(-1)
       const handle = match?.route.handle as ScreenRouteHandle | undefined
       expect(handle, `${s.id}: ${s.example} matched no screen route`).toBeDefined()
