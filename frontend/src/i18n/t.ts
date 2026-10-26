@@ -1,13 +1,18 @@
-import { ru, type MessageKey } from './ru'
+import { devRu } from './dev'
+import { ru } from './ru'
 
-export type { MessageKey }
+export type MessageKey = keyof typeof ru | keyof typeof devRu
 
 type Params = Record<string, string | number>
+
+// The development panel's strings are merged in only for `npm run dev` and the tests. In `npm run build`
+// `import.meta.env.DEV` is false, the branch is removed and devRu with it.
+const messages: Record<MessageKey, string> = import.meta.env.DEV ? { ...ru, ...devRu } : (ru as Record<MessageKey, string>)
 
 // t('placeholder.comesIn', { issues: '#22' }) → "Экран появится в задаче #22".
 // A placeholder without a value stays as written, so a missing param is visible instead of silently empty.
 export function t(key: MessageKey, params?: Params): string {
-  const template: string = ru[key]
+  const template = messages[key]
   if (!params) return template
   return template.replace(/\{(\w+)\}/g, (whole, name: string) =>
     name in params ? String(params[name]) : whole,
