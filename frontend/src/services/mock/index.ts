@@ -1,6 +1,7 @@
 import type { Services } from '../contracts'
 import { createNotImplementedServices } from '../notImplemented'
 import { createMockAuth } from './auth'
+import { createMockDocuments } from './documents'
 import { getMockRuntime, type MockRuntime } from './runtime'
 
 // The mock implementation of `Services`, on the mock store (./store.ts). Every method runs inside
@@ -17,6 +18,7 @@ export function createMockServices(getRuntime: () => MockRuntime = getMockRuntim
   return {
     ...notBuiltYet,
     auth: createMockAuth(getRuntime),
+    documents: createMockDocuments(getRuntime),
   }
 }
 

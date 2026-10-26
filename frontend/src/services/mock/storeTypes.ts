@@ -90,6 +90,8 @@ export interface StoredDocument {
   notes: string | null
   terms: string | null
   lines: StoredDocumentLine[]
+  /** The idempotency key the document was created with (`create` replays return it). Absent in the seed. */
+  clientRequestId?: Id | null
 }
 
 export interface DocumentCounter {
