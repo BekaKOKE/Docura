@@ -127,9 +127,10 @@ export function ClientForm({ client, onSaved, onCancel }: ClientFormProps) {
     const first = FIELD_ORDER.find((field) => shown[field])
     const element = first ? fields.current[first] : null
     if (!element) return
-    element.focus()
-    // The message sits under the field: bring both into view, not just the field.
-    element.scrollIntoView({ block: 'center' })
+    // Focus without jumping, then bring the whole field (control and message) above the sticky buttons.
+    element.focus({ preventScroll: true })
+    // A tick later, so the message that was just set is in the field's height.
+    setTimeout(() => element.closest('.cl-field')?.scrollIntoView({ block: 'nearest' }), 0)
   }
   const set = (field: ClientField) => (value: string) => {
     setValues((current) => ({ ...current, [field]: value }))

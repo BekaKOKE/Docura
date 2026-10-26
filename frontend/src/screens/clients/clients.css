@@ -129,7 +129,13 @@
 
 /* Form fields (components.md "Field"): label above, 48 px control, 16 px text, errors in words. */
 .cl-form { display: grid; gap: var(--dc-space-4); padding: var(--dc-space-2) var(--dc-space-4) var(--dc-space-4); min-width: 0; }
-.cl-field { display: grid; gap: var(--dc-space-1); min-width: 0; }
+.cl-field {
+  display: grid;
+  gap: var(--dc-space-1);
+  min-width: 0;
+  /* Room for the sticky buttons when a field is scrolled into view. */
+  scroll-margin-bottom: calc(var(--dc-size-control-md) + var(--dc-space-9));
+}
 .cl-label { font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); font-weight: var(--dc-weight-button); }
 .cl-optional { margin-left: var(--dc-space-2); color: var(--dc-color-text-muted); font-weight: var(--dc-weight-base); }
 .cl-control {
