@@ -34,6 +34,32 @@ export function DocDate({ date }: { date: string }) {
   return <span className="doc-nowrap">{formatDate(date)}</span>
 }
 
+const MARKED = /((?:КП|СЧ|АВР)-\d{4}-\d{4})|(\d{2}\.\d{2}\.\d{4})/g
+
+/**
+ * Free text that mentions documents ("Предоплата 50% по КП № КП-2026-0002 от 02.10.2026"): the document numbers
+ * and dates inside it are kept whole, so they never split across lines.
+ */
+export function Marked({ text }: { text: string }) {
+  const out: ReactNode[] = []
+  let last = 0
+  for (const match of text.matchAll(MARKED)) {
+    if (match.index > last) out.push(text.slice(last, match.index))
+    out.push(
+      match[1] ? (
+        <Code key={match.index}>{match[1]}</Code>
+      ) : (
+        <span key={match.index} className="doc-nowrap">
+          {match[2]}
+        </span>
+      ),
+    )
+    last = match.index + match[0].length
+  }
+  if (last < text.length) out.push(text.slice(last))
+  return <>{out}</>
+}
+
 /** The A4 sheet: 595 × 842 pt on screen, the page margins of the print dialog in print (documents.css). */
 export function Sheet({ kind, label, children }: { kind: string; label: string; children: ReactNode }) {
   return (
@@ -135,7 +161,7 @@ export function LinesTable({ document, totals }: { document: RenderableDocument;
           <tr key={index}>
             <td className="doc-col-n">{index + 1}</td>
             <td className="doc-col-title">
-              {line.title}
+              <Marked text={line.title} />
               {line.description && <span className="doc-line-note">{line.description}</span>}
             </td>
             <td className="doc-col-num">{formatQty(line.qtyMilli)}</td>

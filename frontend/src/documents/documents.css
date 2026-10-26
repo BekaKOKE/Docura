@@ -119,6 +119,20 @@
   font-weight: var(--dc-weight-lg);
 }
 
+/* Invoice: the payment details (Бенефициар · ИИК · Кбе / Банк · БИК · КНП) in a ruled box, and the total in words. */
+.doc-pay {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 136pt 64pt;
+  border: var(--dc-border-hairline) solid var(--dc-color-border-input);
+}
+.doc-pay-cell { display: grid; gap: 1pt; align-content: start; min-width: 0; padding: 4pt 6pt; }
+.doc-pay-cell:nth-child(3n + 1),
+.doc-pay-cell:nth-child(3n + 2) { border-right: var(--dc-border-hairline) solid var(--dc-color-border-input); }
+.doc-pay-cell:nth-child(-n + 3) { border-bottom: var(--dc-border-hairline) solid var(--dc-color-border-input); }
+.doc-pay-value { overflow-wrap: anywhere; }
+.doc-pay-muted { color: var(--dc-color-text-muted); }
+.doc-words { display: grid; gap: 2pt; }
+
 .doc-free { display: grid; gap: 2pt; }
 .doc-free-text { white-space: pre-line; }
 
