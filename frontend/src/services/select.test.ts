@@ -107,9 +107,9 @@ describe('the http stub', () => {
 })
 
 describe('the mock placeholder', () => {
-  // auth is built in #14; the services of the later issues still reject until their issue lands.
+  // auth is built in #14 and documents in #18; the services of the later issues still reject until their issue lands.
   it('says a service that is not built yet is not implemented', async () => {
     await expect(mockServices.clients.list()).rejects.toThrow(/mock services: clients\.list\(\) is not implemented/)
-    await expect(mockServices.documents.get('x')).rejects.toBeInstanceOf(NotImplementedError)
+    await expect(mockServices.payments.list('x')).rejects.toBeInstanceOf(NotImplementedError)
   })
 })
