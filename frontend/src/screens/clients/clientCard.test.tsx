@@ -1,15 +1,13 @@
 import { renderToString } from 'react-dom/server'
-import { createMemoryRouter, RouterProvider } from 'react-router'
 import { describe, expect, it } from 'vitest'
-import { routes } from '../../app/routes'
 import { t } from '../../i18n/t'
+import { renderApp } from '../../test/renderApp'
 import type { DocumentSummary } from '../../services'
 import { documentBadge, documentPath } from './documentStatus'
 import { Money } from './parts'
 
-function render(url: string): string {
-  return renderToString(<RouterProvider router={createMemoryRouter(routes, { initialEntries: [url] })} />)
-}
+// The routes sit behind the sign-in (#15): render them as a signed-in user with a company.
+const render = (url: string): string => renderApp(url)
 
 const text = (html: string) => html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
 

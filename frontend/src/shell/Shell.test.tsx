@@ -1,15 +1,14 @@
 import { renderToString } from 'react-dom/server'
-import { createMemoryRouter, RouterProvider, StaticRouter } from 'react-router'
+import { createMemoryRouter, StaticRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
 import { shellModeOf } from '../app/nav'
 import { routes } from '../app/routes'
 import { screens } from '../app/screens'
 import { t } from '../i18n/t'
+import { renderApp, withClient } from '../test/renderApp'
 import { CreateSheet, MoreSheet } from './ActionSheets'
 
-function render(url: string): string {
-  return renderToString(<RouterProvider router={createMemoryRouter(routes, { initialEntries: [url] })} />)
-}
+const render = (url: string): string => renderApp(url)
 
 const text = (html: string) => html.replace(/<[^>]+>/g, '').trim()
 
@@ -135,7 +134,7 @@ describe('chrome per screen', () => {
 })
 
 function sheet(node: React.ReactNode): string {
-  return renderToString(<StaticRouter location="/">{node}</StaticRouter>)
+  return renderToString(withClient(<StaticRouter location="/">{node}</StaticRouter>))
 }
 
 describe('sheets', () => {

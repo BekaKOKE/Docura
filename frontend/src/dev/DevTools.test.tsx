@@ -1,14 +1,11 @@
 import { renderToString } from 'react-dom/server'
-import { createMemoryRouter, RouterProvider } from 'react-router'
 import { describe, expect, it } from 'vitest'
-import { routes } from '../app/routes'
 import { t } from '../i18n/t'
+import { renderApp } from '../test/renderApp'
 import { API_ERROR_CODES, API_ERROR_STATUS } from '../services'
 import { DevPanel } from './DevTools'
 
-function render(url: string): string {
-  return renderToString(<RouterProvider router={createMemoryRouter(routes, { initialEntries: [url] })} />)
-}
+const render = (url: string): string => renderApp(url)
 
 /** Every <button ...> element with its attributes and text. */
 function buttons(html: string): { attrs: string; text: string }[] {

@@ -1,13 +1,9 @@
-import { renderToString } from 'react-dom/server'
-import { createMemoryRouter, RouterProvider } from 'react-router'
 import { describe, expect, it } from 'vitest'
-import { routes } from '../app/routes'
 import { screens, SCREEN_MAP_PATH, titleKey } from '../app/screens'
 import { formatIssues, t } from '../i18n/t'
+import { renderApp } from '../test/renderApp'
 
-function render(url: string): string {
-  return renderToString(<RouterProvider router={createMemoryRouter(routes, { initialEntries: [url] })} />)
-}
+const render = (url: string): string => renderApp(url)
 
 describe('screen placeholders', () => {
   it.each(screens.map((s) => [s.id, s.example] as const))('%s renders its id and title at %s', (id, example) => {

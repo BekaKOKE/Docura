@@ -2,6 +2,7 @@
    It is imported as is; this file only uses the tokens and holds no raw colour values. */
 @import '../../../replica/design/tokens.css';
 @import './shell.css';
+@import './forms.css';
 
 *, *::before, *::after { box-sizing: border-box; }
 

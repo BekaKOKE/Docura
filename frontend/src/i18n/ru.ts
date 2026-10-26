@@ -159,6 +159,26 @@ export const ru = {
   'auth.error.passwordShort': 'Пароль не короче 8 символов.',
   'auth.error.nameRequired': 'Введите имя.',
   'auth.error.wrongCredentials': 'Неверная почта или пароль.',
+  'auth.error.emailRequired': 'Введите почту.',
+  'auth.error.passwordRequired': 'Введите пароль.',
+
+  'auth.register.lead': 'Почта и пароль нужны, чтобы входить с любого телефона. Компанию вы настроите на следующем шаге.',
+  'auth.register.submit': 'Зарегистрироваться',
+  'auth.register.haveAccount': 'Уже есть аккаунт?',
+  'auth.register.toLogin': 'Войти',
+  'auth.login.lead': 'Войдите по почте и паролю, чтобы продолжить работу с документами.',
+  'auth.login.submit': 'Войти',
+  'auth.login.noAccount': 'Впервые в Docura?',
+  'auth.login.toRegister': 'Создать аккаунт',
+  'auth.field.fullName': 'Ваше имя',
+  'auth.field.email': 'Почта',
+  'auth.field.password': 'Пароль',
+  'auth.hint.password': 'Не короче 8 символов.',
+
+  'form.optional': 'необязательно',
+  'state.loading': 'Загрузка',
+  'state.retry': 'Повторить',
+  'error.generic': 'Что-то пошло не так. Попробуйте ещё раз.',
 
   // The domain validators' messages (src/domain), mapped in src/i18n/validation.ts.
   'validation.binIin.empty': 'Введите ИИН или БИН',

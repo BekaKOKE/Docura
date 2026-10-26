@@ -4,6 +4,7 @@ import { pickScreen, titleKey, type Screen, type ScreenId } from '../app/screens
 import { t } from '../i18n/t'
 import { ClientCard } from './clients/ClientCard'
 import { ClientsScreen } from './clients/ClientsScreen'
+import { implementedScreens } from './implemented'
 import { NotFound } from './NotFound'
 import { Placeholder } from './Placeholder'
 
@@ -23,6 +24,6 @@ export function ScreenRoute({ candidates, path }: { candidates: readonly Screen[
   }, [screen])
 
   if (!screen) return <NotFound />
-  const Content = built[screen.id]
+  const Content = built[screen.id] ?? implementedScreens[screen.id]
   return Content ? <Content /> : <Placeholder screen={screen} path={path} />
 }

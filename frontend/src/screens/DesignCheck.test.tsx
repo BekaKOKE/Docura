@@ -1,13 +1,9 @@
-import { renderToString } from 'react-dom/server'
-import { createMemoryRouter, RouterProvider } from 'react-router'
 import { describe, expect, it } from 'vitest'
-import { routes } from '../app/routes'
 import { DESIGN_CHECK_PATH, SCREEN_MAP_PATH } from '../app/screens'
 import { t } from '../i18n/t'
+import { renderApp } from '../test/renderApp'
 
-function render(url: string): string {
-  return renderToString(<RouterProvider router={createMemoryRouter(routes, { initialEntries: [url] })} />)
-}
+const render = (url: string): string => renderApp(url)
 
 /** The text of the element marked data-sample="name". */
 function sample(html: string, name: string): string | undefined {

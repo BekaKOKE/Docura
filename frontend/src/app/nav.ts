@@ -149,6 +149,19 @@ export function shellModeOf(id: ScreenId): ShellMode {
   return 'app'
 }
 
+/**
+ * Who may open a screen (#15 AC 2).
+ * public: anyone (the client's page).  guest: sign-up and sign-in.  setup: signed in, no company yet.  app: signed in with a company.
+ */
+export type ScreenAccess = 'public' | 'guest' | 'setup' | 'app'
+
+export function accessOf(id: ScreenId): ScreenAccess {
+  if (id === 'S11') return 'public'
+  if (id === 'S01' || id === 'S02') return 'guest'
+  if (id === 'S03') return 'setup'
+  return 'app'
+}
+
 // Detail screens get a back button in the TopBar. The path is where "back" goes when there is no history to return to.
 const backFallbacks: Partial<Record<ScreenId, string>> = {
   S07: documentListPath.quotes,
