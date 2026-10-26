@@ -27,6 +27,15 @@ export function seedDocument(number: string, companyName = 'ИП Сейткал�
   } as unknown as RenderableDocument
 }
 
+/** The text a reader sees in rendered HTML: tags dropped, runs of ordinary spaces folded (no-break spaces stay). */
+export const plainText = (html: string) =>
+  html
+    .replace(/<!--.*?-->/g, '')
+    .replace(/<\/?span\b[^>]*>/g, '') // inline: an amount stays one run
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/[ \t\n\r]+/g, ' ')
+    .trim()
+
 /** The reference quote of 323 930 ₸ (КП-2026-0001), VAT on. */
 export const referenceQuote = () => seedDocument('КП-2026-0001')
 

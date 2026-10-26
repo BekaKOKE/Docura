@@ -4,6 +4,9 @@
 import type { MessageKey } from '../i18n/t'
 import type { BasisPoints, ClientSnapshot, CompanySnapshot, IsoDate, IsoTimestamp, QtyMilli } from '../services'
 
+/** Kazakhstan is on one zone since 2024-03-01 (spec §8). A company's own zone is passed in when it is known. */
+export const DEFAULT_TIME_ZONE = 'Asia/Almaty'
+
 /** `2026-10-15` → `15.10.2026`: dates on documents are dd.mm.yyyy (components.md §6). */
 export function formatDate(date: IsoDate): string {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date)
