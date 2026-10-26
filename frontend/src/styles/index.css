@@ -1,0 +1,96 @@
+/* replica/design/tokens.css is the only source of colours, type, spacing, radius and sizes (--dc-*).
+   It is imported as is; this file only uses the tokens and holds no raw colour values. */
+@import '../../../replica/design/tokens.css';
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* min-height with dvh, so the address bar of a phone does not cut the page. */
+body { min-height: 100dvh; }
+
+.page {
+  max-width: var(--dc-layout-reading-max);
+  margin: 0 auto;
+  padding: var(--dc-space-6) var(--dc-layout-gutter-mobile) var(--dc-space-10);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--dc-space-4);
+  align-content: start;
+}
+@media (min-width: 1024px) {
+  .page { padding-inline: var(--dc-layout-gutter-desktop); }
+}
+
+.page h1 { margin: 0; font-size: var(--dc-text-2xl); line-height: var(--dc-leading-2xl); font-weight: var(--dc-weight-2xl); }
+.page h2 { margin: 0; font-size: var(--dc-text-lg); line-height: var(--dc-leading-lg); font-weight: var(--dc-weight-lg); }
+.page p { margin: 0; }
+
+.muted { color: var(--dc-color-text-muted); }
+
+.card {
+  background: var(--dc-color-surface);
+  border: var(--dc-border-hairline) solid var(--dc-color-border);
+  border-radius: var(--dc-radius-lg);
+}
+.card-body { padding: var(--dc-space-4); display: grid; gap: var(--dc-space-3); min-width: 0; }
+
+.screen-id {
+  justify-self: start;
+  padding: var(--dc-space-1) var(--dc-space-2);
+  border-radius: var(--dc-radius-sm);
+  background: var(--dc-color-surface-sunken);
+  color: var(--dc-color-text-muted);
+  font-size: var(--dc-text-sm);
+  line-height: var(--dc-leading-sm);
+}
+
+.fact { display: grid; gap: var(--dc-space-1); min-width: 0; }
+.fact-label { font-size: var(--dc-text-caption); line-height: var(--dc-leading-caption); font-weight: var(--dc-weight-caption); color: var(--dc-color-text-muted); }
+/* A route is not an identifier: it may wrap at 360 px (.dc-code is nowrap for document numbers and ИИН/БИН). */
+.fact-value, .map-row-meta .dc-code { white-space: normal; overflow-wrap: anywhere; }
+
+.hint { display: flex; align-items: center; gap: var(--dc-space-2); }
+.hint svg { width: var(--dc-size-icon-sm); height: var(--dc-size-icon-sm); flex: none; }
+
+/* Button recipe from the specimen: ink label on saffron, 48 px target, label wraps at word boundaries. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--dc-space-2);
+  min-height: var(--dc-size-control-md);
+  padding: var(--dc-space-3) var(--dc-space-4);
+  border: var(--dc-border-input) solid transparent;
+  border-radius: var(--dc-radius-md);
+  font: var(--dc-weight-button) var(--dc-text-button) / var(--dc-leading-button) var(--dc-font-sans);
+  text-align: center;
+  text-decoration: none;
+}
+.btn > span { min-width: 0; }
+.btn-primary { background: var(--dc-color-accent); color: var(--dc-color-on-accent); }
+.btn-primary:hover { background: var(--dc-color-accent-hover); }
+.btn-primary:active { background: var(--dc-color-accent-pressed); }
+.btn-secondary { background: var(--dc-color-surface); color: var(--dc-color-text); border-color: var(--dc-color-border-input); }
+.btn-secondary:active { background: var(--dc-color-surface-sunken); }
+.btn-block { display: flex; width: 100%; }
+
+.group { display: grid; gap: var(--dc-space-2); }
+
+/* The screen map: ruled list rows, one link each, 72 px minimum like ListRow. */
+.map-list { list-style: none; margin: 0; padding: 0; }
+.map-row {
+  display: grid;
+  grid-template-columns: var(--dc-size-icon) minmax(0, 1fr);
+  gap: var(--dc-space-3);
+  align-items: start;
+  min-height: 72px;
+  padding: var(--dc-space-3) var(--dc-space-4);
+  border-bottom: var(--dc-border-hairline) solid var(--dc-color-border);
+  color: inherit;
+  text-decoration: none;
+}
+.map-list li:last-child .map-row { border-bottom: 0; }
+.map-row:active { background: var(--dc-color-surface-sunken); }
+.map-row svg { width: var(--dc-size-icon); height: var(--dc-size-icon); }
+.map-row-text { display: grid; gap: var(--dc-space-1); min-width: 0; }
+.map-row-title { font-weight: var(--dc-weight-lg); }
+.map-row-meta { display: flex; flex-wrap: wrap; gap: var(--dc-space-1) var(--dc-space-3); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); color: var(--dc-color-text-muted); }
