@@ -1,0 +1,33 @@
+/* The catalogue screen (S24). It reuses the list, search, chip, banner and form classes of the clients screens
+   (clients.css); this file holds only what is different. Tokens only, no raw colours. Every grid is
+   minmax(0, 1fr) and every flex child has min-width: 0, so nothing widens the page at 360 px (components.md section 0). */
+
+/* A row: [title, kind and unit] [price]. Titles wrap, the price never does. */
+.ct-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--dc-space-3);
+  align-items: center;
+  width: 100%;
+  min-height: 72px;
+  padding: var(--dc-space-3) var(--dc-space-4);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+.ct-row-text { display: grid; gap: var(--dc-space-1); min-width: 0; }
+.ct-row-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  font-weight: var(--dc-weight-lg);
+}
+.ct-row-meta { color: var(--dc-color-text-muted); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); }
+.ct-row-price { display: grid; justify-items: end; gap: var(--dc-space-1); font-weight: var(--dc-weight-lg); }
+.ct-per { color: var(--dc-color-text-muted); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); font-weight: var(--dc-weight-base); }
+.ct-nowrap { white-space: nowrap; }

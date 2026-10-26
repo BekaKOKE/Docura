@@ -2,6 +2,7 @@ import { useEffect, type ComponentType } from 'react'
 import { useSearchParams } from 'react-router'
 import { pickScreen, titleKey, type Screen, type ScreenId } from '../app/screens'
 import { t } from '../i18n/t'
+import { CatalogScreen } from './catalog/CatalogScreen'
 import { ClientCard } from './clients/ClientCard'
 import { ClientsScreen } from './clients/ClientsScreen'
 import { implementedScreens } from './implemented'
@@ -12,6 +13,7 @@ import { Placeholder } from './Placeholder'
 const built: Partial<Record<ScreenId, ComponentType>> = {
   S22: ClientsScreen,
   S23: ClientCard,
+  S24: CatalogScreen,
 }
 
 // One route can carry several screens that differ only by query (S15 and S21 share /documents/invoices).
