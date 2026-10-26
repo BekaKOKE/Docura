@@ -160,6 +160,36 @@ export const ru = {
   'auth.error.nameRequired': 'Введите имя.',
   'auth.error.wrongCredentials': 'Неверная почта или пароль.',
 
+  // The domain validators' messages (src/domain), mapped in src/i18n/validation.ts.
+  'validation.binIin.empty': 'Введите ИИН или БИН',
+  'validation.binIin.digits': 'ИИН и БИН состоят только из цифр',
+  'validation.binIin.length': 'ИИН и БИН состоят из 12 цифр',
+  'validation.binIin.checksum': 'ИИН или БИН указан неверно: проверьте цифры',
+  'validation.iik.empty': 'Введите ИИК',
+  'validation.iik.charset': 'ИИК состоит из заглавных латинских букв и цифр, без пробелов',
+  'validation.iik.length': 'ИИК состоит из 20 символов',
+  'validation.iik.prefix': 'ИИК начинается с букв KZ',
+  'validation.iik.checksum': 'ИИК указан неверно: проверьте символы',
+  'validation.knp.empty': 'Введите КНП',
+  'validation.knp.format': 'КНП состоит из 3 цифр',
+  'validation.kbe.empty': 'Введите Кбе',
+  'validation.kbe.format': 'Кбе состоит из 2 цифр',
+  'validation.required': 'Заполните это поле.',
+  'validation.unknown': 'Проверьте значение.',
+
+  'company.error.legalName': 'Укажите название компании.',
+  'company.error.address': 'Укажите адрес.',
+  'company.error.directorName': 'Укажите ФИО директора.',
+  'company.error.directorPosition': 'Укажите должность.',
+  'company.error.legalForm': 'Выберите форму: ИП, ТОО, АО или другая.',
+  'company.error.phone': 'Телефон начинается с +7 и содержит 10 цифр, например +7 701 123 45 67.',
+  'company.error.bik': 'БИК состоит из 8 латинских букв и цифр.',
+  'company.error.validityDays': 'Срок действия: целое число дней от 1 до 365.',
+  'company.error.exists': 'У этого аккаунта уже есть компания.',
+
+  'logo.error.type': 'Логотип должен быть в формате PNG или JPEG.',
+  'logo.error.size': 'Файл больше 300 КБ. Выберите логотип поменьше.',
+
   // Counted nouns: one key per Intl.PluralRules('ru') category, read through tCount().
   'count.invoice.one': '{n} счёт',
   'count.invoice.few': '{n} счёта',

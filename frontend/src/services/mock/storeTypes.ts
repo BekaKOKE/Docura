@@ -37,8 +37,8 @@ export interface StoredUser {
   password: string
 }
 
-/** A company as stored. `hasLogo` is absent in the seed, which means false. */
-export type StoredCompany = Omit<Company, 'hasLogo'> & { hasLogo?: boolean }
+/** A company as stored. `hasLogo` is absent in the seed, which means false. `logoDataUrl` is the uploaded logo (PNG or JPEG) as a data URL. */
+export type StoredCompany = Omit<Company, 'hasLogo'> & { hasLogo?: boolean; logoDataUrl?: string | null }
 
 export interface StoredDocumentLine {
   id: Id

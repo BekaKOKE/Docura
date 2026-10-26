@@ -9,8 +9,10 @@ export function toUser(user: StoredUser): User {
 }
 
 export function toCompany(company: StoredCompany): Company {
+  // The logo's data URL stays in the store: it is read through `company.logoUrl()`, not carried on every Company.
+  const { logoDataUrl: _logoDataUrl, ...rest } = company
   return {
-    ...company,
+    ...rest,
     phone: company.phone ?? null,
     email: company.email ?? null,
     bankName: company.bankName ?? null,
