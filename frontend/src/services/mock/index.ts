@@ -1,6 +1,7 @@
 import type { Services } from '../contracts'
 import { createNotImplementedServices } from '../notImplemented'
 import { createMockAuth } from './auth'
+import { createMockClients } from './clients'
 import { createMockDocuments } from './documents'
 import { getMockRuntime, type MockRuntime } from './runtime'
 
@@ -8,8 +9,8 @@ import { getMockRuntime, type MockRuntime } from './runtime'
 // `runtime.call`, which adds the 150-400 ms latency and the dev panel's forced errors, and reaches data only
 // through the store's company-scoped access, so another company's ids are 404.
 //
-// Built here: auth (#14). The other services reject with NotImplementedError until their issues land:
-// company (#15), clients (#16), articles (#17), documents and public (#18), payments (#30), dashboard (#32).
+// Built here: auth (#14), clients (#16). The other services reject with NotImplementedError until their issues land:
+// company (#15), articles (#17), documents and public (#18), payments (#30), dashboard (#32).
 // A new service goes in as `clients: createMockClients(getRuntime)` below, written like ./auth.ts.
 // Only src/services/select.ts imports this file; screens use `services` from 'src/services'.
 
@@ -19,6 +20,7 @@ export function createMockServices(getRuntime: () => MockRuntime = getMockRuntim
     ...notBuiltYet,
     auth: createMockAuth(getRuntime),
     documents: createMockDocuments(getRuntime),
+    clients: createMockClients(getRuntime),
   }
 }
 

@@ -1,6 +1,8 @@
 // Pure business rules: no React, no network. Shared test vectors live in contracts/test-vectors/.
 export { amountInWords } from './amountInWords'
 export { isValidIinBin, validateIinBin } from './binIin'
+export { clientFieldError, normalizeBinIin, validateClient } from './client'
+export type { ClientDraft, ClientField, ClientFieldErrors } from './client'
 export { isValidIik, validateIik } from './iik'
 export { formatMoney, parsePriceTiyn, parseQuantityMilli } from './money'
 export type { MoneyFormatMode, QtyMilli, Tiyn } from './money'
