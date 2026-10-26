@@ -119,6 +119,25 @@ export const ru = {
   'check.buttonPair1': 'Отправить',
   'check.buttonPair2': 'Подписать сейчас',
 
+  // The message of every ApiError code, as the mock raises it (the backend sends the same texts).
+  'apiError.validation_error': 'Проверьте заполненные поля.',
+  'apiError.unauthorized': 'Нужно войти в аккаунт.',
+  'apiError.not_found': 'Не найдено. Возможно, это удалили.',
+  'apiError.version_conflict': 'Документ уже изменили в другом месте. Откройте его заново.',
+  'apiError.document_locked': 'Документ подписан или выставлен, его больше нельзя менять.',
+  'apiError.exceeds_quote_total': 'Сумма счетов не может быть больше суммы КП.',
+  'apiError.overpayment': 'Оплата больше остатка по счёту.',
+  'apiError.already_signed': 'Документ уже подписан.',
+  'apiError.link_expired': 'Срок действия ссылки истёк. Попросите новую ссылку.',
+  'apiError.link_revoked': 'Ссылку отозвали. Попросите новую ссылку.',
+  'apiError.rate_limited': 'Слишком много попыток. Подождите минуту.',
+
+  'auth.error.emailInvalid': 'Введите почту в формате name@example.kz.',
+  'auth.error.emailTaken': 'Эта почта уже зарегистрирована.',
+  'auth.error.passwordShort': 'Пароль не короче 8 символов.',
+  'auth.error.nameRequired': 'Введите имя.',
+  'auth.error.wrongCredentials': 'Неверная почта или пароль.',
+
   // Counted nouns: one key per Intl.PluralRules('ru') category, read through tCount().
   'count.invoice.one': '{n} счёт',
   'count.invoice.few': '{n} счёта',
