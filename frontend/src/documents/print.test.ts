@@ -14,12 +14,16 @@ describe('print.css (#21 AC 5)', () => {
     expect(printCss).toMatch(/@page\s*\{[^}]*margin:\s*40pt/)
   })
 
-  it('hides the app chrome: sidebar, top bar, tab bar, buttons, the dev panel', () => {
+  it('hides the app chrome: sidebar, top bar (which holds the dev panel launcher), tab bar, buttons', () => {
     const print = printCss.slice(printCss.indexOf('@media print'))
-    for (const chrome of ['.sidebar', '.topbar', '.tabbar', '.segments-wrap', '.dev-launcher', '.no-print']) {
+    for (const chrome of ['.sidebar', '.topbar', '.tabbar', '.segments-wrap', '.no-print']) {
       expect(print, chrome).toContain(chrome)
     }
     expect(print).toMatch(/\{\s*display:\s*none\s*!important/)
+  })
+
+  it('names no development-panel class: they must not appear in the production CSS (#14 AC 5)', () => {
+    expect(printCss).not.toMatch(/\.dev-/)
   })
 
   it('only hides classes that the shell really has', () => {
