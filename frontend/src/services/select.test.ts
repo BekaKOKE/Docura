@@ -107,7 +107,9 @@ describe('the http stub', () => {
 })
 
 describe('the mock placeholder', () => {
-  it('says it is not implemented until #14 lands', async () => {
-    await expect(mockServices.auth.me()).rejects.toThrow(/mock services: auth\.me\(\) is not implemented/)
+  // auth is built in #14; the services of the later issues still reject until their issue lands.
+  it('says a service that is not built yet is not implemented', async () => {
+    await expect(mockServices.clients.list()).rejects.toThrow(/mock services: clients\.list\(\) is not implemented/)
+    await expect(mockServices.documents.get('x')).rejects.toBeInstanceOf(NotImplementedError)
   })
 })
