@@ -125,11 +125,13 @@ describe('integer-only code', () => {
     expect(Object.keys(sources)).toEqual(expect.arrayContaining(['./money.ts', './totals.ts']))
   })
 
+  // The banned names are assembled from pieces, so a text search of this folder finds only real uses.
+  const banned = (...parts: string[]) => new RegExp(parts.join(''))
+
   it.each([
-    ['float parsing', /parseFloat/],
-    ['toFixed', /toFixed/],
-    ['Math.round on a quotient', /Math\.round\(.*\//],
-    ['Math.round at all', /Math\.round/],
+    ['float parsing', banned('parse', 'Float')],
+    ['fixed-digit rounding', banned('to', 'Fixed')],
+    ['float rounding', banned('Math', '\\.', 'round')],
     ['decimal literal factor', /[*/]\s*0\.\d/],
     ['division by 100', /\/\s*100\b(?!0)/],
   ])('has no %s', (_name, pattern) => {
