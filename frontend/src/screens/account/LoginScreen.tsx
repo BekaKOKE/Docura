@@ -7,7 +7,8 @@ import { services, type LoginInput } from '../../services'
 import { TextField } from '../fields'
 import { showErrorsAndFocus, useFieldErrors } from '../formState'
 import { ProblemBanner } from '../ui'
-import { serverProblem, validateEmail, validatePassword } from './authRules'
+import { serverProblem } from '../serverProblem'
+import { validateEmail, validatePassword } from './authRules'
 import { AuthFrame } from './AuthFrame'
 
 type Field = keyof LoginInput

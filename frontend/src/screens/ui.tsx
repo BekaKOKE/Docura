@@ -17,9 +17,9 @@ export function FullPage({ children }: { children: ReactNode }) {
   )
 }
 
-export function PageLoading() {
+export function PageLoading({ screen }: { screen?: string }) {
   return (
-    <div className="page" role="status" aria-busy="true" aria-label={t('state.loading')} data-state="loading">
+    <div className="page" data-screen={screen} role="status" aria-busy="true" aria-label={t('state.loading')} data-state="loading">
       <span className="sr-only">{t('state.loading')}</span>
       <div className="skeleton skeleton-title" aria-hidden="true" />
       <div className="skeleton skeleton-block" aria-hidden="true" />
@@ -29,9 +29,20 @@ export function PageLoading() {
 }
 
 /** A failed call: the message in words and a button that tries again. */
-export function ErrorState({ error, onRetry, retrying }: { error: unknown; onRetry: () => void; retrying?: boolean }) {
+export function ErrorState({
+  error,
+  onRetry,
+  retrying,
+  screen,
+}: {
+  error: unknown
+  onRetry: () => void
+  retrying?: boolean
+  /** The screen this state stands in for (its data-screen), so it is still told apart. */
+  screen?: string
+}) {
   return (
-    <div className="page" data-state="error">
+    <div className="page" data-screen={screen} data-state="error">
       <div className="banner banner-danger" role="alert">
         <CircleAlert aria-hidden="true" />
         <p>{errorText(error)}</p>

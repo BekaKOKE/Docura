@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { t } from '../../i18n/t'
 import { renderApp } from '../../test/renderApp'
 import { ApiError } from '../../services'
-import { serverProblem, validateEmail, validateFullName, validatePassword } from './authRules'
+import { serverProblem } from '../serverProblem'
+import { validateEmail, validateFullName, validatePassword } from './authRules'
 
 describe('sign-up and sign-in rules', () => {
   it('asks for an email, and for one that looks like an email', () => {

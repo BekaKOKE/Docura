@@ -74,3 +74,74 @@ export function TextField({ id, label, value, onChange, onBlur, optional, hint, 
     </FieldFrame>
   )
 }
+
+/** 2 to 4 options set as a value: a group of radios drawn as a segmented control (components.md, SegmentedControl). */
+export function SegmentedField<V extends string>({
+  id,
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  id: string
+  label: string
+  value: V
+  options: readonly { value: V; label: string }[]
+  onChange: (value: V) => void
+}) {
+  return (
+    <div className="field">
+      <span id={`${id}-label`} className="field-label">
+        {label}
+      </span>
+      <div className="segmented" role="radiogroup" aria-labelledby={`${id}-label`}>
+        {options.map((option) => (
+          <label key={option.value} className="segmented-option">
+            <input
+              type="radio"
+              name={id}
+              value={option.value}
+              checked={value === option.value}
+              onChange={() => onChange(option.value)}
+            />
+            <span className="segmented-tile">{option.label}</span>
+          </label>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/** A yes/no row; the whole row is the hit area (components.md, Switch). */
+export function SwitchField({
+  id,
+  label,
+  hint,
+  checked,
+  onChange,
+}: {
+  id: string
+  label: string
+  hint?: string
+  checked: boolean
+  onChange: (checked: boolean) => void
+}) {
+  return (
+    <label className="switch-row" htmlFor={id}>
+      <span className="switch-text">
+        <span className="switch-label">{label}</span>
+        {hint && <span className="field-hint">{hint}</span>}
+      </span>
+      <input
+        id={id}
+        name={id}
+        type="checkbox"
+        role="switch"
+        checked={checked}
+        aria-checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+      />
+      <span className="switch-track" aria-hidden="true" />
+    </label>
+  )
+}

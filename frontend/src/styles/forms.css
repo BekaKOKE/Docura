@@ -131,6 +131,8 @@
 .switch-row:has(input:focus-visible) { outline: var(--dc-border-focus) solid var(--dc-color-focus); outline-offset: 2px; }
 
 .logo-box { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--dc-space-3); }
+.file-btn { cursor: pointer; }
+.file-btn:has(input:focus-visible) { outline: var(--dc-border-focus) solid var(--dc-color-focus); outline-offset: 2px; }
 .logo-preview {
   display: flex;
   align-items: center;
