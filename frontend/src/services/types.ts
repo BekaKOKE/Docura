@@ -545,6 +545,8 @@ export interface PublicDocument {
   signature: SignatureSummary | null
   /** URL of the company logo, or null. */
   logoUrl: string | null
+  /** URL of the client's drawn signature (an image), or null while the quote is not signed. */
+  signatureImageUrl: string | null
 }
 
 export interface PublicSignInput {
