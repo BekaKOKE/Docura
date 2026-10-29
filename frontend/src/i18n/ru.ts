@@ -2,6 +2,7 @@ import { clientsRu } from './clients'
 import { documentsRu } from './documents'
 import { catalogRu } from './catalog'
 import { quoteEditorRu } from './quoteEditor'
+import { publicRu } from './public'
 import { quotesRu } from './quotes'
 
 // Russian UI strings. Every visible string goes through t(), so Kazakh is a second file later, not a rewrite.
@@ -11,6 +12,7 @@ export const ru = {
   ...catalogRu,
   ...quoteEditorRu,
   ...quotesRu,
+  ...publicRu,
   'app.name': 'Docura',
   'app.pageTitle': '{title} · Docura',
 
