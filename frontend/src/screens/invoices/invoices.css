@@ -1,0 +1,39 @@
+/* The invoice screens (#28): the list (S15, S21) and the card (S16). Tokens only, no raw colours. Rows reuse the
+   document row of the clients screens (.cl-row, .cl-badge) and the card of the quotes (.qd-*, quotes.css). Every grid
+   is minmax(0, 1fr) and every flex child has min-width: 0, so nothing widens the page at 360 px (components.md
+   section 0); amounts and numbers never wrap (.dc-money, .dc-code); a target is 48 px or more. */
+
+.iv-strip { display: flex; flex-wrap: wrap; gap: var(--dc-space-1) var(--dc-space-2); padding: var(--dc-space-3) var(--dc-space-4); font-weight: var(--dc-weight-lg); }
+.iv-strip > span { min-width: 0; }
+
+/* One row is one link: client and total, then number, due date and badge, then the bar of a partly paid one. */
+.iv-row { grid-template-columns: minmax(0, 1fr); }
+.iv-main { display: grid; gap: var(--dc-space-2); min-width: 0; }
+.iv-line { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--dc-space-3); min-width: 0; }
+.iv-line > .ql-client { flex: 1 1 0; min-width: 0; }
+.iv-amount { flex: none; font-weight: var(--dc-weight-lg); }
+.iv-meta { flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: var(--dc-space-1) var(--dc-space-3); color: var(--dc-color-text-muted); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); }
+.iv-due { white-space: nowrap; }
+.iv-balance { color: var(--dc-color-text-muted); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); }
+
+.iv-progress { display: block; height: 8px; border-radius: var(--dc-radius-pill); background: var(--dc-color-surface-sunken); overflow: hidden; }
+.iv-progress-fill { display: block; height: 100%; border-radius: var(--dc-radius-pill); background: var(--dc-color-ink); }
+
+/* ---------------------------------------------------------------- card */
+
+.iv { max-width: var(--dc-layout-content-max); }
+.iv-state { display: grid; gap: var(--dc-space-1); margin: 0; padding: var(--dc-space-3) var(--dc-space-4); border-radius: var(--dc-radius-md); background: var(--dc-color-surface-sunken); }
+.iv-state > div { display: flex; justify-content: space-between; gap: var(--dc-space-3); }
+.iv-state dt { color: var(--dc-color-text-muted); }
+.iv-state dd { margin: 0; font-weight: var(--dc-weight-button); }
+.iv-state-balance { padding-top: var(--dc-space-1); border-top: var(--dc-border-hairline) solid var(--dc-color-border); font-size: var(--dc-text-lg); line-height: var(--dc-leading-lg); }
+.iv-state-balance dt { color: var(--dc-color-text); font-weight: var(--dc-weight-lg); }
+
+.iv-label { margin: 0 0 var(--dc-space-2); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); font-weight: var(--dc-weight-button); }
+.iv-payments { list-style: none; margin: 0; padding: 0; overflow: hidden; }
+.iv-payment { display: flex; align-items: center; justify-content: space-between; gap: var(--dc-space-3); min-height: 64px; padding: var(--dc-space-3) var(--dc-space-4); }
+.iv-payment + .iv-payment { border-top: var(--dc-border-hairline) solid var(--dc-color-border); }
+.iv-payment-main { display: grid; gap: var(--dc-space-1); min-width: 0; }
+.iv-payment-method { font-weight: var(--dc-weight-lg); }
+.iv-payment-date, .iv-payment-note { color: var(--dc-color-text-muted); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); overflow-wrap: anywhere; }
+.iv-payment-amount { flex: none; font-weight: var(--dc-weight-lg); }
