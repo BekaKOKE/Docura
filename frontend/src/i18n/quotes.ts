@@ -34,6 +34,8 @@ export const quotesRu = {
   'qs.helloAnon': 'Здравствуйте!',
   'qs.body': 'Отправляю коммерческое предложение на {amount}, действует до {date}: {link}',
   'qs.bodyNoDate': 'Отправляю коммерческое предложение на {amount}: {link}',
+  'qs.invoiceBody': 'Отправляю счёт на оплату на сумму {amount}, оплатить до {date}: {link}',
+  'qs.invoiceBodyNoDate': 'Отправляю счёт на оплату на сумму {amount}: {link}',
   'qs.whatsapp': 'WhatsApp',
   'qs.whatsapp.hint': 'Откроется чат с клиентом',
   'qs.whatsapp.noPhone': 'У клиента нет телефона. Скопируйте ссылку и отправьте любым способом.',

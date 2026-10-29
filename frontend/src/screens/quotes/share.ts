@@ -21,14 +21,19 @@ export function greetingName(client: Pick<ClientSnapshot, 'kind' | 'name' | 'con
 }
 
 /** "Здравствуйте, Қайрат! Отправляю коммерческое предложение на 323 930 ₸, действует до 03.11.2026: {ссылка}". */
-export function shareMessage(quote: Pick<Document, 'clientSnapshot' | 'grossTiyn' | 'validUntil' | 'shareUrl'>): string {
+export function shareMessage(
+  quote: Pick<Document, 'clientSnapshot' | 'grossTiyn' | 'validUntil' | 'shareUrl'> & Partial<Pick<Document, 'type' | 'dueDate'>>,
+): string {
   const name = greetingName(quote.clientSnapshot)
   const hello = name ? t('qs.hello', { name }) : t('qs.helloAnon')
   const amount = formatMoney(quote.grossTiyn)
   const link = quote.shareUrl ?? ''
-  const body = quote.validUntil
-    ? t('qs.body', { amount, date: formatDate(quote.validUntil), link })
-    : t('qs.bodyNoDate', { amount, link })
+  // An invoice says by when to pay, a quote until when it stands.
+  const invoice = quote.type === 'invoice'
+  const until = invoice ? quote.dueDate : quote.validUntil
+  const dated = invoice ? 'qs.invoiceBody' : 'qs.body'
+  const undated = invoice ? 'qs.invoiceBodyNoDate' : 'qs.bodyNoDate'
+  const body = until ? t(dated, { amount, date: formatDate(until), link }) : t(undated, { amount, link })
   return `${hello} ${body}`
 }
 

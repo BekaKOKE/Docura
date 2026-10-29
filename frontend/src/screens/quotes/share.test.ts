@@ -52,6 +52,16 @@ describe('shareMessage', () => {
     expect(shareMessage(quote({ grossTiyn: 174_176 })).replace(/\s/g, ' ')).toContain('на 1 741,76 ₸')
   })
 
+  it('says "счёт на оплату" and by when to pay for an invoice (#28)', () => {
+    const invoice = quote({ type: 'invoice', dueDate: '2026-11-04', validUntil: null })
+    expect(shareMessage(invoice).replace(/\s/g, ' ')).toBe(
+      'Здравствуйте, Қайрат! Отправляю счёт на оплату на сумму 323 930 ₸, оплатить до 04.11.2026: http://localhost:5173/p/tok123',
+    )
+    expect(shareMessage({ ...invoice, dueDate: null }).replace(/\s/g, ' ')).toBe(
+      'Здравствуйте, Қайрат! Отправляю счёт на оплату на сумму 323 930 ₸: http://localhost:5173/p/tok123',
+    )
+  })
+
   it('never says the signature is legally binding', () => {
     expect(shareMessage(quote())).not.toMatch(/юридическ|ЭЦП|legally/i)
   })
