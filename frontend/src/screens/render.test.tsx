@@ -16,7 +16,8 @@ describe('screen placeholders', () => {
   it('names the M1 issue that builds the content', () => {
     // S07 is built by #19, S13 by #22 and S14 by #27; the act's screen (S18) still shows a placeholder.
     expect(render('/acts/demo')).toContain('#31')
-    expect(render('/invoices/demo')).toContain(formatIssues([28, 30]))
+    // The invoice list and card (S15, S16) are built by #28; the dashboard (S04) still shows a placeholder.
+    expect(render('/')).toContain(formatIssues([32]))
   })
 
   it('lists every screen on the screen map', () => {
