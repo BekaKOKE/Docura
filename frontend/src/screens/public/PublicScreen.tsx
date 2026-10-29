@@ -165,7 +165,9 @@ export function PublicView({ doc, token, onReload, onSigned, justSigned }: ViewP
   useEffect(() => {
     if (justSigned) success.current?.focus()
   }, [justSigned])
-  const fileName = doc.number ?? t('doc.quote.title')
+  // The same page serves a quote and an invoice (the share sheet of #28): each is called what it is.
+  const title = t(doc.type === 'invoice' ? 'doc.invoice.title' : 'doc.quote.title')
+  const fileName = doc.number ?? title
   const signature = doc.signature
   const signedAt = signature ? formatDateTime(signature.signedAt, DEFAULT_TIME_ZONE) : null
   const signed = doc.status === 'signed' && signature !== null
@@ -192,9 +194,9 @@ export function PublicView({ doc, token, onReload, onSigned, justSigned }: ViewP
           </section>
         )}
 
-        <section className="pub-head" aria-label={t('doc.quote.title')}>
-          {!justSigned && <h1 className="pub-title">{t('doc.quote.title')}</h1>}
-          {justSigned && <p className="pub-title">{t('doc.quote.title')}</p>}
+        <section className="pub-head" aria-label={title}>
+          {!justSigned && <h1 className="pub-title">{title}</h1>}
+          {justSigned && <p className="pub-title">{title}</p>}
           <p className="pub-number">
             {t('pub.number', { number: doc.number ?? '', date: formatDate(doc.issueDate) })}
           </p>
@@ -223,7 +225,7 @@ export function PublicView({ doc, token, onReload, onSigned, justSigned }: ViewP
             )}
           </Notice>
         )}
-        {!signed && !doc.isExpired && !doc.canSign && <Notice tone="neutral">{t('pub.closed')}</Notice>}
+        {doc.type === 'quote' && !signed && !doc.isExpired && !doc.canSign && <Notice tone="neutral">{t('pub.closed')}</Notice>}
 
         <Lines doc={doc} />
 

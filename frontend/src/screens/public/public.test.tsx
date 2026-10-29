@@ -128,6 +128,17 @@ describe('S11 the page the client opens', () => {
   it('never calls the signature legally binding (spec §7)', () => {
     expect(html).not.toMatch(/юридическ|ЭЦП|legally/i)
   })
+
+  it('calls an invoice an invoice, with no quote notice and no way to sign it (the share sheet of #28)', () => {
+    const invoice = renderPage(publicDoc({ type: 'invoice', number: 'СЧ-2026-0003', canSign: false, status: 'issued', validUntil: null }))
+    const visible = text(invoice)
+    expect(visible).toContain(t('doc.invoice.title'))
+    expect(visible).toContain('СЧ-2026-0003')
+    expect(visible).not.toContain(t('doc.quote.title'))
+    expect(visible).not.toContain(t('pub.closed'))
+    expect(visible).not.toContain(t('pub.sign'))
+    expect(invoice).toContain('data-doc="invoice"')
+  })
 })
 
 describe('S11 states (AC 2)', () => {
