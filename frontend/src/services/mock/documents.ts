@@ -4,16 +4,22 @@
 // sent are ignored, a quote is editable while draft or sent and frozen after, "expired" is derived from `validUntil`
 // in the company's time zone and never stored.
 //
-// Not here, on purpose: cancel, duplicate and decline are post-MVP (docs/spec.md, D5); `convert` and the invoice
-// and act lifecycle come with #27 and #31; signing the quote is `public.sign` (#24). `signatureBlob` only reads the
-// image of a signature that already exists (the seed has some), so the quote's card (#22) can show it.
+// `convert` makes an invoice from a signed quote (#27): the whole quote, a percent, an amount or the remainder,
+// never more than the quote total in sum. The invoice is a draft or, with `issue: true`, issued at once (number,
+// share link). The rest of the invoice lifecycle (update, issue, delete of an invoice draft) and the act come
+// with #31.
+//
+// Not here, on purpose: cancel, duplicate and decline are post-MVP (docs/spec.md, D5); `convert` with
+// `target: 'act'` is #31; signing the quote is `public.sign` (#24). `signatureBlob` only reads the image of a
+// signature that already exists (the seed has some), so the quote's card (#22) can show it.
 
-import { computeTotals, searchKey, type VatSetting } from '../../domain'
+import { computePrepayment, computeTotals, formatMoney, searchKey, type VatSetting } from '../../domain'
 import { t } from '../../i18n/t'
 import type { DocumentsService } from '../contracts'
 import { ApiError } from '../errors'
 import { NotImplementedError } from '../notImplemented'
 import type {
+  ConvertInput,
   Document,
   DocumentInput,
   DocumentLine,
@@ -21,6 +27,7 @@ import type {
   DocumentListParams,
   DocumentSummary,
   Id,
+  InvoiceBasis,
   IsoDate,
   Page,
   PaymentSummary,
@@ -202,6 +209,136 @@ function withTotals(lines: CheckedInput['lines'], vat: VatSetting): Totals {
   } catch (error) {
     if (error instanceof RangeError) throw invalid({ lines: t('document.error.amountTooLarge') })
     throw error
+  }
+}
+
+/** The public link of a document that has just been issued. */
+function addShareLink(db: ScopedDb, documentId: Id, createdAt: string): void {
+  db.insert('shareLinks', {
+    id: newId(),
+    documentId,
+    token: newToken(SHARE_TOKEN_BYTES),
+    expiresAt: null,
+    revokedAt: null,
+    viewCount: 0,
+    firstViewedAt: null,
+    lastViewedAt: null,
+    createdAt,
+  })
+}
+
+// ---------------------------------------------------------------- converting a quote into an invoice
+
+/** `2026-10-20` as `20.10.2026`, the way a document refers to another one. */
+function ruDate(date: IsoDate): string {
+  const [year, month, day] = date.split('-')
+  return `${day}.${month}.${year}`
+}
+
+/** Basis points as a percent in words: 5000 is "50", 1250 is "12,5", 3333 is "33,33". */
+function percentText(basisPoints: number): string {
+  const whole = Math.trunc(basisPoints / 100)
+  const fraction = String(basisPoints % 100).padStart(2, '0').replace(/0+$/, '')
+  return fraction === '' ? String(whole) : `${whole},${fraction}`
+}
+
+/** What the invoice is for, after the checks: lines copied from the quote, or one prepayment line. */
+interface InvoicePlan {
+  basis: InvoiceBasis
+  basisValue: number | null
+  lines: StoredDocumentLine[]
+  netTiyn: number
+  vatTiyn: number
+  grossTiyn: number
+}
+
+function exceedsQuoteTotal(availableTiyn: number): ApiError {
+  return new ApiError({
+    code: 'exceeds_quote_total',
+    message: t('invoice.error.exceedsQuoteTotal', { amount: formatMoney(Math.max(availableTiyn, 0)) }),
+  })
+}
+
+/** Checks `basis` and `basisValue` of an invoice conversion and works out the lines. Throws before anything is written. */
+function planInvoice(
+  input: Extract<ConvertInput, { target: 'invoice' }>,
+  quote: StoredDocument,
+  invoicedTiyn: number,
+): InvoicePlan {
+  const availableTiyn = quote.grossTiyn - invoicedTiyn
+  const { basis } = input
+  if (basis !== 'full' && basis !== 'percent' && basis !== 'amount' && basis !== 'remaining') {
+    throw invalid({ basis: t('invoice.error.basisInvalid') })
+  }
+
+  if (basis === 'full') {
+    // The whole quote is only possible while nothing else was invoiced from it.
+    if (invoicedTiyn > 0 || availableTiyn <= 0) throw exceedsQuoteTotal(availableTiyn)
+    return {
+      basis,
+      basisValue: null,
+      lines: quote.lines.map(({ qtyText: _qtyText, ...line }, position) => ({ ...line, id: newId(), position })),
+      netTiyn: quote.netTiyn,
+      vatTiyn: quote.vatTiyn,
+      grossTiyn: quote.grossTiyn,
+    }
+  }
+
+  const value = (input as { basisValue?: unknown }).basisValue
+  if (basis === 'percent') {
+    if (typeof value !== 'number' || !Number.isSafeInteger(value) || value < 1 || value > 10000) {
+      throw invalid({ basisValue: t('invoice.error.percentInvalid') })
+    }
+  } else if (basis === 'amount') {
+    if (typeof value !== 'number' || !Number.isSafeInteger(value) || value <= 0) {
+      throw invalid({ basisValue: t('invoice.error.amountInvalid') })
+    }
+  }
+
+  const vat: VatSetting = { vatEnabled: quote.vatEnabled && quote.companySnapshot.vatPayer, vatRateBp: quote.vatRateBp }
+  const prepayment = computePrepayment({
+    ...vat,
+    ...(basis === 'remaining' ? { basis } : { basis, basisValue: value as number }),
+    quoteGrossTiyn: quote.grossTiyn,
+    alreadyInvoicedTiyn: invoicedTiyn,
+  })
+  if ('error' in prepayment) {
+    if (prepayment.error === 'exceeds_quote_total') throw exceedsQuoteTotal(availableTiyn)
+    // A percent so small that it rounds to nothing.
+    throw invalid({ basisValue: t(basis === 'percent' ? 'invoice.error.percentInvalid' : 'invoice.error.amountInvalid') })
+  }
+
+  const quoteRef = { number: quote.number ?? '', date: ruDate(quote.issueDate) }
+  const title =
+    basis === 'percent'
+      ? t('invoice.line.percent', { ...quoteRef, percent: percentText(value as number) })
+      : t(basis === 'amount' ? 'invoice.line.amount' : 'invoice.line.remaining', quoteRef)
+  // The line holds the net amount as its price, as the seed's prepayment invoices do; the VAT is inside the gross.
+  const { netTiyn, vatTiyn, grossTiyn } = prepayment
+  return {
+    basis,
+    basisValue: basis === 'remaining' ? null : (value as number),
+    lines: [
+      {
+        id: newId(),
+        position: 0,
+        articleId: null,
+        kind: 'service',
+        title,
+        description: null,
+        unit: t('invoice.line.unit'),
+        qtyMilli: 1000,
+        unitPriceTiyn: netTiyn,
+        discountBp: 0,
+        netTiyn,
+        vatTiyn,
+        grossTiyn,
+        workDate: null,
+      },
+    ],
+    netTiyn,
+    vatTiyn,
+    grossTiyn,
   }
 }
 
@@ -470,17 +607,7 @@ export function createMockDocuments(getRuntime: () => MockRuntime): DocumentsSer
         const number = takeNextNumber(db, 'quote', row.issueDate)
         const issuedAt = utcTimestamp(now)
 
-        db.insert('shareLinks', {
-          id: newId(),
-          documentId: row.id,
-          token: newToken(SHARE_TOKEN_BYTES),
-          expiresAt: null,
-          revokedAt: null,
-          viewCount: 0,
-          firstViewedAt: null,
-          lastViewedAt: null,
-          createdAt: issuedAt,
-        })
+        addShareLink(db, row.id, issuedAt)
         const saved = db.patch('documents', id, {
           status: 'sent',
           number,
@@ -498,8 +625,65 @@ export function createMockDocuments(getRuntime: () => MockRuntime): DocumentsSer
       })
     },
 
-    convert: async () => {
-      throw notBuilt('convert', '#27 and #31')
+    convert(id, input) {
+      // The act is #31.
+      if (input.target !== 'invoice') return Promise.reject(notBuilt('convert', 'the act (#31)'))
+      return write((db, view, now) => {
+        // A replay of the same request returns the document it made.
+        if (input.clientRequestId) {
+          const existing = db.rows('documents').find((d) => d.clientRequestId === input.clientRequestId)
+          if (existing) return view.document(existing)
+        }
+        const quote = db.get('documents', id)
+        if (quote.type !== 'quote' || quote.status !== 'signed') throw locked()
+
+        const invoiced = db
+          .rows('documents')
+          .filter((d) => d.sourceDocumentId === quote.id && d.type === 'invoice' && d.status !== 'cancelled')
+          .reduce((sum, d) => sum + d.grossTiyn, 0)
+        // Every check happens before a number is taken, so a refused conversion leaves no gap.
+        const plan = planInvoice(input, quote, invoiced)
+
+        const company = db.company()
+        const issueDate = todayInZone(company.timezone, now)
+        const issueNow = input.issue === true
+        const issuedAt = issueNow ? utcTimestamp(now) : null
+        const row = db.insert('documents', {
+          id: newId(),
+          type: 'invoice',
+          status: issueNow ? 'issued' : 'draft',
+          number: issueNow ? takeNextNumber(db, 'invoice', issueDate) : null,
+          issueDate,
+          validUntil: null,
+          dueDate: addDays(issueDate, company.invoiceDueDays),
+          periodFrom: null,
+          periodTo: null,
+          contractRef: t('invoice.contractRef', { number: quote.number ?? '', date: ruDate(quote.issueDate) }),
+          clientId: quote.clientId,
+          // The client as the quote was issued; the company as it is now.
+          clientSnapshot: structuredClone(quote.clientSnapshot),
+          companySnapshot: snapshotOfCompany(company),
+          sourceDocumentId: quote.id,
+          currency: quote.currency,
+          netTiyn: plan.netTiyn,
+          vatTiyn: plan.vatTiyn,
+          grossTiyn: plan.grossTiyn,
+          version: 1,
+          issuedAt,
+          signedAt: null,
+          cancelledAt: null,
+          basis: plan.basis,
+          basisValue: plan.basisValue,
+          vatEnabled: quote.vatEnabled,
+          vatRateBp: quote.vatRateBp,
+          notes: null,
+          terms: null,
+          lines: plan.lines,
+          clientRequestId: input.clientRequestId ?? null,
+        })
+        if (issuedAt) addShareLink(db, row.id, issuedAt)
+        return view.document(row)
+      })
     },
 
     signatureBlob(id) {

@@ -332,7 +332,7 @@ describe('state machine (AC 1, TC-1)', () => {
     await expect(services.documents.get(seeded.id)).resolves.toMatchObject({ id: seeded.id })
   })
 
-  it('does not build cancel-style or conversion calls yet', async () => {
+  it('does not build the act conversion yet (#31)', async () => {
     const { services } = setup()
     await signInSeitkali(services)
     await expect(
