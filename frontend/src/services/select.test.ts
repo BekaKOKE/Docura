@@ -110,6 +110,7 @@ describe('the mock placeholder', () => {
   // auth is built in #14, clients in #16, articles in #17 and documents in #18; the services of the later issues still reject until their issue lands.
   it('says a service that is not built yet is not implemented', async () => {
     await expect(mockServices.dashboard.get()).rejects.toThrow(/mock services: dashboard\.get\(\) is not implemented/)
-    await expect(mockServices.payments.list('x')).rejects.toBeInstanceOf(NotImplementedError)
+    // payments.list is built by #28; recording a payment is #30.
+    await expect(mockServices.payments.remove('x')).rejects.toBeInstanceOf(NotImplementedError)
   })
 })
