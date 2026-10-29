@@ -55,6 +55,8 @@ const detailKey = (id: string) => ['documents', 'detail', id] as const
 interface Handoff {
   saved: Document
   time: string
+  /** The draft was saved but issuing it failed: the page it moves to says so. */
+  sendError?: string
 }
 
 const handoffOf = (state: unknown): Handoff | null =>
@@ -80,9 +82,11 @@ interface EditorProps {
   quote: Document | null
   /** "14:32" when the quote was just saved on the page it came from. */
   savedTime: string | null
+  /** Why "Отправить" failed after the draft was saved, if it did. */
+  sendError: string | null
 }
 
-function Editor({ company, quote, savedTime }: EditorProps) {
+function Editor({ company, quote, savedTime, sendError }: EditorProps) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
 
@@ -106,7 +110,9 @@ function Editor({ company, quote, savedTime }: EditorProps) {
 
   const [dirty, setDirty] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [saveError, setSaveError] = useState<string | null>(null)
+  const [saveError, setSaveError] = useState<string | null>(sendError)
+  // The draft is saved and only the sending failed: the banner says so instead of "не удалось сохранить".
+  const [sendFailed, setSendFailed] = useState(sendError !== null)
   const [saved, setSaved] = useState<string | null>(savedTime)
   const [removed, setRemoved] = useState<{ id: number; line: RemovedLine } | null>(null)
   const [focusRequest, setFocusRequest] = useState<{ id: string; n: number } | null>(null)
@@ -230,6 +236,7 @@ function Editor({ company, quote, savedTime }: EditorProps) {
     busy.current = true
     setSaving(true)
     setSaveError(null)
+    setSendFailed(false)
     const articleIds = new Map<string, string>()
     try {
       // A manual line the person asked to keep goes into the catalogue first. Once it is there the line points at it,
@@ -260,7 +267,17 @@ function Editor({ company, quote, savedTime }: EditorProps) {
       queryClient.setQueryData(detailKey(result.id), result)
       void queryClient.invalidateQueries({ queryKey: ['documents', 'list'] })
       if (thenSend) {
-        const issued = await services.documents.issue(result.id)
+        let issued: Document
+        try {
+          issued = await services.documents.issue(result.id)
+        } catch (error) {
+          // The draft is saved. Move to its own address (a reload must not open an empty form) and say what failed.
+          const failed: Handoff = { saved: result, time, sendError: errorText(error) }
+          navigate(current.id ? '.' : `/quotes/${result.id}/edit`, { replace: true, state: failed })
+          setSendFailed(true)
+          setSaveError(failed.sendError ?? null)
+          return
+        }
         queryClient.setQueryData(detailKey(issued.id), issued)
         navigate(`/quotes/${issued.id}/send`, { replace: true })
         return
@@ -321,8 +338,8 @@ function Editor({ company, quote, savedTime }: EditorProps) {
 
         <div ref={errorBox}>
           {saveError && (
-            <Banner tone="danger" title={t('qe.saveError.title')}>
-              {saveError} {t('qe.saveError.hint')}
+            <Banner tone="danger" title={sendFailed ? t('qd.send.error') : t('qe.saveError.title')}>
+              {saveError} {sendFailed ? t('qd.send.hint') : t('qe.saveError.hint')}
             </Banner>
           )}
         </div>
@@ -555,5 +572,5 @@ export function QuoteEditorScreen() {
   const quote = handedOver?.saved ?? (loaded.isFetchedAfterMount ? loaded.data : undefined)
   if (!company.data || (quoteId !== undefined && !quote)) return <PageLoading screen="S07" />
 
-  return <Editor key={quote?.id ?? 'new'} company={company.data} quote={quote ?? null} savedTime={handedOver?.time ?? null} />
+  return <Editor key={quote?.id ?? 'new'} company={company.data} quote={quote ?? null} savedTime={handedOver?.time ?? null} sendError={handedOver?.sendError ?? null} />
 }

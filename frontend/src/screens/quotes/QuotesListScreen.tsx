@@ -65,7 +65,8 @@ export function QuotesListScreen() {
 
   let body
   if (!data) {
-    body = errorBanner ? null : <ListSkeleton rows={SKELETON_ROWS} label={t('ql.loading')} />
+    // After "Повторить" the failed query is fetching again: show the loading state, not nothing.
+    body = errorBanner && !list.isFetching ? null : <ListSkeleton rows={SKELETON_ROWS} label={t('ql.loading')} />
   } else if (data.total === 0) {
     body = (
       <EmptyState

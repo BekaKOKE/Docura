@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { DocumentRenderer, DocumentViewport } from '../../documents'
 import { DEFAULT_TIME_ZONE, formatDate, formatDateTime } from '../../documents/format'
@@ -19,6 +19,8 @@ export function QuoteView({ quote, screen }: Props) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [sending, setSending] = useState(false)
+  // A second tap before the first answer must not issue the quote twice.
+  const busy = useRef(false)
   const [sendError, setSendError] = useState<string | null>(null)
 
   const badge = documentBadge(quote)
@@ -35,6 +37,8 @@ export function QuoteView({ quote, screen }: Props) {
 
   // "Отправить" on a draft: issue it (the number is assigned here), then open the share sheet.
   async function send() {
+    if (busy.current) return
+    busy.current = true
     setSending(true)
     setSendError(null)
     try {
@@ -43,6 +47,7 @@ export function QuoteView({ quote, screen }: Props) {
     } catch (error) {
       setSendError(errorText(error))
     } finally {
+      busy.current = false
       setSending(false)
     }
   }
@@ -79,7 +84,7 @@ export function QuoteView({ quote, screen }: Props) {
             <Link className="btn btn-secondary" to={`/quotes/${quote.id}/edit`}>
               <span className="dc-label">{t('qd.action.edit')}</span>
             </Link>
-            <button type="button" className="btn btn-primary" aria-busy={sending || undefined} onClick={() => void send()}>
+            <button type="button" className="btn btn-primary" aria-busy={sending || undefined} disabled={sending} onClick={() => void send()}>
               <span className="dc-label">{sending ? t('qd.action.sending') : t('qd.action.send')}</span>
             </button>
           </>

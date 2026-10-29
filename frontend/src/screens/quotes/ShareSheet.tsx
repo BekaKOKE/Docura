@@ -16,6 +16,8 @@ function ShareBody({ quote }: { quote: Document }) {
   const whatsapp = whatsappLink(quote.clientSnapshot.phone, message)
 
   async function copy() {
+    // Back to idle first, so a second copy is announced again.
+    setCopied('idle')
     setCopied((await copyText(link)) ? 'done' : 'failed')
   }
 
@@ -45,7 +47,7 @@ function ShareBody({ quote }: { quote: Document }) {
             </span>
           </a>
         ) : (
-          <div className="qs-row" aria-disabled="true">
+          <div className="qs-row" role="group" aria-disabled="true">
             <MessageCircle aria-hidden="true" />
             <span className="qs-row-text">
               <span className="qs-row-title">{t('qs.whatsapp')}</span>
@@ -84,7 +86,7 @@ export interface ShareSheetProps {
 export function ShareSheet({ quote, onClose }: ShareSheetProps) {
   return (
     <BottomSheet open title={t('qs.title', { number: quote.number ?? '' })} onClose={onClose}>
-      <ShareBody quote={quote} />
+      <ShareBody key={quote.id} quote={quote} />
     </BottomSheet>
   )
 }

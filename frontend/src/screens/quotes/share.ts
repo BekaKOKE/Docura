@@ -52,18 +52,21 @@ export async function copyText(text: string): Promise<boolean> {
   } catch {
     // Refused (no permission, not focused): try the old way.
   }
+  // Selecting the hidden field takes focus; give it back, or a dialog's focus trap loses its place.
+  const before = document.activeElement instanceof HTMLElement ? document.activeElement : null
   const field = document.createElement('textarea')
   field.value = text
-  field.setAttribute('readonly', '')
   field.style.position = 'fixed'
   field.style.opacity = '0'
   document.body.appendChild(field)
   field.select()
+  field.setSelectionRange(0, text.length)
   try {
     return document.execCommand('copy')
   } catch {
     return false
   } finally {
     field.remove()
+    before?.focus()
   }
 }

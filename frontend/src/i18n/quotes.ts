@@ -25,6 +25,7 @@ export const quotesRu = {
   'qd.action.invoice': 'Выставить счёт',
   'qd.action.act': 'Создать акт',
   'qd.send.error': 'Не удалось выпустить КП',
+  'qd.send.hint': 'Черновик сохранён. Нажмите «Отправить» ещё раз.',
 
   'qs.title': 'Отправить {number}',
   'qs.message.label': 'Сообщение клиенту',
