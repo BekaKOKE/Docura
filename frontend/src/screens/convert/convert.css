@@ -1,0 +1,51 @@
+/* Invoice from a signed quote (S14, #27). Tokens only, no raw colours. Every grid is minmax(0, 1fr) and every flex
+   child has min-width: 0, so nothing widens the page at 360 px (components.md section 0); amounts never wrap
+   (.dc-money); a target is 48 px or more; at most two buttons side by side. */
+
+.cv { max-width: var(--dc-layout-reading-max); }
+.cv > * { min-width: 0; }
+.cv p { margin: 0; }
+
+.cv-head { display: grid; gap: var(--dc-space-1); }
+.cv-title { margin: 0; min-width: 0; }
+.cv-client { font-weight: var(--dc-weight-lg); overflow-wrap: anywhere; }
+
+.cv-sums { display: grid; gap: var(--dc-space-1); margin: 0; padding: var(--dc-space-3) var(--dc-space-4); border-radius: var(--dc-radius-md); background: var(--dc-color-surface-sunken); }
+.cv-sums > div { display: flex; justify-content: space-between; gap: var(--dc-space-3); }
+.cv-sums dt { color: var(--dc-color-text-muted); }
+.cv-sums dd { margin: 0; font-weight: var(--dc-weight-button); }
+.cv-sums-available { padding-top: var(--dc-space-1); border-top: var(--dc-border-hairline) solid var(--dc-color-border); font-size: var(--dc-text-lg); line-height: var(--dc-leading-lg); }
+.cv-sums-available dt { color: var(--dc-color-text); font-weight: var(--dc-weight-lg); }
+
+.cv-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--dc-space-4); }
+.cv-form > * { min-width: 0; }
+.cv-options { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--dc-space-2); margin: 0; padding: 0; border: 0; min-width: 0; }
+.cv-legend { padding: 0; margin-bottom: var(--dc-space-2); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); font-weight: var(--dc-weight-button); }
+
+.cv-option { display: grid; gap: var(--dc-space-3); padding: 0 var(--dc-space-4); border: var(--dc-border-input) solid var(--dc-color-border-input); border-radius: var(--dc-radius-lg); background: var(--dc-color-surface); }
+.cv-option[data-selected] { border-color: var(--dc-color-ink); border-width: var(--dc-border-strong); }
+.cv-option[data-selected]:has(.field) { padding-bottom: var(--dc-space-4); }
+.cv-option-row { display: flex; align-items: center; gap: var(--dc-space-3); min-height: 64px; cursor: pointer; }
+.cv-option-row input { flex: none; width: 24px; height: 24px; margin: 0; accent-color: var(--dc-color-ink); }
+.cv-option-row:has(input:focus-visible) { outline: var(--dc-border-focus) solid var(--dc-color-focus); outline-offset: 2px; border-radius: var(--dc-radius-md); }
+.cv-option-text { display: grid; gap: var(--dc-space-1); min-width: 0; padding: var(--dc-space-2) 0; }
+.cv-option-title { font-weight: var(--dc-weight-lg); }
+.cv-option-hint { color: var(--dc-color-text-muted); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); overflow-wrap: anywhere; }
+
+.cv-percent { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--dc-space-2); }
+.cv-percent-sign { font-weight: var(--dc-weight-lg); }
+
+.cv-preview { font-size: var(--dc-text-lg); line-height: var(--dc-leading-lg); font-weight: var(--dc-weight-lg); }
+.cv-confirm { min-height: var(--dc-size-control-lg); }
+.cv-note { padding: var(--dc-space-3) var(--dc-space-4); border-radius: var(--dc-radius-md); background: var(--dc-color-surface-sunken); }
+
+.cv-done { display: flex; align-items: flex-start; gap: var(--dc-space-3); padding: var(--dc-space-3) var(--dc-space-4); border-radius: var(--dc-radius-md); background: var(--dc-color-success-bg); color: var(--dc-color-success); }
+.cv-done:focus-visible { outline: var(--dc-border-focus) solid var(--dc-color-focus); outline-offset: 2px; }
+.cv-done svg { flex: none; width: var(--dc-size-icon); height: var(--dc-size-icon); }
+.cv-done-text { display: grid; gap: var(--dc-space-3); flex: 1 1 0; min-width: 0; overflow-wrap: anywhere; }
+/* Two buttons side by side, and no more. */
+.cv-done-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--dc-space-2); }
+
+.cv-locked { display: grid; justify-items: center; gap: var(--dc-space-3); padding: var(--dc-space-8) var(--dc-space-4); text-align: center; }
+.cv-locked svg { width: 48px; height: 48px; color: var(--dc-color-warning); }
+.cv-locked h1 { margin: 0; font-size: var(--dc-text-xl); line-height: var(--dc-leading-xl); font-weight: var(--dc-weight-xl); }
