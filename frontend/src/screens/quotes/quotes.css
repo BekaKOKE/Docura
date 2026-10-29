@@ -1,0 +1,91 @@
+/* The quotes screens (#22): the list (S06), the card (S13) and the share sheet (S09). Tokens only, no raw colours.
+   Rows reuse the document row of the client card (clients.css: .cl-row, .cl-doc, .cl-badge); this file holds what is
+   different. Every grid is minmax(0, 1fr) and every flex child has min-width: 0, so nothing widens the page at 360 px;
+   amounts and numbers never wrap (.dc-money, .dc-code); a target is 48 px or more, at most two buttons side by side. */
+
+/* ---------------------------------------------------------------- list */
+
+.ql-date { color: var(--dc-color-text-muted); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); white-space: nowrap; }
+.ql-client {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  font-weight: var(--dc-weight-lg);
+}
+
+/* ---------------------------------------------------------------- card */
+
+.qd { max-width: var(--dc-layout-content-max); }
+.qd-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--dc-space-2) var(--dc-space-3); min-width: 0; }
+.qd-number { margin: 0; min-width: 0; }
+.qd-summary { display: grid; gap: var(--dc-space-1); min-width: 0; }
+.qd-client { font-weight: var(--dc-weight-lg); overflow-wrap: anywhere; }
+.qd-amount { font-size: var(--dc-text-xl); line-height: var(--dc-leading-xl); font-weight: var(--dc-weight-xl); }
+
+/* One or two actions; two sit side by side, and that is the most there ever are. */
+.qd-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--dc-space-2); }
+.qd-actions[data-count='0'] { display: none; }
+.qd-actions[data-count='1'] { grid-template-columns: minmax(0, 1fr); }
+.qd-actions .btn { min-height: var(--dc-size-control-lg); }
+
+/* The document, scaled to the width of the screen; a tap opens it full size (S08). */
+.qd-doc {
+  display: block;
+  min-width: 0;
+  border: var(--dc-border-hairline) solid var(--dc-color-border);
+  border-radius: var(--dc-radius-md);
+  background: var(--dc-color-surface-sunken);
+  color: inherit;
+  overflow: hidden;
+}
+.qd-doc:focus-visible { outline: var(--dc-border-focus) solid var(--dc-color-focus); outline-offset: 2px; }
+
+.qd-sign { display: grid; gap: var(--dc-space-2); padding: var(--dc-space-4); min-width: 0; }
+.qd-sign p { overflow-wrap: anywhere; }
+.qd-sign-image {
+  max-width: 100%;
+  height: auto;
+  justify-self: start;
+  border: var(--dc-border-hairline) solid var(--dc-color-border);
+  border-radius: var(--dc-radius-md);
+  background: var(--dc-color-surface);
+}
+
+/* ---------------------------------------------------------------- share sheet */
+
+.qs-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--dc-space-4); min-width: 0; padding: var(--dc-space-2) var(--dc-space-4) var(--dc-space-6); }
+.qs-body > * { min-width: 0; }
+.qs-message { min-height: 128px; resize: vertical; overflow-wrap: anywhere; }
+
+.qs-rows { display: grid; gap: var(--dc-space-2); }
+.qs-row {
+  display: grid;
+  grid-template-columns: var(--dc-size-icon) minmax(0, 1fr);
+  align-items: center;
+  gap: var(--dc-space-3);
+  width: 100%;
+  min-height: 72px;
+  padding: var(--dc-space-3) var(--dc-space-4);
+  border: var(--dc-border-input) solid var(--dc-color-border-input);
+  border-radius: var(--dc-radius-lg);
+  background: var(--dc-color-surface);
+  color: var(--dc-color-text);
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.qs-row:active { background: var(--dc-color-surface-sunken); }
+.qs-row:focus-visible { outline: var(--dc-border-focus) solid var(--dc-color-focus); outline-offset: 2px; }
+.qs-row[aria-disabled='true'] { background: var(--dc-color-surface-sunken); color: var(--dc-color-text-muted); cursor: default; }
+.qs-row svg { width: var(--dc-size-icon); height: var(--dc-size-icon); }
+.qs-row-text { display: grid; gap: var(--dc-space-1); min-width: 0; }
+.qs-row-title { font-weight: var(--dc-weight-lg); }
+.qs-row-hint { color: var(--dc-color-text-muted); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); overflow-wrap: anywhere; }
+
+.qs-status { margin: 0; min-height: var(--dc-leading-base); font-weight: var(--dc-weight-button); }
+.qs-status[data-state='done'] { color: var(--dc-color-success); }
+.qs-status[data-state='failed'] { color: var(--dc-color-danger); }
