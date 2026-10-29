@@ -9,7 +9,8 @@ describe('screen placeholders', () => {
   it.each(screens.map((s) => [s.id, s.example] as const))('%s renders its id and title at %s', (id, example) => {
     const html = render(example)
     expect(html).toContain(`data-screen="${id}"`)
-    expect(html).toContain(t(titleKey(id)))
+    // The client's page (S11) has no app title on purpose: it is the tradesperson's document, with no Docura chrome.
+    if (id !== 'S11') expect(html).toContain(t(titleKey(id)))
   })
 
   it('names the M1 issue that builds the content', () => {
