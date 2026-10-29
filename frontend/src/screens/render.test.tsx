@@ -13,8 +13,8 @@ describe('screen placeholders', () => {
   })
 
   it('names the M1 issue that builds the content', () => {
-    // S07 is built by #19; the quote's own page (S13) still shows a placeholder.
-    expect(render('/quotes/demo')).toContain('#22')
+    // S07 is built by #19 and S13 by #22; the convert screen (S14) still shows a placeholder.
+    expect(render('/quotes/demo/invoice')).toContain('#27')
     expect(render('/invoices/demo')).toContain(formatIssues([28, 30]))
   })
 
