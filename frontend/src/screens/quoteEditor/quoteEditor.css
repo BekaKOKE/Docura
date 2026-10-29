@@ -178,6 +178,10 @@ button.qe-totals-main { cursor: pointer; }
 .qe-totals-detail > div:last-child { padding-top: var(--dc-space-1); border-top: var(--dc-border-hairline) solid var(--dc-color-on-ink-muted); }
 
 .qe-actions {
+  /* "Отправить" and "Сохранить": two buttons side by side, and no more. */
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--dc-space-2);
   padding: var(--dc-space-3) var(--dc-space-4) calc(var(--dc-space-3) + env(safe-area-inset-bottom));
   background: var(--dc-color-surface);
   border-top: var(--dc-border-hairline) solid var(--dc-color-border);

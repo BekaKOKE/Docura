@@ -219,7 +219,8 @@ function Editor({ company, quote, savedTime }: EditorProps) {
     target?.scrollIntoView?.({ block: 'center' })
   }
 
-  async function save() {
+  /** Saves the draft. With `thenSend` the quote is issued right after (its number is assigned) and the share sheet opens. */
+  async function save(thenSend = false) {
     if (busy.current) return
     const found = validateDraft(draft, issueDate)
     if (found.length > 0) {
@@ -258,6 +259,12 @@ function Editor({ company, quote, savedTime }: EditorProps) {
       setSaved(time)
       queryClient.setQueryData(detailKey(result.id), result)
       void queryClient.invalidateQueries({ queryKey: ['documents', 'list'] })
+      if (thenSend) {
+        const issued = await services.documents.issue(result.id)
+        queryClient.setQueryData(detailKey(issued.id), issued)
+        navigate(`/quotes/${issued.id}/send`, { replace: true })
+        return
+      }
       // The page this screen moves to (or reloads into) opens from the newest copy, not from the first one.
       const handoff: Handoff = { saved: result, time }
       navigate(current.id ? '.' : `/quotes/${result.id}/edit`, { replace: true, state: handoff })
@@ -494,7 +501,10 @@ function Editor({ company, quote, savedTime }: EditorProps) {
         />
         {!readOnly && (
           <div className="qe-actions">
-            <button id="qe-save" type="button" className="btn btn-primary btn-block" aria-busy={saving || undefined} onClick={() => void save()}>
+            <button id="qe-send" type="button" className="btn btn-secondary" aria-busy={saving || undefined} onClick={() => void save(true)}>
+              <span className="dc-label">{t('qd.action.send')}</span>
+            </button>
+            <button id="qe-save" type="button" className="btn btn-primary" aria-busy={saving || undefined} onClick={() => void save()}>
               <span className="dc-label">{saving ? t('qe.saving') : t('qe.save')}</span>
             </button>
           </div>
