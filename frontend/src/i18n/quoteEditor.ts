@@ -47,6 +47,7 @@ export const quoteEditorRu = {
   'qe.line.removed': 'Строка удалена',
   'qe.line.undo': 'Вернуть',
   'qe.line.error': 'Проверьте строку',
+  'qe.line.ariaNoAmount': 'Строка {n}: {title}',
 
   'qe.unit.sheet': 'Единица измерения',
 

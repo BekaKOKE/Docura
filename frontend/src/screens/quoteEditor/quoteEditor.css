@@ -1,0 +1,221 @@
+/* The quote editor (S07, #19): the form, the line cards, the ink totals bar and the save bar. Tokens only, no raw
+   colours. Every grid is minmax(0, 1fr) and every flex child has min-width: 0, so nothing widens the page at 360 px
+   (components.md section 0); a target is 48 px or more and at most two buttons sit side by side. */
+
+.qe-root { min-width: 0; }
+.qe.page { padding-bottom: var(--dc-space-6); }
+@media (min-width: 1024px) {
+  /* The split layout already pads the form column. */
+  .qe.page { padding-inline: 0; }
+}
+
+/* A focused field is never hidden behind the totals and the save bar. */
+.qe-root [id] { scroll-margin-bottom: calc(var(--dc-layout-action-bar) + var(--dc-size-control-lg) + var(--dc-space-4)); }
+
+.qe-status { font-size: var(--dc-text-caption); line-height: var(--dc-leading-caption); }
+.qe-note { padding: var(--dc-space-3) var(--dc-space-4); border-radius: var(--dc-radius-md); background: var(--dc-color-surface-sunken); }
+.qe-nowrap { white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.qe-section { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--dc-space-3); min-width: 0; }
+.qe .qe-label {
+  font-size: var(--dc-text-sm);
+  line-height: var(--dc-leading-sm);
+  font-weight: var(--dc-weight-button);
+}
+
+/* ---------------------------------------------------------------- client */
+
+.qe-client { display: flex; align-items: center; gap: var(--dc-space-3); padding: var(--dc-space-3) var(--dc-space-4); min-width: 0; }
+.qe-client-text { display: grid; gap: var(--dc-space-1); flex: 1 1 0; min-width: 0; }
+.qe-client-name { font-weight: var(--dc-weight-lg); overflow-wrap: anywhere; }
+.qe-client-meta { color: var(--dc-color-text-muted); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); overflow-wrap: anywhere; }
+.qe-client .btn { flex: none; }
+#qe-client[aria-invalid='true'] { border-color: var(--dc-color-danger); border-width: var(--dc-border-strong); }
+
+/* ---------------------------------------------------------------- lines */
+
+.qe-lines { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--dc-space-3); }
+.qe-line { min-width: 0; }
+.qe-line[data-open] { border-color: var(--dc-color-ink); border-width: var(--dc-border-strong); }
+.qe-line[data-invalid] { border-color: var(--dc-color-danger); }
+
+/* The collapsed line is one button: title and total, then "qty unit × price" and the VAT. */
+.qe-line-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: start;
+  column-gap: var(--dc-space-3);
+  row-gap: var(--dc-space-1);
+  width: 100%;
+  min-height: 72px;
+  padding: var(--dc-space-3) var(--dc-space-4);
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+button.qe-line-head { cursor: pointer; }
+button.qe-line-head:active { background: var(--dc-color-surface-sunken); }
+.qe-line-head:focus-visible { outline: var(--dc-border-focus) solid var(--dc-color-focus); outline-offset: calc(var(--dc-border-focus) * -1); }
+.qe-line-head > * { min-width: 0; }
+/* Explicit places, so a line without the chevron (a signed quote) keeps the same two columns. */
+.qe-line-title { grid-column: 1; grid-row: 1; }
+.qe-line-total { grid-column: 2; grid-row: 1; }
+.qe-line-meta { grid-column: 1; grid-row: 2; }
+.qe-line-vat { grid-column: 2; grid-row: 2; }
+.qe-line-bad { grid-row: 3; }
+.qe-line-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  font-weight: var(--dc-weight-lg);
+}
+.qe-line-total { justify-self: end; font-weight: var(--dc-weight-lg); }
+.qe-line-meta,
+.qe-line-vat {
+  color: var(--dc-color-text-muted);
+  font-size: var(--dc-text-sm);
+  line-height: var(--dc-leading-sm);
+}
+.qe-line-vat { justify-self: end; }
+.qe-line-bad { grid-column: 1 / -1; color: var(--dc-color-danger); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); font-weight: var(--dc-weight-button); }
+.qe-line-chevron { grid-column: 3; grid-row: 1 / span 2; align-self: center; width: var(--dc-size-icon-sm); height: var(--dc-size-icon-sm); color: var(--dc-color-text-muted); }
+
+.qe-line-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--dc-space-4);
+  padding: var(--dc-space-4);
+  border-top: var(--dc-border-hairline) solid var(--dc-color-border);
+}
+.qe-line-body > * { min-width: 0; }
+.qe-textarea { min-height: 96px; resize: vertical; field-sizing: content; overflow-wrap: anywhere; }
+.qe-kind .segmented { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+.qe-qty { display: grid; grid-template-columns: var(--dc-size-touch-min) minmax(0, 1fr) var(--dc-size-touch-min); gap: var(--dc-space-2); align-items: center; }
+.qe-qty-input { text-align: center; font-variant-numeric: tabular-nums; }
+
+.qe-unit {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--dc-space-2);
+  width: 100%;
+  min-height: var(--dc-size-touch-min);
+  padding: 0 var(--dc-space-3);
+  border: var(--dc-border-input) solid var(--dc-color-border-input);
+  border-radius: var(--dc-radius-md);
+  background: var(--dc-color-surface);
+  color: var(--dc-color-text);
+  font: inherit;
+  font-weight: var(--dc-weight-button);
+  cursor: pointer;
+}
+.qe-unit:focus-visible { outline: var(--dc-border-focus) solid var(--dc-color-focus); outline-offset: 2px; }
+.qe-unit svg { width: var(--dc-size-icon-sm); height: var(--dc-size-icon-sm); flex: none; color: var(--dc-color-text-muted); }
+.qe-unit-value { min-width: 0; overflow-wrap: anywhere; }
+
+.qe-check { display: flex; align-items: center; gap: var(--dc-space-3); min-height: var(--dc-size-touch-min); cursor: pointer; }
+.qe-check input { flex: none; width: 24px; height: 24px; margin: 0; accent-color: var(--dc-color-ink); }
+.qe-line-catalog { font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); }
+
+.qe-line-moves { display: flex; gap: var(--dc-space-2); }
+.btn.qe-remove { color: var(--dc-color-danger); }
+
+.qe-add { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--dc-space-2); }
+
+/* ---------------------------------------------------------------- terms */
+
+.qe-terms { display: grid; gap: var(--dc-space-2); padding: var(--dc-space-4); }
+.qe-terms p { margin: 0; }
+.qe-notes-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+.qe-validity .segmented { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.qe-validity .segmented-tile { padding: 0 var(--dc-space-1); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); }
+.qe-novat { display: grid; gap: var(--dc-space-1); justify-items: start; padding: var(--dc-space-3) var(--dc-space-4); border-radius: var(--dc-radius-md); background: var(--dc-color-surface-sunken); }
+.qe-novat p { margin: 0; }
+
+/* ---------------------------------------------------------------- bars */
+
+/* The totals bar and the save bar stay at the bottom of the screen. While a text field has focus on a phone they
+   step aside for the keyboard and come back on blur (components.md S07, Behaviour). */
+.qe-bars { position: sticky; bottom: 0; z-index: var(--dc-z-sticky); display: grid; grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 1023px) {
+  .qe-root[data-typing] .qe-bars { display: none; }
+}
+
+.qe-totals { background: var(--dc-color-ink); color: var(--dc-color-on-ink); }
+.qe-totals-main {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: var(--dc-space-3);
+  width: 100%;
+  min-height: var(--dc-size-control-lg);
+  padding: var(--dc-space-2) var(--dc-space-4);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+button.qe-totals-main { cursor: pointer; }
+.qe-totals-main:focus-visible { outline: var(--dc-border-focus) solid var(--dc-color-on-ink); outline-offset: calc(var(--dc-border-focus) * -1); }
+.qe-totals-main > * { min-width: 0; }
+.qe-totals-label { color: var(--dc-color-on-ink-muted); }
+.qe-totals-sum { font-size: var(--dc-text-lg); line-height: var(--dc-leading-lg); font-weight: var(--dc-weight-xl); }
+.qe-totals-count { color: var(--dc-color-on-ink-muted); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); }
+.qe-totals-chevron { width: var(--dc-size-icon); height: var(--dc-size-icon); color: var(--dc-color-on-ink-muted); transition: transform var(--dc-motion-fast) var(--dc-motion-ease); }
+.qe-totals-chevron[data-open] { transform: rotate(180deg); }
+.qe-totals-detail { display: grid; gap: var(--dc-space-1); margin: 0; padding: var(--dc-space-3) var(--dc-space-4) 0; }
+.qe-totals-detail > div { display: flex; justify-content: space-between; gap: var(--dc-space-3); }
+.qe-totals-detail dt { color: var(--dc-color-on-ink-muted); }
+.qe-totals-detail dd { margin: 0; font-weight: var(--dc-weight-button); }
+.qe-totals-detail > div:last-child { padding-top: var(--dc-space-1); border-top: var(--dc-border-hairline) solid var(--dc-color-on-ink-muted); }
+
+.qe-actions {
+  padding: var(--dc-space-3) var(--dc-space-4) calc(var(--dc-space-3) + env(safe-area-inset-bottom));
+  background: var(--dc-color-surface);
+  border-top: var(--dc-border-hairline) solid var(--dc-color-border);
+  box-shadow: var(--dc-shadow-bar);
+}
+.qe-actions .btn { min-height: var(--dc-size-control-lg); }
+
+/* ---------------------------------------------------------------- toast */
+
+.qe-toast {
+  position: fixed;
+  inset-inline: var(--dc-space-4);
+  bottom: calc(var(--dc-layout-action-bar) + var(--dc-size-control-lg) + var(--dc-space-3) + env(safe-area-inset-bottom));
+  z-index: var(--dc-z-toast);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--dc-space-3);
+  max-width: 480px;
+  margin-inline: auto;
+  padding: var(--dc-space-1) var(--dc-space-2) var(--dc-space-1) var(--dc-space-4);
+  border-radius: var(--dc-radius-md);
+  background: var(--dc-color-ink);
+  color: var(--dc-color-on-ink);
+  box-shadow: var(--dc-shadow-pop);
+}
+.qe-toast-text { flex: 1 1 0; min-width: 0; overflow-wrap: anywhere; }
+.qe-toast-action {
+  flex: none;
+  min-width: var(--dc-size-touch-min);
+  min-height: var(--dc-size-touch-min);
+  padding: 0 var(--dc-space-3);
+  border: 0;
+  background: transparent;
+  color: var(--dc-color-on-ink);
+  font: inherit;
+  font-weight: var(--dc-weight-button);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.qe-toast-action:focus-visible { outline: var(--dc-border-focus) solid var(--dc-color-on-ink); outline-offset: -2px; }

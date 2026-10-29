@@ -5,12 +5,14 @@ import { RegisterScreen } from './account/RegisterScreen'
 import { SettingsScreen } from './company/SettingsScreen'
 import { SetupScreen } from './company/SetupScreen'
 import { DocumentPreview } from './DocumentPreview'
+import { QuoteEditorScreen } from './quoteEditor/QuoteEditorScreen'
 
 // The screens whose M1 issue has landed. Every other screen still shows its Placeholder (ScreenRoute).
 export const implementedScreens: Partial<Record<ScreenId, ComponentType>> = {
   S01: RegisterScreen,
   S02: LoginScreen,
   S03: SetupScreen,
+  S07: QuoteEditorScreen,
   S08: DocumentPreview,
   S28: SettingsScreen,
 }

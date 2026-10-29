@@ -1,0 +1,71 @@
+/* The two pickers of the quote editor (S07): the client sheet and the catalogue sheet. They reuse the search,
+   chip, list, banner, empty and skeleton classes of the clients screens (clients.css) and the row look of the
+   catalogue (catalog.css); this file holds only what is different. Tokens only, no raw colours. Every grid is
+   minmax(0, 1fr) and every flex child has min-width: 0, so nothing widens the sheet at 360 px (components.md section 0). */
+
+.pk-body { display: grid; gap: var(--dc-space-3); min-width: 0; padding: var(--dc-space-2) var(--dc-space-4) var(--dc-space-4); }
+.pk-body > * { min-width: 0; }
+
+/* A row is one button: the whole width taps, 72 px minimum. */
+.pk-list { list-style: none; margin: 0; padding: 0; overflow: hidden; }
+.pk-list > li + li { border-top: var(--dc-border-hairline) solid var(--dc-color-border); }
+.pk-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--dc-space-3);
+  align-items: center;
+  width: 100%;
+  min-height: 72px;
+  padding: var(--dc-space-3) var(--dc-space-4);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.pk-row:active { background: var(--dc-color-surface-sunken); }
+.pk-row:focus-visible { outline: var(--dc-border-focus) solid var(--dc-color-focus); outline-offset: calc(var(--dc-border-focus) * -1); }
+.pk-row[data-with-price] { grid-template-columns: minmax(0, 1fr) auto; }
+.pk-row-text { display: grid; gap: var(--dc-space-1); min-width: 0; }
+.pk-row-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  font-weight: var(--dc-weight-lg);
+}
+.pk-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--dc-space-3);
+  min-width: 0;
+  color: var(--dc-color-text-muted);
+  font-size: var(--dc-text-sm);
+  line-height: var(--dc-leading-sm);
+}
+.pk-row-meta > span { min-width: 0; }
+.pk-wrap { overflow-wrap: anywhere; }
+.pk-nowrap { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pk-row-price { display: grid; justify-items: end; gap: var(--dc-space-1); font-weight: var(--dc-weight-lg); }
+.pk-per { color: var(--dc-color-text-muted); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); font-weight: var(--dc-weight-base); }
+
+/* The footer of the client sheet: one full-width button that stays at the bottom while the list scrolls. */
+.pk-footer {
+  position: sticky;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  padding: var(--dc-space-3) var(--dc-space-4);
+  background: var(--dc-color-surface);
+  border-top: var(--dc-border-hairline) solid var(--dc-color-border);
+}
+
+/* The back control above the create form. */
+.pk-back { display: flex; padding: 0 var(--dc-space-2); }
+.pk-back .btn { justify-content: flex-start; max-width: 100%; }
+.pk-back .btn .dc-label { min-width: 0; overflow-wrap: anywhere; }
+
+.pk-banner-wrap { display: grid; min-width: 0; }
