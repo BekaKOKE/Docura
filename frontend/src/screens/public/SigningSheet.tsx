@@ -62,10 +62,15 @@ function SigningBody({ doc, token, onSigned, onReload }: Omit<SigningSheetProps,
       onSigned(signed)
     } catch (caught) {
       const code = isApiError(caught) ? caught.code : null
-      if (code === 'version_conflict') setConflict(true)
-      // Signed meanwhile, expired or withdrawn: the page shows its own state for it.
-      else if (code === 'already_signed' || code === 'link_expired' || code === 'link_revoked' || code === 'not_found') onReload()
+      if (code === 'version_conflict') {
+        setConflict(true)
+        // The button that was pressed is about to be disabled: the new one for the conflict takes the focus.
+        setTimeout(() => document.getElementById('pub-conflict-action')?.focus(), 0)
+      }
+      // Signed meanwhile, expired, withdrawn or closed: the page shows its own state for it.
+      else if (code === 'already_signed' || code === 'link_expired' || code === 'link_revoked' || code === 'not_found' || code === 'document_locked') onReload()
       else if (code === 'rate_limited') setError(t('pub.sign.rateLimited'))
+      else if (code === 'validation_error') setError(t('pub.sign.invalid'))
       // Anything else is treated as a lost connection: the name, the drawing and the ticks stay as they are.
       else setError(t('pub.sign.network'))
     } finally {
@@ -82,7 +87,7 @@ function SigningBody({ doc, token, onSigned, onReload }: Omit<SigningSheetProps,
             <strong id="pub-conflict-title">{t('pub.conflict.title')}</strong>
             <span id="pub-conflict-text">{t('pub.conflict.text')}</span>
           </div>
-          <button type="button" className="btn btn-primary btn-block" onClick={onReload}>
+          <button id="pub-conflict-action" type="button" className="btn btn-primary btn-block" onClick={onReload}>
             <span className="dc-label">{t('pub.conflict.action')}</span>
           </button>
         </div>
@@ -152,7 +157,8 @@ function SigningBody({ doc, token, onSigned, onReload }: Omit<SigningSheetProps,
         <button
           type="button"
           className="btn btn-primary btn-block"
-          disabled={missing.length > 0 || sending || conflict}
+          // While sending it is only marked busy, not disabled: a disabled button drops the focus out of the sheet.
+          disabled={missing.length > 0 || conflict}
           aria-busy={sending || undefined}
           aria-describedby={missing.length > 0 ? 'pub-missing' : undefined}
           onClick={() => void submit()}

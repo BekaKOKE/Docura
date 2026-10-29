@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CircleAlert, CircleCheck, Download, LinkIcon, Phone, TriangleAlert } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useParams } from 'react-router'
 import { DocumentRenderer, printDocument } from '../../documents'
 import { DEFAULT_TIME_ZONE, formatDate, formatDateTime, formatQty, taxIdLabel } from '../../documents/format'
@@ -160,6 +160,11 @@ interface ViewProps {
 
 export function PublicView({ doc, token, onReload, onSigned, justSigned }: ViewProps) {
   const [sheetOpen, setSheetOpen] = useState(false)
+  const success = useRef<HTMLElement>(null)
+  // The sheet that was opened from "Подписать" is gone with it: the success note takes the focus, and is read out.
+  useEffect(() => {
+    if (justSigned) success.current?.focus()
+  }, [justSigned])
   const fileName = doc.number ?? t('doc.quote.title')
   const signature = doc.signature
   const signedAt = signature ? formatDateTime(signature.signedAt, DEFAULT_TIME_ZONE) : null
@@ -179,7 +184,7 @@ export function PublicView({ doc, token, onReload, onSigned, justSigned }: ViewP
         <CompanyBlock doc={doc} />
 
         {justSigned && signature && signedAt && (
-          <section className="pub-success" aria-labelledby="pub-success-title">
+          <section ref={success} className="pub-success" role="status" tabIndex={-1} aria-labelledby="pub-success-title">
             <CircleCheck aria-hidden="true" />
             <h1 id="pub-success-title">{t('pub.success.title')}</h1>
             <p className="pub-success-when">{t('pub.success.when', { date: signedAt.date, time: signedAt.time })}</p>
@@ -283,6 +288,8 @@ export function PublicScreen() {
 function PublicPage({ token }: { token: string }) {
   const queryClient = useQueryClient()
   const [justSigned, setJustSigned] = useState(false)
+  // After "Показать новую версию" the old copy must not be signable while the new one is on its way.
+  const [reloading, setReloading] = useState(false)
 
   const query = useQuery({
     queryKey: publicKey(token),
@@ -293,7 +300,7 @@ function PublicPage({ token }: { token: string }) {
     staleTime: Infinity,
   })
 
-  if (query.isPending || (query.isError && query.isFetching)) return <PublicLoading />
+  if (query.isPending || reloading || (query.isError && query.isFetching)) return <PublicLoading />
   if (query.isError) {
     const error = query.error
     if (isApiError(error) && (error.code === 'not_found' || error.code === 'link_revoked')) return <PublicGone />
@@ -321,7 +328,8 @@ function PublicPage({ token }: { token: string }) {
       justSigned={justSigned}
       onReload={() => {
         setJustSigned(false)
-        void query.refetch()
+        setReloading(true)
+        void query.refetch().finally(() => setReloading(false))
       }}
       onSigned={(signed) => {
         queryClient.setQueryData(publicKey(token), signed)

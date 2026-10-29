@@ -44,15 +44,26 @@ export function SignaturePad({ ref, onChange }: SignaturePadProps) {
     pad.current = instance
 
     // The canvas has one pixel per device pixel; it is redrawn when its box changes (rotation), keeping the ink.
+    let last: { width: number; height: number } | null = null
     function fit() {
       if (!element) return
+      const width = element.offsetWidth
+      const height = element.offsetHeight
+      if (last && last.width === width && last.height === height) return
       const ratio = Math.max(globalThis.devicePixelRatio || 1, 1)
       const saved: PointGroup[] = instance.toData()
-      element.width = Math.round(element.offsetWidth * ratio)
-      element.height = Math.round(element.offsetHeight * ratio)
+      element.width = Math.round(width * ratio)
+      element.height = Math.round(height * ratio)
       element.getContext('2d')?.scale(ratio, ratio)
       instance.clear()
-      if (saved.length > 0) instance.fromData(saved)
+      if (saved.length > 0 && last && last.width > 0 && last.height > 0) {
+        // The box changed (the phone turned): the ink goes along with it, so it stays inside the frame.
+        const sx = width / last.width
+        const sy = height / last.height
+        instance.fromData(saved.map((group) => ({ ...group, points: group.points.map((p) => ({ ...p, x: p.x * sx, y: p.y * sy })) })))
+        notify.current(signatureStats(instance.toData()))
+      }
+      last = { width, height }
     }
     fit()
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(fit)
@@ -85,6 +96,7 @@ export function SignaturePad({ ref, onChange }: SignaturePadProps) {
       const top = Math.max(0, stats.box.top - CROP_MARGIN)
       const width = Math.min(source.offsetWidth - left, stats.box.width + CROP_MARGIN * 2)
       const height = Math.min(source.offsetHeight - top, stats.box.height + CROP_MARGIN * 2)
+      if (width <= 0 || height <= 0) return null
 
       // Within 1200 × 400, then smaller still until the file is within 200 KB.
       let target = fitWithin(width * ratio, height * ratio)
