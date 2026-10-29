@@ -5,7 +5,8 @@
 // in the company's time zone and never stored.
 //
 // Not here, on purpose: cancel, duplicate and decline are post-MVP (docs/spec.md, D5); `convert` and the invoice
-// and act lifecycle come with #27 and #31; signing the quote is `public.sign` (#24).
+// and act lifecycle come with #27 and #31; signing the quote is `public.sign` (#24). `signatureBlob` only reads the
+// image of a signature that already exists (the seed has some), so the quote's card (#22) can show it.
 
 import { computeTotals, searchKey, type VatSetting } from '../../domain'
 import { t } from '../../i18n/t'
@@ -28,7 +29,7 @@ import type {
 import { newId, newToken } from './ids'
 import { takeNextNumber } from './numbering'
 import type { MockRuntime } from './runtime'
-import type { ScopedDb } from './scopedDb'
+import { notFound, type ScopedDb } from './scopedDb'
 import type { StoredClient, StoredCompany, StoredDocument, StoredDocumentLine } from './storeTypes'
 import { addDays, isIsoDate, todayInZone, utcTimestamp } from './time'
 
@@ -501,8 +502,15 @@ export function createMockDocuments(getRuntime: () => MockRuntime): DocumentsSer
       throw notBuilt('convert', '#27 and #31')
     },
 
-    signatureBlob: async () => {
-      throw notBuilt('signatureBlob', '#24')
+    signatureBlob(id) {
+      return read((db) => {
+        // The document is looked up first: another company's id is a 404 like any other (company scope in the data layer).
+        const row = db.get('documents', id)
+        const signature = db.rows('signatures').find((s) => s.documentId === row.id)
+        if (!signature?.imagePngBase64) throw notFound()
+        const bytes = Uint8Array.from(atob(signature.imagePngBase64), (char) => char.charCodeAt(0))
+        return new Blob([bytes], { type: 'image/png' })
+      })
     },
   }
 }
