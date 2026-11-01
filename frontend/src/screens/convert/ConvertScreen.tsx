@@ -129,7 +129,8 @@ function ConvertForm({ quote }: { quote: Document }) {
 
       {offered.length === 0 ? (
         <p className="cv-note">{t('cv.allDone')}</p>
-      ) : (
+      ) : created ? null : (
+        // Once an invoice is out the form goes: a second tap here would be a second invoice, and that can't be cancelled.
         <form
           className="cv-form"
           noValidate
