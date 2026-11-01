@@ -177,9 +177,11 @@ describe('S04 states (AC 4, TC-4)', () => {
     expect(text(render(tc1))).not.toContain('пока ничего')
   })
 
-  it('a quiet month that still has a quote to invoice is not empty', () => {
-    expect(isQuiet({ ...empty, toInvoice: [quote('5')] })).toBe(false)
-    expect(isQuiet({ ...empty, outstanding: { count: 1, balanceTiyn: 100, overdue: { count: 0, balanceTiyn: 0 } } })).toBe(false)
+  it('a month with no activity is quiet even when older invoices or quotes still wait (AC 4)', () => {
+    expect(isQuiet({ ...empty, toInvoice: [quote('5')] })).toBe(true)
+    expect(isQuiet({ ...empty, outstanding: { count: 1, balanceTiyn: 100, overdue: { count: 0, balanceTiyn: 0 } } })).toBe(true)
+    expect(isQuiet({ ...empty, cashedTiyn: 1 })).toBe(false)
+    expect(isQuiet({ ...empty, invoicedTiyn: 1 })).toBe(false)
     expect(isQuiet(empty)).toBe(true)
   })
 
@@ -204,6 +206,14 @@ describe('S04 states (AC 4, TC-4)', () => {
     expect(text(html)).toContain(t('state.retry'))
     expect(html).not.toContain('db-tile')
     expect(text(html)).not.toContain('0 ₸')
+  })
+
+  it('error after an earlier load: the banner only, without the figures kept from it (TC-4)', () => {
+    const html = view({ data: empty, error: new ApiError({ code: 'rate_limited', message: 'Слишком много попыток' }), fetching: false })
+    expect(html).toContain('role="alert"')
+    expect(html).not.toContain('db-tile')
+    expect(text(html)).not.toContain('0 ₸')
+    expect(text(html)).not.toContain('пока ничего')
   })
 
   it('after "Повторить" the screen shows the skeleton again, not an empty page', () => {

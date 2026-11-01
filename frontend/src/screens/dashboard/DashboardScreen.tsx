@@ -87,7 +87,9 @@ interface ViewProps {
 }
 
 // What S04 shows for the state of its query. An error shows the banner and nothing else: no fake zeros.
-export function DashboardView({ data, error, fetching, onRetry }: ViewProps) {
+export function DashboardView({ data: loaded, error, fetching, onRetry }: ViewProps) {
+  // Figures kept from an earlier load are not shown beside an error: they may no longer be true.
+  const data = error != null ? undefined : loaded
   const errorBanner =
     error != null ? (
       <Banner

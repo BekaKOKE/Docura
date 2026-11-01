@@ -14,14 +14,7 @@ export function periodTitle(day: string): string {
   return t('db.period', { month: name.charAt(0).toUpperCase() + name.slice(1), year: day.slice(0, 4) })
 }
 
-/** Nothing happened in the period and nothing waits: the tiles are zeros and the screen says so. */
+/** Nothing happened in the period: the screen says so, even if older invoices or quotes still wait. */
 export function isQuiet(data: Dashboard): boolean {
-  return (
-    data.cashedTiyn === 0 &&
-    data.invoicedTiyn === 0 &&
-    data.outstanding.balanceTiyn === 0 &&
-    data.signed.count === 0 &&
-    data.awaitingSignature.count === 0 &&
-    data.toInvoice.length === 0
-  )
+  return data.cashedTiyn === 0 && data.invoicedTiyn === 0 && data.signed.count === 0 && data.awaitingSignature.count === 0
 }
