@@ -1,0 +1,51 @@
+/* The dashboard (#32, S04). Tokens only, no raw colours. Rows reuse the list row of the clients screens (.cl-row, .cl-list)
+   and the banner, empty state and skeleton of clients/parts.tsx. Every grid is minmax(0, 1fr) and every flex child has
+   min-width: 0, so nothing widens the page at 360 px (components.md section 0); amounts never wrap (.dc-money); a target is
+   48 px or more, and no row has two buttons side by side. */
+
+.db { max-width: var(--dc-layout-content-max); }
+.db > * { min-width: 0; }
+.db-head { display: grid; gap: var(--dc-space-1); }
+
+/* One tile per row on a phone: four tiles are about 340 px tall, so they fit a 360x740 screen with the bars. */
+.db-tiles { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--dc-space-2); }
+@media (min-width: 1024px) {
+  .db-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--dc-space-3); }
+}
+
+.db-tile {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--dc-space-3);
+  min-height: 72px;
+  padding: var(--dc-space-3) var(--dc-space-4);
+  color: inherit;
+  text-decoration: none;
+}
+.db-tile-link:active { background: var(--dc-color-surface-sunken); }
+.db-tile > svg { width: var(--dc-size-icon-sm); height: var(--dc-size-icon-sm); color: var(--dc-color-text-muted); }
+.db-tile-text { display: grid; gap: var(--dc-space-1); min-width: 0; }
+.page .db-tile-label { margin: 0; color: var(--dc-color-text-muted); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); font-weight: var(--dc-weight-button); }
+.db-tile-value { font-size: var(--dc-text-xl); line-height: var(--dc-leading-xl); font-weight: var(--dc-weight-xl); }
+.db-tile-sub { color: var(--dc-color-text-muted); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); }
+.db-tile-sub[data-tone='danger'] { color: var(--dc-color-danger); }
+
+.db-section { display: grid; gap: var(--dc-space-2); }
+
+/* One row is one link: client and number on the left, the total and the "Счёт" cue on the right. */
+.db-row { grid-template-columns: minmax(0, 1fr) auto; }
+.db-row-main { display: grid; gap: var(--dc-space-1); min-width: 0; }
+.db-row-number { color: var(--dc-color-text-muted); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); }
+.db-row-side { display: grid; justify-items: end; gap: var(--dc-space-1); }
+.db-row-amount { font-weight: var(--dc-weight-lg); }
+.db-row-action {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--dc-space-7);
+  padding: 0 var(--dc-space-3);
+  border: var(--dc-border-input) solid var(--dc-color-border-input);
+  border-radius: var(--dc-radius-pill);
+  font-size: var(--dc-text-sm);
+  font-weight: var(--dc-weight-button);
+}

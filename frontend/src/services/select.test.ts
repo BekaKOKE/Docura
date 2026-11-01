@@ -109,7 +109,8 @@ describe('the http stub', () => {
 describe('the mock placeholder', () => {
   // auth is built in #14, clients in #16, articles in #17 and documents in #18; the services of the later issues still reject until their issue lands.
   it('says a service that is not built yet is not implemented', async () => {
-    await expect(mockServices.dashboard.get()).rejects.toThrow(/mock services: dashboard\.get\(\) is not implemented/)
+    // The dashboard is built by #32, so the message is checked on the placeholder the mock starts from.
+    await expect(createNotImplementedServices('mock', 'built in the issue of that screen').dashboard.get()).rejects.toThrow(/mock services: dashboard\.get\(\) is not implemented/)
     // payments is built by #28 and #30, so the same placeholder is checked for a service that is still not built.
     await expect(createNotImplementedServices('mock', 'built in the issue of that screen').payments.remove('x')).rejects.toBeInstanceOf(NotImplementedError)
   })

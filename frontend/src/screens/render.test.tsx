@@ -27,6 +27,10 @@ describe('screen placeholders', () => {
     expect(html).toContain(formatIssues([31]))
   })
 
+  it.each(screens.map((s) => [s.id, s.example] as const))('%s shows its own content, not the placeholder', (_id, example) => {
+    expect(render(example)).not.toContain(t('placeholder.allScreens'))
+  })
+
   it('lists every screen on the screen map', () => {
     const html = render(SCREEN_MAP_PATH)
     for (const s of screens) expect(html, s.id).toContain(t(titleKey(s.id)))

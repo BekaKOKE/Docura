@@ -8,6 +8,7 @@ import { SettingsScreen } from './company/SettingsScreen'
 import { SetupScreen } from './company/SetupScreen'
 import { DocumentPreview } from './DocumentPreview'
 import { ConvertScreen } from './convert/ConvertScreen'
+import { DashboardScreen } from './dashboard/DashboardScreen'
 import { InvoiceDetailScreen } from './invoices/InvoiceDetailScreen'
 import { InvoicesListScreen } from './invoices/InvoicesListScreen'
 import { PublicScreen } from './public/PublicScreen'
@@ -21,6 +22,7 @@ export const implementedScreens: Partial<Record<ScreenId, ComponentType>> = {
   S01: RegisterScreen,
   S02: LoginScreen,
   S03: SetupScreen,
+  S04: DashboardScreen,
   S06: QuotesListScreen,
   S07: QuoteEditorScreen,
   S08: DocumentPreview,
