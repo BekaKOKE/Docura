@@ -8,6 +8,12 @@
   isn't the one asked for.
 - All work happens inside `with storage.unit_of_work() as uow:`. A clean exit commits, and any exception undoes
   everything done in the block. Records are copies: changing one changes nothing until it is saved.
+- After a `RepositoryError` caught inside the block, the unit of work stays usable and unchanged: the failed write left
+  nothing behind and the block can carry on and commit. A database aborts a transaction on a failed statement (Postgres)
+  or leaves part of it done, so each SQL write has to run in a savepoint.
+- Units of work don't nest, and a repository used outside one fails: both raise `RuntimeError`.
+- `next_number` is an upsert, so two callers taking the first number of a year serialise on the counter row instead of
+  both inserting it.
 - A document is only ever changed through `compare_and_set`, so every write that depends on what the caller read fails
   if the document moved on (architecture.md, "Races").
 
