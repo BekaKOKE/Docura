@@ -25,6 +25,8 @@ export interface RenderableLine {
   netTiyn?: Tiyn
   vatTiyn?: Tiyn
   grossTiyn?: Tiyn
+  /** Act only: "дата выполнения работ" of the Р-1 form (column 3). */
+  workDate?: IsoDate | null
 }
 
 export interface RenderableDocument {
@@ -35,7 +37,10 @@ export interface RenderableDocument {
   validUntil?: IsoDate | null
   /** Invoice only. */
   dueDate?: IsoDate | null
-  /** "КП № КП-2026-0004 от 05.10.2026": what an invoice was made from. */
+  /** Act only: the reporting period. */
+  periodFrom?: IsoDate | null
+  periodTo?: IsoDate | null
+  /** "КП № КП-2026-0004 от 05.10.2026": what an invoice or an act was made from. */
   contractRef?: string | null
   clientSnapshot: ClientSnapshot
   companySnapshot: CompanySnapshot

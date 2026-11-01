@@ -2,6 +2,7 @@
 // through this one component, so a quote looks the same in each of them and on paper.
 
 import type { DocumentType } from '../services'
+import { ActDoc } from './ActDoc'
 import { InvoiceDoc } from './InvoiceDoc'
 import type { DocProps } from './model'
 import { QuoteDoc } from './QuoteDoc'
@@ -13,5 +14,6 @@ export interface DocumentRendererProps extends DocProps {
 export function DocumentRenderer({ type, ...props }: DocumentRendererProps) {
   if (type === 'quote') return <QuoteDoc {...props} />
   if (type === 'invoice') return <InvoiceDoc {...props} />
+  if (type === 'act') return <ActDoc {...props} />
   return null
 }

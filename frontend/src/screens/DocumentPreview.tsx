@@ -62,7 +62,7 @@ export function PreviewError({ error, onRetry }: { error: unknown; onRetry: () =
   )
 }
 
-/** A type with no renderer yet (the act, #31): a plain notice instead of a blank sheet. */
+/** A type with no renderer: a plain notice instead of a blank sheet (every type has one today). */
 export function PreviewNotBuilt() {
   return (
     <Frame>
@@ -117,6 +117,7 @@ export function DocumentPreview() {
   const document = query.data
   if (!hasRenderer(document.type)) return <PreviewNotBuilt />
   // The page title is the file name Chrome offers for the PDF.
-  const fileName = document.number ?? t(document.type === 'invoice' ? 'doc.invoice.title' : 'doc.quote.title')
+  const titleKey = { quote: 'doc.quote.title', invoice: 'doc.invoice.title', act: 'act.doc.title' } as const
+  const fileName = document.number ?? t(titleKey[document.type])
   return <PreviewReady document={document} zoom={zoom} onZoom={setZoom} onPrint={() => void printDocument(fileName)} />
 }

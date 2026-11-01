@@ -69,5 +69,5 @@ export const documentsRu = {
   'preview.zoomOut': 'Вписать в экран',
   'preview.page': 'Документ на листе А4',
   'preview.pane': 'Живой предпросмотр документа',
-  'preview.actPending': 'Предпросмотр акта появится в задаче #31.',
+  'preview.actPending': 'Предпросмотр этого документа недоступен.',
 } as const

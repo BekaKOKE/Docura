@@ -1,0 +1,25 @@
+/* The act (ActDoc), laid out after form Р-1: the lines with the date of each work, and the "Сдал / Принял" blocks.
+   Tokens only, no raw colours; sizes in pt like the other sheets (documents.css). */
+
+.act-table .act-col-date { width: 58pt; white-space: nowrap; }
+.act-table thead .act-col-date { white-space: normal; }
+.act-table .act-col-report { width: 58pt; }
+
+/* The lines of the form that Docura has no data for: a label and a ruled line to fill in by hand. */
+.act-form-lines { display: grid; gap: 4pt; break-inside: avoid; }
+
+/* Сдал (Исполнитель) and Принял (Заказчик), side by side: each is a position, a signature and a name on ruled lines. */
+.act-signatures { display: grid; gap: 12pt; align-content: start; margin-top: 8pt; break-inside: avoid; }
+.act-sign-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24pt; }
+.act-sign { display: grid; gap: 6pt; align-content: start; min-width: 0; }
+.act-sign-row { display: grid; gap: 1pt; }
+.act-sign-value { min-height: 14pt; border-bottom: var(--dc-border-hairline) solid var(--dc-color-text); overflow-wrap: anywhere; }
+.act-sign-caption {
+  text-align: center;
+  font-size: var(--doc-table);
+  line-height: var(--doc-table-leading);
+  color: var(--dc-color-text-muted);
+}
+.act-sign-stamp { color: var(--dc-color-text-muted); }
+.act-sign-date { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0 6pt; }
+.act-sign-blank { display: inline-block; min-width: 100pt; height: 12pt; border-bottom: var(--dc-border-hairline) solid var(--dc-color-text); }

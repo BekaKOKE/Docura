@@ -6,11 +6,14 @@
 //
 // `convert` makes an invoice from a signed quote (#27): the whole quote, a percent, an amount or the remainder,
 // never more than the quote total in sum. The invoice is a draft or, with `issue: true`, issued at once (number,
-// share link). The rest of the invoice lifecycle (update, issue, delete of an invoice draft) and the act come
-// with #31.
+// share link). The rest of the invoice lifecycle (update, issue, delete of an invoice draft) is not built.
 //
-// Not here, on purpose: cancel, duplicate and decline are post-MVP (docs/spec.md, D5); `convert` with
-// `target: 'act'` is #31; signing the quote is `public.sign` (#24). `signatureBlob` only reads the image of a
+// `convert` with `target: 'act'` makes the completion act (АВР, #31): a draft with the quote's lines, one work date
+// per line, the reporting period and the contract reference, one active act per quote. `update` edits an act draft
+// (work dates, period, contract reference) and `issue` gives it its number АВР-YYYY-NNNN and freezes it.
+//
+// Not here, on purpose: cancel, duplicate and decline are post-MVP (docs/spec.md, D5); signing the quote is
+// `public.sign` (#24). `signatureBlob` only reads the image of a
 // signature that already exists (the seed has some), so the quote's card (#22) can show it.
 
 import { computePrepayment, computeTotals, formatMoney, searchKey, type VatSetting } from '../../domain'
@@ -26,6 +29,7 @@ import type {
   DocumentLineInput,
   DocumentListParams,
   DocumentSummary,
+  DocumentUpdateInput,
   Id,
   InvoiceBasis,
   IsoDate,
@@ -342,6 +346,65 @@ function planInvoice(
   }
 }
 
+// ---------------------------------------------------------------- the completion act (#31)
+
+const CONTRACT_REF_MAX = 200
+
+/** The one non-cancelled act made from a quote, if any. */
+function activeActOf(db: ScopedDb, quoteId: Id): StoredDocument | undefined {
+  return db.rows('documents').find((d) => d.type === 'act' && d.sourceDocumentId === quoteId && d.status !== 'cancelled')
+}
+
+function actExists(): ApiError {
+  return new ApiError({ code: 'document_locked', message: t('act.error.exists') })
+}
+
+/** A date of an act's form: null or a real calendar day. */
+function dateProblem(value: string | null | undefined): boolean {
+  return value != null && !isIsoDate(value)
+}
+
+/** What a save of an act draft may change: the work date of each line, the reporting period and the contract reference. */
+function checkActDraft(row: StoredDocument, input: DocumentUpdateInput): Pick<StoredDocument, 'periodFrom' | 'periodTo' | 'contractRef'> & { workDates: (IsoDate | null)[] } {
+  const fields: Record<string, string> = {}
+  if (input.type !== 'act') fields.type = t('act.error.typeNotAct')
+  if (input.clientId !== row.clientId) fields.clientId = t('act.error.clientLocked')
+
+  const periodFrom = input.periodFrom ?? null
+  const periodTo = input.periodTo ?? null
+  if (dateProblem(periodFrom)) fields.periodFrom = t('document.error.dateInvalid')
+  if (dateProblem(periodTo)) fields.periodTo = t('document.error.dateInvalid')
+  if (!fields.periodFrom && !fields.periodTo && periodFrom && periodTo && periodTo < periodFrom) {
+    fields.periodTo = t('act.error.periodOrder')
+  }
+
+  const contractRef = trimmedOrNull(input.contractRef)
+  if (contractRef !== null && contractRef.length > CONTRACT_REF_MAX) fields.contractRef = t('act.error.contractRefTooLong')
+
+  // The act copies the lines of the quote: they are not added, removed or changed here, only dated.
+  const lines = Array.isArray(input.lines) ? input.lines : []
+  if (lines.length !== row.lines.length) fields.lines = t('act.error.linesFixed')
+  const workDates = row.lines.map((_line, index) => lines[index]?.workDate ?? null)
+  workDates.forEach((date, index) => {
+    if (dateProblem(date)) fields[`lines.${index}.workDate`] = t('document.error.dateInvalid')
+  })
+
+  if (Object.keys(fields).length > 0) throw invalid(fields)
+  return { periodFrom, periodTo, contractRef, workDates }
+}
+
+/** What an act still needs before it can be issued, per field (the number is taken only when this is empty). */
+function actIssueProblems(row: StoredDocument): Record<string, string> {
+  const fields: Record<string, string> = {}
+  if (row.lines.length === 0) fields.lines = t('document.error.linesRequired')
+  row.lines.forEach((line, index) => {
+    if (!line.workDate) fields[`lines.${index}.workDate`] = t('act.error.workDateRequired')
+  })
+  if (!row.periodFrom) fields.periodFrom = t('act.error.periodRequired')
+  if (!row.periodTo) fields.periodTo = t('act.error.periodRequired')
+  return fields
+}
+
 // ---------------------------------------------------------------- stored rows to the wire shapes
 
 interface View {
@@ -432,6 +495,91 @@ function publicBaseUrl(): string {
   return globalThis.location?.origin ?? 'http://localhost:5173'
 }
 
+/** `convert` with `target: 'act'`: the draft act of a signed quote (or an issued one with `issue: true`). */
+function convertToAct(
+  db: ScopedDb,
+  view: View,
+  now: Date,
+  quoteId: Id,
+  input: Extract<ConvertInput, { target: 'act' }>,
+): Document {
+  // A replay of the same request returns the document it made.
+  if (input.clientRequestId) {
+    const existing = db.rows('documents').find((d) => d.clientRequestId === input.clientRequestId)
+    if (existing) return view.document(existing)
+  }
+  const quote = db.get('documents', quoteId)
+  if (quote.type !== 'quote' || quote.status !== 'signed') throw locked()
+  // One active act per quote. Checked before a number is taken, so a refused request leaves no gap.
+  if (activeActOf(db, quote.id)) throw actExists()
+
+  const company = db.company()
+  const issueDate = todayInZone(company.timezone, now)
+  const issueNow = input.issue === true
+  const issuedAt = issueNow ? utcTimestamp(now) : null
+  const row = db.insert('documents', {
+    id: newId(),
+    type: 'act',
+    status: issueNow ? 'issued' : 'draft',
+    number: issueNow ? takeNextNumber(db, 'act', issueDate) : null,
+    issueDate,
+    validUntil: null,
+    dueDate: null,
+    // The work is taken as done on the day of the act until the owner says otherwise.
+    periodFrom: issueDate,
+    periodTo: issueDate,
+    contractRef: t('act.contractRef', { number: quote.number ?? '', date: ruDate(quote.issueDate) }),
+    clientId: quote.clientId,
+    // The client as the quote was issued; the company as it is now. Both are taken again when the act is issued.
+    clientSnapshot: structuredClone(quote.clientSnapshot),
+    companySnapshot: snapshotOfCompany(company),
+    sourceDocumentId: quote.id,
+    currency: quote.currency,
+    netTiyn: quote.netTiyn,
+    vatTiyn: quote.vatTiyn,
+    grossTiyn: quote.grossTiyn,
+    version: 1,
+    issuedAt,
+    signedAt: null,
+    cancelledAt: null,
+    basis: null,
+    basisValue: null,
+    vatEnabled: quote.vatEnabled,
+    vatRateBp: quote.vatRateBp,
+    notes: null,
+    terms: null,
+    lines: quote.lines.map(({ qtyText: _qtyText, ...line }, position) => ({ ...line, id: newId(), position, workDate: issueDate })),
+    clientRequestId: input.clientRequestId ?? null,
+  })
+  if (issuedAt) addShareLink(db, row.id, issuedAt)
+  return view.document(row)
+}
+
+/** Issues an act draft: checks it, then takes the number АВР-YYYY-NNNN, freezes the requisites and makes the link. */
+function issueAct(db: ScopedDb, view: View, now: Date, row: StoredDocument): Document {
+  // Every check comes before the number, so a refused issue leaves no gap.
+  const problems = actIssueProblems(row)
+  if (Object.keys(problems).length > 0) throw invalid(problems)
+
+  const company = db.company()
+  const client = db.find('clients', row.clientId)
+  // The act is dated the day it is issued; its number runs in the year of that date.
+  const issueDate = todayInZone(company.timezone, now)
+  const number = takeNextNumber(db, 'act', issueDate)
+  const issuedAt = utcTimestamp(now)
+  addShareLink(db, row.id, issuedAt)
+  const saved = db.patch('documents', row.id, {
+    status: 'issued',
+    number,
+    issueDate,
+    issuedAt,
+    clientSnapshot: client ? snapshotOfClient(client) : row.clientSnapshot,
+    companySnapshot: snapshotOfCompany(company),
+    version: row.version + 1,
+  })
+  return view.document(saved)
+}
+
 // ---------------------------------------------------------------- the service
 
 export function createMockDocuments(getRuntime: () => MockRuntime): DocumentsService {
@@ -457,14 +605,14 @@ export function createMockDocuments(getRuntime: () => MockRuntime): DocumentsSer
   }
 
   /**
-   * The row to edit or delete. `document_locked` unless it is a quote still in draft or sent (invoices and acts are
-   * editable only as drafts, and their lifecycle is built in #27 and #31).
+   * The row to edit. `document_locked` unless it is a quote still in draft or sent, or an act still in draft (an
+   * invoice is editable only as a draft, and editing one is not built).
    */
   function editable(db: ScopedDb, id: Id, method: string): StoredDocument {
     const row = db.get('documents', id)
     const open = row.type === 'quote' ? row.status === 'draft' || row.status === 'sent' : row.status === 'draft'
     if (!open) throw locked()
-    if (row.type !== 'quote') throw notBuilt(method, 'the issues of invoices and acts (#27, #31)')
+    if (row.type === 'invoice') throw notBuilt(method, 'the issue of invoice drafts')
     return row
   }
 
@@ -550,6 +698,17 @@ export function createMockDocuments(getRuntime: () => MockRuntime): DocumentsSer
         if (!Number.isSafeInteger(input.version)) throw invalid({ version: t('document.error.versionInvalid') })
         if (input.version !== row.version) throw versionConflict()
 
+        if (row.type === 'act') {
+          // An act draft: the work dates, the period and the contract reference. Everything else is the quote's.
+          const { workDates, ...fields } = checkActDraft(row, input)
+          const saved = db.patch('documents', id, {
+            ...fields,
+            lines: row.lines.map((line, index) => ({ ...line, workDate: workDates[index] ?? null })),
+            version: row.version + 1,
+          })
+          return view.document(saved)
+        }
+
         const company = db.company()
         const today = todayInZone(company.timezone, now)
         const checked = checkInput(db, input, today, company.quoteValidityDays)
@@ -586,7 +745,7 @@ export function createMockDocuments(getRuntime: () => MockRuntime): DocumentsSer
       return write((db) => {
         const row = db.get('documents', id)
         if (row.status !== 'draft') throw locked()
-        if (row.type !== 'quote') throw notBuilt('remove', 'the issues of invoices and acts (#27, #31)')
+        if (row.type !== 'quote') throw notBuilt('remove', 'the deletion of invoice and act drafts')
         db.remove('documents', id)
       })
     },
@@ -595,7 +754,8 @@ export function createMockDocuments(getRuntime: () => MockRuntime): DocumentsSer
       return write((db, view, now) => {
         const row = db.get('documents', id)
         if (row.status !== 'draft') throw locked()
-        if (row.type !== 'quote') throw notBuilt('issue', 'the issues of invoices and acts (#27, #31)')
+        if (row.type === 'invoice') throw notBuilt('issue', 'the issue of invoice drafts')
+        if (row.type === 'act') return issueAct(db, view, now, row)
         if (row.lines.length === 0) throw invalid({ lines: t('document.error.linesRequired') })
         const client = db.find('clients', row.clientId)
         if (!client) throw invalid({ clientId: t('document.error.clientMissing') })
@@ -626,8 +786,7 @@ export function createMockDocuments(getRuntime: () => MockRuntime): DocumentsSer
     },
 
     convert(id, input) {
-      // The act is #31.
-      if (input.target !== 'invoice') return Promise.reject(notBuilt('convert', 'the act (#31)'))
+      if (input.target === 'act') return write((db, view, now) => convertToAct(db, view, now, id, input))
       return write((db, view, now) => {
         // A replay of the same request returns the document it made.
         if (input.clientRequestId) {

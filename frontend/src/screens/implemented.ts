@@ -2,6 +2,8 @@ import type { ComponentType } from 'react'
 import type { ScreenId } from '../app/screens'
 import { LoginScreen } from './account/LoginScreen'
 import { RegisterScreen } from './account/RegisterScreen'
+import { ActDetailScreen } from './acts/ActDetailScreen'
+import { ActsListScreen } from './acts/ActsListScreen'
 import { SettingsScreen } from './company/SettingsScreen'
 import { SetupScreen } from './company/SetupScreen'
 import { DocumentPreview } from './DocumentPreview'
@@ -28,6 +30,8 @@ export const implementedScreens: Partial<Record<ScreenId, ComponentType>> = {
   S14: ConvertScreen,
   S15: InvoicesListScreen,
   S16: InvoiceDetailScreen,
+  S18: ActDetailScreen,
   S21: InvoicesListScreen,
   S28: SettingsScreen,
+  ACTS: ActsListScreen,
 }

@@ -332,12 +332,14 @@ describe('state machine (AC 1, TC-1)', () => {
     await expect(services.documents.get(seeded.id)).resolves.toMatchObject({ id: seeded.id })
   })
 
-  it('does not build the act conversion yet (#31)', async () => {
+  it('builds the act conversion since #31: a signed quote becomes a draft act (the rules are in act.test.ts)', async () => {
     const { services } = setup()
     await signInSeitkali(services)
-    await expect(
-      services.documents.convert(seed.documents[2]!.id, { target: 'act', clientRequestId: '55555555-5555-4555-8555-555555555555' }),
-    ).rejects.toThrow('not implemented')
+    const act = await services.documents.convert(seed.documents[2]!.id, {
+      target: 'act',
+      clientRequestId: '55555555-5555-4555-8555-555555555555',
+    })
+    expect(act).toMatchObject({ type: 'act', status: 'draft', number: null, sourceDocumentId: seed.documents[2]!.id })
   })
 })
 

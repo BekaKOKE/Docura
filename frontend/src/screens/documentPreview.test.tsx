@@ -79,8 +79,14 @@ describe('S08 preview: the document', () => {
     expect(plainText(out)).toContain('Счёт на оплату № СЧ-2026-0001')
   })
 
-  it('says the act preview is not built yet instead of showing a blank page', () => {
-    expect(plainText(html(<PreviewNotBuilt />))).toContain('Предпросмотр акта появится в задаче #31.')
+  it('draws an act with the same screen (#31)', () => {
+    const act = seedDocument('АВР-2026-0001') as unknown as Document
+    const out = html(<PreviewReady document={{ ...act, type: 'act' }} zoom="fit" onZoom={noop} onPrint={noop} />)
+    expect(plainText(out)).toContain('Акт выполненных работ (оказанных услуг) № АВР-2026-0001')
+  })
+
+  it('says so instead of showing a blank page for a type that has no renderer', () => {
+    expect(plainText(html(<PreviewNotBuilt />))).toContain('Предпросмотр этого документа недоступен.')
   })
 })
 

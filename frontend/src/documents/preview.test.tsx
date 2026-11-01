@@ -33,11 +33,13 @@ describe('fitScale', () => {
 })
 
 describe('DocumentRenderer', () => {
-  it('draws a quote and an invoice, and has nothing for an act yet (#31)', () => {
+  it('draws a quote, an invoice and an act (the act came with #31)', () => {
     expect(hasRenderer('quote')).toBe(true)
     expect(hasRenderer('invoice')).toBe(true)
-    expect(hasRenderer('act')).toBe(false)
-    expect(renderToString(<DocumentRenderer type="act" document={referenceQuote()} />)).toBe('')
+    expect(hasRenderer('act')).toBe(true)
+    expect(plainText(renderToString(<DocumentRenderer type="act" document={seedDocument('АВР-2026-0001')} />))).toContain(
+      'Акт выполненных работ (оказанных услуг) № АВР-2026-0001',
+    )
     expect(plainText(renderToString(<DocumentRenderer type="quote" document={referenceQuote()} />))).toContain(
       'Коммерческое предложение',
     )

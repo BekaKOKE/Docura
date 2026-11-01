@@ -1,0 +1,37 @@
+/* The act screens (#31): the card (S18) and the step that makes an act from a signed quote. Tokens only, no raw
+   colours. The list reuses the rows of the quotes (quotes.css, clients.css); the card reuses the head, the summary,
+   the actions and the document frame of the quote's card (.qd-*). Every grid is minmax(0, 1fr) and every flex child
+   has min-width: 0, so nothing widens the page at 360 px (components.md section 0); amounts and numbers never wrap
+   (.dc-money, .dc-code); a target is 48 px or more; at most two buttons side by side. */
+
+.act { max-width: var(--dc-layout-content-max); }
+.act > * { min-width: 0; }
+.act p { margin: 0; }
+.act-wrap { overflow-wrap: anywhere; }
+.act-creating { font-weight: var(--dc-weight-lg); }
+
+.act-draft { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--dc-space-4); }
+.act-draft > * { min-width: 0; }
+
+.act-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--dc-space-3); padding: var(--dc-space-4); min-width: 0; }
+.act-form h2, .act-form h3 { margin: 0; }
+.act-label { font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); font-weight: var(--dc-weight-button); }
+.act-fields { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--dc-space-3); margin: 0; padding: 0; border: 0; min-width: 0; }
+
+.act-lines { list-style: none; display: grid; gap: var(--dc-space-3); margin: 0; padding: 0; }
+.act-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--dc-space-2);
+  margin: 0;
+  padding: var(--dc-space-3) var(--dc-space-4) var(--dc-space-4);
+  border: var(--dc-border-hairline) solid var(--dc-color-border);
+  border-radius: var(--dc-radius-md);
+  min-width: 0;
+}
+.act-line-title { padding: 0 var(--dc-space-1); font-weight: var(--dc-weight-lg); overflow-wrap: anywhere; }
+.act-line-qty { color: var(--dc-color-text-muted); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); }
+
+.act-locked { display: grid; justify-items: center; gap: var(--dc-space-3); padding: var(--dc-space-8) var(--dc-space-4); text-align: center; }
+.act-locked svg { width: 48px; height: 48px; color: var(--dc-color-warning); }
+.act-locked h1 { margin: 0; font-size: var(--dc-text-xl); line-height: var(--dc-leading-xl); font-weight: var(--dc-weight-xl); }

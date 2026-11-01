@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import { isApiError } from '../errors'
-import { NotImplementedError } from '../notImplemented'
 import type { ConvertInput, Document, DocumentInput, Id } from '../types'
 import { createMockServices } from './index'
 import { createMockRuntime } from './runtime'
@@ -438,14 +437,17 @@ describe('what the invoice looks like afterwards', () => {
   })
 })
 
-describe('the act is not built yet', () => {
-  it('target act still rejects with NotImplementedError', async () => {
+describe('the act (#31)', () => {
+  it('target act is built since #31 and leaves the invoice sums alone (the rules are in act.test.ts)', async () => {
     const { services } = setup()
     await services.auth.login(SEITKALI)
     const quote = await signedQuote(services)
 
-    await expect(services.documents.convert(quote.id, { target: 'act', clientRequestId: requestId() })).rejects.toBeInstanceOf(
-      NotImplementedError,
-    )
+    const act = await services.documents.convert(quote.id, { target: 'act', clientRequestId: requestId() })
+    expect(act).toMatchObject({ type: 'act', status: 'draft', sourceDocumentId: quote.id })
+
+    // The act is a child of the quote but not an invoice: the whole quote can still be invoiced.
+    const invoice = await services.documents.convert(quote.id, invoiceOf('full'))
+    expect(invoice.grossTiyn).toBe(323930 * TENGE)
   })
 })

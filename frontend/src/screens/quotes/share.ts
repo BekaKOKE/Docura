@@ -28,6 +28,8 @@ export function shareMessage(
   const hello = name ? t('qs.hello', { name }) : t('qs.helloAnon')
   const amount = formatMoney(quote.grossTiyn)
   const link = quote.shareUrl ?? ''
+  // An act has no deadline: it is sent to be signed on paper.
+  if (quote.type === 'act') return `${hello} ${t('act.share.body', { amount, link })}`
   // An invoice says by when to pay, a quote until when it stands.
   const invoice = quote.type === 'invoice'
   const until = invoice ? quote.dueDate : quote.validUntil

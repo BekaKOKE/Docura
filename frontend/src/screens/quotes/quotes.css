@@ -39,6 +39,7 @@
   border-radius: var(--dc-radius-md);
   background: var(--dc-color-surface-sunken);
   color: inherit;
+  text-decoration: none;
   overflow: hidden;
 }
 .qd-doc:focus-visible { outline: var(--dc-border-focus) solid var(--dc-color-focus); outline-offset: 2px; }

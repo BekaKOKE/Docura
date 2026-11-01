@@ -96,7 +96,7 @@ export function QuoteView({ quote, screen }: Props) {
         )}
         {signed && (
           <>
-            {/* #31 opens the form that makes the act from this quote at /acts/new. */}
+            {/* /acts/new makes the act from this quote, or opens the one it already has. */}
             <Link className="btn btn-secondary" to={`/acts/new?quoteId=${quote.id}`}>
               <span className="dc-label">{t('qd.action.act')}</span>
             </Link>
