@@ -284,7 +284,9 @@ class MemoryDocumentRepository(_AddMixin, _GetMixin):
         "created_by": "users",
     }
 
-    def get_by_client_request_id(self, company_id: UUID, client_request_id: UUID) -> Document | None:
+    def get_by_client_request_id(self, company_id: UUID, client_request_id: UUID | None) -> Document | None:
+        if client_request_id is None:
+            return None
         matches = (row for row in self._in_company(company_id) if row.client_request_id == client_request_id)
         return deepcopy(next(matches, None))
 
@@ -423,7 +425,9 @@ class MemoryPaymentRepository(_AddMixin, _GetMixin, _DocumentChildRepository):
     table = "payments"
     references: ClassVar[dict[str, str]] = {"document_id": "documents", "created_by": "users"}
 
-    def get_by_client_request_id(self, company_id: UUID, client_request_id: UUID) -> Payment | None:
+    def get_by_client_request_id(self, company_id: UUID, client_request_id: UUID | None) -> Payment | None:
+        if client_request_id is None:
+            return None
         matches = (row for row in self._in_company(company_id) if row.client_request_id == client_request_id)
         return deepcopy(next(matches, None))
 

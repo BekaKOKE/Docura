@@ -102,6 +102,14 @@ def test_a_replayed_payment_request_is_refused_and_can_be_found(storage: Storage
         assert uow.payments.get_by_client_request_id(tenant.id, request_id) == made
 
 
+def test_a_missing_request_id_finds_nothing_even_with_rows_that_have_none(storage: Storage, tenant: Tenant) -> None:
+    with storage.unit_of_work() as uow:
+        uow.documents.add(tenant.id, make_document(tenant.id, tenant.client.id))
+        uow.payments.add(tenant.id, make_payment(tenant.id, tenant.document.id))
+        assert uow.documents.get_by_client_request_id(tenant.id, None) is None
+        assert uow.payments.get_by_client_request_id(tenant.id, None) is None
+
+
 def test_payments_without_a_request_id_do_not_collide(storage: Storage, tenant: Tenant) -> None:
     with storage.unit_of_work() as uow:
         uow.payments.add(tenant.id, make_payment(tenant.id, tenant.document.id))
