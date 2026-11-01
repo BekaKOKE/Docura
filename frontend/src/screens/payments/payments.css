@@ -1,0 +1,74 @@
+/* Recording and removing a payment (#30): the sheet, the method chips, the undo toast, the ⋯ of a row. Tokens only, no
+   raw colours. Every grid is minmax(0, 1fr) and every flex child has min-width: 0, so nothing widens the page at 360 px
+   (components.md section 0); amounts never wrap (.dc-money); a target is 48 px or more; at most two buttons side by side. */
+
+.pm-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--dc-space-4); min-width: 0; padding: var(--dc-space-2) var(--dc-space-4) var(--dc-space-6); }
+.pm-body > * { min-width: 0; }
+.pm-body p { margin: 0; }
+.pm-sub { color: var(--dc-color-text-muted); }
+.pm-confirm { overflow-wrap: anywhere; }
+.pm-submit { min-height: var(--dc-size-control-lg); }
+.pm-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--dc-space-2); }
+
+/* The methods: radios drawn as chips, three and two to a row so the words fit at 360 px. */
+.pm-chips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--dc-space-2); min-width: 0; }
+.pm-chip { position: relative; display: block; min-width: 0; }
+.pm-chip input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.pm-chip-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--dc-size-touch-min);
+  padding: 0 var(--dc-space-2);
+  border: var(--dc-border-input) solid var(--dc-color-border-input);
+  border-radius: var(--dc-radius-pill);
+  background: var(--dc-color-surface);
+  color: var(--dc-color-text);
+  font-weight: var(--dc-weight-button);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.pm-chip input:checked + .pm-chip-tile { border-color: var(--dc-color-ink); border-width: var(--dc-border-strong); background: var(--dc-color-ink); color: var(--dc-color-on-ink); }
+.pm-chip input:focus-visible + .pm-chip-tile { outline: var(--dc-border-focus) solid var(--dc-color-focus); outline-offset: 2px; }
+
+/* A date field is as wide as the column, whatever the browser draws inside it. */
+.pm-body input[type='date'] { min-width: 0; max-width: 100%; }
+
+/* ---------------------------------------------------------------- toast */
+
+.pm-toast {
+  position: fixed;
+  inset-inline: var(--dc-space-4);
+  bottom: calc(var(--dc-layout-tabbar) + var(--dc-space-3) + env(safe-area-inset-bottom));
+  z-index: var(--dc-z-toast);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--dc-space-3);
+  max-width: 480px;
+  margin-inline: auto;
+  padding: var(--dc-space-1) var(--dc-space-2) var(--dc-space-1) var(--dc-space-4);
+  min-height: var(--dc-size-touch-min);
+  border-radius: var(--dc-radius-md);
+  background: var(--dc-color-ink);
+  color: var(--dc-color-on-ink);
+  box-shadow: var(--dc-shadow-pop);
+}
+.pm-toast-text { flex: 1 1 0; min-width: 0; overflow-wrap: anywhere; }
+.pm-toast-action {
+  flex: none;
+  min-width: var(--dc-size-touch-min);
+  min-height: var(--dc-size-touch-min);
+  padding: 0 var(--dc-space-3);
+  border: 0;
+  background: transparent;
+  color: var(--dc-color-on-ink);
+  font: inherit;
+  font-weight: var(--dc-weight-button);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.pm-toast-action:focus-visible { outline: var(--dc-border-focus) solid var(--dc-color-on-ink); outline-offset: -2px; }
+@media (min-width: 1024px) {
+  .pm-toast { bottom: calc(var(--dc-space-6) + env(safe-area-inset-bottom)); }
+}

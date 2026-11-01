@@ -29,11 +29,22 @@
 .iv-state-balance { padding-top: var(--dc-space-1); border-top: var(--dc-border-hairline) solid var(--dc-color-border); font-size: var(--dc-text-lg); line-height: var(--dc-leading-lg); }
 .iv-state-balance dt { color: var(--dc-color-text); font-weight: var(--dc-weight-lg); }
 
+.iv-record { min-height: var(--dc-size-control-lg); }
+
 .iv-label { margin: 0 0 var(--dc-space-2); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); font-weight: var(--dc-weight-button); }
 .iv-payments { list-style: none; margin: 0; padding: 0; overflow: hidden; }
 .iv-payment { display: flex; align-items: center; justify-content: space-between; gap: var(--dc-space-3); min-height: 64px; padding: var(--dc-space-3) var(--dc-space-4); }
 .iv-payment + .iv-payment { border-top: var(--dc-border-hairline) solid var(--dc-color-border); }
-.iv-payment-main { display: grid; gap: var(--dc-space-1); min-width: 0; }
+.iv-payment-main { display: grid; gap: var(--dc-space-1); flex: 1 1 0; min-width: 0; }
+/* A wrong entry can be removed: the 48 px button sits at the edge of the row. */
+.iv-payment:has(.icon-btn) { padding-right: var(--dc-space-2); }
 .iv-payment-method { font-weight: var(--dc-weight-lg); }
 .iv-payment-date, .iv-payment-note { color: var(--dc-color-text-muted); font-size: var(--dc-text-sm); line-height: var(--dc-leading-sm); overflow-wrap: anywhere; }
 .iv-payment-amount { flex: none; font-weight: var(--dc-weight-lg); }
+
+/* ---------------------------------------------------------------- the ⋯ of a row (#30) */
+
+/* The row is the link, and the ⋯ beside it opens the same actions as a swipe to the left. */
+.iv-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; min-width: 0; touch-action: pan-y; }
+.iv-item > .cl-row { min-width: 0; }
+.iv-item > .icon-btn { margin-right: var(--dc-space-2); }

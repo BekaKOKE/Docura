@@ -5,6 +5,7 @@ import { catalogRu } from './catalog'
 import { quoteEditorRu } from './quoteEditor'
 import { invoicesRu } from './invoices'
 import { invoiceScreensRu } from './invoiceScreens'
+import { paymentsRu } from './payments'
 import { publicRu } from './public'
 import { quotesRu } from './quotes'
 
@@ -19,6 +20,7 @@ export const ru = {
   ...invoicesRu,
   ...convertRu,
   ...invoiceScreensRu,
+  ...paymentsRu,
   'app.name': 'Docura',
   'app.pageTitle': '{title} · Docura',
 

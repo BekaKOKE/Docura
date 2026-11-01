@@ -1,21 +1,28 @@
 import { useQuery } from '@tanstack/react-query'
+import { Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
+import { useMe } from '../../app/session'
+import { formatMoney } from '../../domain'
 import { DocumentRenderer, DocumentViewport } from '../../documents'
-import { formatDate } from '../../documents/format'
+import { DEFAULT_TIME_ZONE, formatDate } from '../../documents/format'
 import { t } from '../../i18n/t'
 import { ApiError, services, type Document, type Payment } from '../../services'
 import { Banner, ListSkeleton, Money } from '../clients/parts'
 import { errorText } from '../errorText'
+import { PaymentToast } from '../payments/PaymentToast'
+import { usePaymentToast } from '../payments/paymentQueries'
+import { RecordPaymentSheet } from '../payments/RecordPaymentSheet'
+import { RemovePaymentSheet } from '../payments/RemovePaymentSheet'
 import { ErrorState, PageLoading } from '../ui'
 import { useQuote } from '../quotes/quoteQueries'
 import { ShareSheet } from '../quotes/ShareSheet'
-import { invoiceBadge, isPartlyPaid, percentPaid } from './invoiceStatus'
+import { invoiceBadge, isPartlyPaid, owesMoney, percentPaid } from './invoiceStatus'
 import './invoices.css'
 
 export const paymentsKey = (invoiceId: string) => ['payments', invoiceId] as const
 
-function PaymentRow({ payment }: { payment: Payment }) {
+function PaymentRow({ payment, onRemove }: { payment: Payment; onRemove?: (payment: Payment) => void }) {
   return (
     <li className="iv-payment">
       <span className="iv-payment-main">
@@ -26,11 +33,21 @@ function PaymentRow({ payment }: { payment: Payment }) {
       <span className="iv-payment-amount">
         <Money tiyn={payment.amountTiyn} />
       </span>
+      {onRemove && (
+        <button
+          type="button"
+          className="icon-btn"
+          aria-label={t('pm.remove.aria', { amount: formatMoney(payment.amountTiyn), date: formatDate(payment.paidOn) })}
+          onClick={() => onRemove(payment)}
+        >
+          <Trash2 aria-hidden="true" />
+        </button>
+      )}
     </li>
   )
 }
 
-function Payments({ invoiceId }: { invoiceId: string }) {
+function Payments({ invoiceId, onRemove }: { invoiceId: string; onRemove?: (payment: Payment) => void }) {
   const query = useQuery({ queryKey: paymentsKey(invoiceId), queryFn: () => services.payments.list(invoiceId) })
   let body
   if (query.isPending) body = <ListSkeleton rows={1} label={t('id.payments.loading')} />
@@ -53,7 +70,7 @@ function Payments({ invoiceId }: { invoiceId: string }) {
     body = (
       <ul className="card iv-payments">
         {query.data.map((payment) => (
-          <PaymentRow key={payment.id} payment={payment} />
+          <PaymentRow key={payment.id} payment={payment} onRemove={onRemove} />
         ))}
       </ul>
     )
@@ -71,11 +88,19 @@ function Payments({ invoiceId }: { invoiceId: string }) {
 /** The card of an invoice: where it stands, what is paid and what is left, the document and the payments. */
 export function InvoiceView({ invoice }: { invoice: Document }) {
   const [shareOpen, setShareOpen] = useState(false)
+  const [recordOpen, setRecordOpen] = useState(false)
+  const [removing, setRemoving] = useState<Payment | null>(null)
+  const { toast, show, dismiss } = usePaymentToast()
+  const me = useMe()
+  const timeZone = me.data?.companies[0]?.timezone ?? DEFAULT_TIME_ZONE
   const [now] = useState(() => new Date())
   const badge = invoiceBadge(invoice, now)
   const paid = invoice.payment?.paidTiyn ?? 0
   const balance = invoice.payment?.balanceTiyn ?? invoice.grossTiyn
   const percent = percentPaid(invoice)
+  // Only an issued invoice with a balance takes a payment; a paid one can still lose a wrong entry.
+  const canRecord = owesMoney(invoice)
+  const canRemove = invoice.status === 'issued'
 
   return (
     <div className="page iv" data-screen="S16">
@@ -116,18 +141,24 @@ export function InvoiceView({ invoice }: { invoice: Document }) {
         </span>
       )}
 
+      {canRecord && (
+        <button type="button" className="btn btn-primary btn-block iv-record" aria-haspopup="dialog" onClick={() => setRecordOpen(true)}>
+          <span className="dc-label">{t('pm.action.record')}</span>
+        </button>
+      )}
+
       <div className="qd-actions" data-count={invoice.sourceDocumentId ? 2 : 1}>
         {invoice.sourceDocumentId && (
           <Link className="btn btn-secondary" to={`/quotes/${invoice.sourceDocumentId}`}>
             <span className="dc-label">{t('id.action.quote')}</span>
           </Link>
         )}
-        <button type="button" className="btn btn-primary" aria-haspopup="dialog" disabled={!invoice.shareUrl} onClick={() => setShareOpen(true)}>
+        <button type="button" className={canRecord ? 'btn btn-secondary' : 'btn btn-primary'} aria-haspopup="dialog" disabled={!invoice.shareUrl} onClick={() => setShareOpen(true)}>
           <span className="dc-label">{t('id.action.send')}</span>
         </button>
       </div>
 
-      <Payments invoiceId={invoice.id} />
+      <Payments invoiceId={invoice.id} onRemove={canRemove ? setRemoving : undefined} />
 
       <Link className="qd-doc" to={`/documents/${invoice.id}/preview`} aria-label={t('id.openDocument')}>
         <DocumentViewport zoom="fit">
@@ -136,11 +167,33 @@ export function InvoiceView({ invoice }: { invoice: Document }) {
       </Link>
 
       {shareOpen && <ShareSheet quote={invoice} onClose={() => setShareOpen(false)} />}
+      {recordOpen && (
+        <RecordPaymentSheet
+          invoice={invoice}
+          timeZone={timeZone}
+          onClose={() => setRecordOpen(false)}
+          onRecorded={(payment) => {
+            setRecordOpen(false)
+            show({ kind: 'recorded', paymentId: payment.id, invoiceId: invoice.id })
+          }}
+        />
+      )}
+      {removing && (
+        <RemovePaymentSheet
+          payment={removing}
+          onClose={() => setRemoving(null)}
+          onRemoved={() => {
+            setRemoving(null)
+            show({ kind: 'notice', text: t('pm.toast.removed') })
+          }}
+        />
+      )}
+      {toast && <PaymentToast key={toast.id} toast={toast} onDismiss={dismiss} />}
     </div>
   )
 }
 
-// S16: the card of one invoice. Recording a payment on it is #30.
+// S16: the card of one invoice, where a payment is recorded (the sheet) and a wrong one removed (#30).
 export function InvoiceDetailScreen() {
   const { invoiceId = '' } = useParams()
   const query = useQuote(invoiceId)

@@ -3,7 +3,7 @@ import contractsSource from './contracts.ts?raw'
 import type { Services } from './contracts'
 import { httpServices } from './http'
 import { mockServices } from './mock'
-import { NotImplementedError } from './notImplemented'
+import { createNotImplementedServices, NotImplementedError } from './notImplemented'
 import { resolveApiMode, selectServices } from './select'
 
 /** Every `service.method` of the contract, read from contracts.ts. */
@@ -110,7 +110,7 @@ describe('the mock placeholder', () => {
   // auth is built in #14, clients in #16, articles in #17 and documents in #18; the services of the later issues still reject until their issue lands.
   it('says a service that is not built yet is not implemented', async () => {
     await expect(mockServices.dashboard.get()).rejects.toThrow(/mock services: dashboard\.get\(\) is not implemented/)
-    // payments.list is built by #28; recording a payment is #30.
-    await expect(mockServices.payments.remove('x')).rejects.toBeInstanceOf(NotImplementedError)
+    // payments is built by #28 and #30, so the same placeholder is checked for a service that is still not built.
+    await expect(createNotImplementedServices('mock', 'built in the issue of that screen').payments.remove('x')).rejects.toBeInstanceOf(NotImplementedError)
   })
 })

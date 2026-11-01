@@ -13,8 +13,7 @@ import { getMockRuntime, type MockRuntime } from './runtime'
 // `runtime.call`, which adds the 150-400 ms latency and the dev panel's forced errors, and reaches data only
 // through the store's company-scoped access, so another company's ids are 404.
 //
-// Built here: auth (#14), company (#15), clients (#16), articles (#17), documents (#18), public (#24). The other services reject with
-// NotImplementedError until their issues land: dashboard (#32). payments only lists (#28); recording one is #30.
+// Built here: auth (#14), company (#15), clients (#16), articles (#17), documents (#18), public (#24), payments (#28, #30).
 // A new service goes in as `clients: createMockClients(getRuntime)` below, written like ./auth.ts.
 // Only src/services/select.ts imports this file; screens use `services` from 'src/services'.
 

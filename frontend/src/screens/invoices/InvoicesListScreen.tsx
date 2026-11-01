@@ -1,12 +1,19 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { Receipt } from 'lucide-react'
-import { useState } from 'react'
+import { EllipsisVertical, Receipt } from 'lucide-react'
+import { useRef, useState, type TouchEvent } from 'react'
 import { Link, useSearchParams } from 'react-router'
+import { useMe } from '../../app/session'
 import { formatMoney } from '../../domain'
+import { DEFAULT_TIME_ZONE } from '../../documents/format'
 import { t } from '../../i18n/t'
 import { services, type DocumentSummary, type Page } from '../../services'
 import { Banner, EmptyState, ListSkeleton, Money } from '../clients/parts'
 import { errorText } from '../errorText'
+import { InvoiceMenuSheet } from '../payments/InvoiceMenuSheet'
+import { PaymentToast } from '../payments/PaymentToast'
+import { usePaymentToast } from '../payments/paymentQueries'
+import { isSwipeLeft } from '../payments/paymentRules'
+import { RecordPaymentSheet } from '../payments/RecordPaymentSheet'
 import { invoiceBadge, isPartlyPaid, owesMoney, percentPaid, shortDate, waitingOf } from './invoiceStatus'
 import './invoices.css'
 
@@ -36,12 +43,25 @@ function rowName(invoice: DocumentSummary, badge: string): string {
   return parts.join(', ')
 }
 
-function InvoiceRow({ invoice, now }: { invoice: DocumentSummary; now: Date }) {
+function InvoiceRow({ invoice, now, onActions, onSwipe }: { invoice: DocumentSummary; now: Date; onActions: (invoice: DocumentSummary) => void; onSwipe: (invoice: DocumentSummary) => void }) {
   const badge = invoiceBadge(invoice, now)
   const partly = isPartlyPaid(invoice)
   const percent = percentPaid(invoice)
+  // Only an invoice with a balance has an action; a swipe to the left is the shortcut to "Записать оплату", the ⋯ is the way that always works.
+  const payable = owesMoney(invoice)
+  const swipe = useRef<{ x: number; y: number } | null>(null)
+  const onTouchStart = (event: TouchEvent) => {
+    const touch = event.touches[0]
+    swipe.current = touch ? { x: touch.clientX, y: touch.clientY } : null
+  }
+  const onTouchEnd = (event: TouchEvent) => {
+    const start = swipe.current
+    const touch = event.changedTouches[0]
+    swipe.current = null
+    if (start && touch && isSwipeLeft(touch.clientX - start.x, touch.clientY - start.y)) onSwipe(invoice)
+  }
   return (
-    <li>
+    <li className="iv-item" onTouchStart={payable ? onTouchStart : undefined} onTouchEnd={payable ? onTouchEnd : undefined}>
       <Link className="cl-row iv-row" to={`/invoices/${invoice.id}`} aria-label={rowName(invoice, badge.label)}>
         <span className="iv-main">
           <span className="iv-line">
@@ -74,6 +94,11 @@ function InvoiceRow({ invoice, now }: { invoice: DocumentSummary; now: Date }) {
           )}
         </span>
       </Link>
+      {payable && (
+        <button type="button" className="icon-btn" aria-haspopup="dialog" aria-label={t('pm.menu.aria', { number: invoice.number ?? '' })} onClick={() => onActions(invoice)}>
+          <EllipsisVertical aria-hidden="true" />
+        </button>
+      )}
     </li>
   )
 }
@@ -89,6 +114,13 @@ export function InvoicesListScreen() {
 
 function InvoicesList({ unpaidOnly }: { unpaidOnly: boolean }) {
   const [shown, setShown] = useState(PAGE_SIZE)
+  // The row whose actions are open, and the id of the one a payment is being recorded for: the sheet reads the row
+  // from the list, so its balance follows a refresh instead of staying what it was when the sheet opened.
+  const [menuFor, setMenuFor] = useState<DocumentSummary | null>(null)
+  const [recordId, setRecordId] = useState<string | null>(null)
+  const { toast, show, dismiss } = usePaymentToast()
+  const me = useMe()
+  const timeZone = me.data?.companies[0]?.timezone ?? DEFAULT_TIME_ZONE
   const list = useQuery({
     queryKey: invoicesListKey,
     queryFn: fetchAllInvoices,
@@ -140,7 +172,7 @@ function InvoicesList({ unpaidOnly }: { unpaidOnly: boolean }) {
       <>
         <ul className="card cl-list" aria-busy={list.isPlaceholderData || undefined}>
           {rows.slice(0, shown).map((invoice) => (
-            <InvoiceRow key={invoice.id} invoice={invoice} now={now} />
+            <InvoiceRow key={invoice.id} invoice={invoice} now={now} onActions={setMenuFor} onSwipe={(row) => setRecordId(row.id)} />
           ))}
         </ul>
         {rows.length > shown && (
@@ -153,6 +185,7 @@ function InvoicesList({ unpaidOnly }: { unpaidOnly: boolean }) {
   }
 
   const waiting = data ? waitingOf(data.items) : null
+  const recordFor = data?.items.find((invoice) => invoice.id === recordId)
 
   return (
     <div className="page" data-screen={unpaidOnly ? 'S21' : 'S15'}>
@@ -170,6 +203,28 @@ function InvoicesList({ unpaidOnly }: { unpaidOnly: boolean }) {
       )}
       {errorBanner}
       {body}
+      {menuFor && (
+        <InvoiceMenuSheet
+          invoice={menuFor}
+          onClose={() => setMenuFor(null)}
+          onRecord={() => {
+            setRecordId(menuFor.id)
+            setMenuFor(null)
+          }}
+        />
+      )}
+      {recordFor && (
+        <RecordPaymentSheet
+          invoice={recordFor}
+          timeZone={timeZone}
+          onClose={() => setRecordId(null)}
+          onRecorded={(payment) => {
+            setRecordId(null)
+            show({ kind: 'recorded', paymentId: payment.id, invoiceId: recordFor.id })
+          }}
+        />
+      )}
+      {toast && <PaymentToast key={toast.id} toast={toast} onDismiss={dismiss} />}
     </div>
   )
 }

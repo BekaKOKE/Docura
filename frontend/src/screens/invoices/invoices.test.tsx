@@ -257,6 +257,71 @@ describe('S16 the invoice card', () => {
   })
 })
 
+// ---------------------------------------------------------------- recording and removing payments (#30)
+
+describe('S15 the payment menu of a row (AC 1, TC-1, TC-8)', () => {
+  const html = renderList('/documents/invoices', rows)
+
+  it('gives every invoice that is owed a ⋯ button of 48 px, named after the invoice', () => {
+    for (const number of ['0004', '0003', '0002']) {
+      expect(html, number).toMatch(new RegExp(`<button[^>]*class="icon-btn"[^>]*aria-label="Действия со счётом СЧ-2026-${number}"`))
+    }
+    expect(html.match(/aria-label="Действия со счётом/g)).toHaveLength(3)
+    expect(read('../../styles/shell.css')).toMatch(/\.icon-btn \{[^}]*width: var\(--dc-size-touch-min\)[^}]*height: var\(--dc-size-touch-min\)/)
+  })
+
+  it('gives a paid invoice nothing to record, and keeps the row a link to its card', () => {
+    expect(html).not.toContain('Действия со счётом СЧ-2026-0001')
+    expect(html).toContain('href="/invoices/1"')
+  })
+
+  it('keeps the row next to its button without widening the page', () => {
+    const css = read('./invoices.css')
+    expect(css).toMatch(/\.iv-item \{[^}]*grid-template-columns: minmax\(0, 1fr\) auto/)
+    expect(css).toMatch(/\.iv-item > \.cl-row \{[^}]*min-width: 0/)
+  })
+
+  it('opens no sheet and no toast until a button is tapped', () => {
+    expect(html).not.toContain('role="dialog"')
+    expect(html).not.toContain('pm-toast')
+  })
+})
+
+describe('S16 recording and removing payments (AC 1, AC 5, TC-1, TC-4)', () => {
+  const html = renderCard(invoiceDoc(), [payment])
+  const visible = text(html)
+
+  it('has "Записать оплату" as the one primary button while money is owed, and "Отправить" beside the quote link as secondary', () => {
+    expect(html).toMatch(/<button[^>]*class="btn btn-primary btn-block iv-record"[^>]*aria-haspopup="dialog"[^>]*>\s*<span class="dc-label">Записать оплату<\/span>/)
+    expect(html).toMatch(/<button[^>]*class="btn btn-secondary"[^>]*aria-haspopup="dialog"[^>]*>\s*<span class="dc-label">Отправить<\/span>/)
+    expect(html.match(/<button[^>]*btn-primary/g)).toHaveLength(1)
+  })
+
+  it('has no such button when the invoice is paid, and "Отправить" is the primary one again', () => {
+    const paid = renderCard(invoiceDoc({ payment: { state: 'paid', paidTiyn: 10_000_000, balanceTiyn: 0 } }), [payment])
+    expect(paid).not.toContain('Записать оплату')
+    expect(paid).toMatch(/<button[^>]*class="btn btn-primary"[^>]*aria-haspopup="dialog"[^>]*>\s*<span class="dc-label">Отправить/)
+  })
+
+  it('has no such button on a cancelled invoice', () => {
+    expect(renderCard(invoiceDoc({ status: 'cancelled' }), [payment])).not.toContain('Записать оплату')
+  })
+
+  it('puts a 48 px remove button on every payment, named after it', () => {
+    expect(html).toMatch(/<button[^>]*class="icon-btn"[^>]*aria-label="Удалить оплату 40\s000\s₸ от 18\.10\.2026"/)
+    expect(visible).toContain('Kaspi')
+  })
+
+  it('offers no removal on a cancelled invoice', () => {
+    expect(renderCard(invoiceDoc({ status: 'cancelled' }), [payment])).not.toContain('Удалить оплату')
+  })
+
+  it('opens no sheet and no toast until a button is tapped', () => {
+    expect(html).not.toContain('role="dialog"')
+    expect(html).not.toContain('pm-toast')
+  })
+})
+
 describe('the invoice files follow the design rules (components.md §0)', () => {
   const css = read('./invoices.css')
   const sources = ['./InvoicesListScreen.tsx', './InvoiceDetailScreen.tsx', './invoiceStatus.ts'].map(read).join('\n')
