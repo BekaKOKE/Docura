@@ -4,12 +4,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import health
 from app.config import Settings, get_settings
 from app.errors import install_error_handlers
+from app.repositories import build_storage
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
     app = FastAPI(title="Docura API", version="0.1.0")
     app.state.settings = settings
+    app.state.storage = build_storage(settings)
 
     app.add_middleware(
         CORSMiddleware,

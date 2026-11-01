@@ -15,3 +15,4 @@ PowerShell: `$env:STORAGE="memory"; uv run uvicorn app.main:app --reload --port 
 - `app/errors.py`: `ApiError` and the `{"error": {"code", "message", "fields"}}` handlers.
 - `app/schemas/base.py`: `CamelModel`, the base of every wire model (camelCase JSON).
 - `app/domain/`: pure business rules, tested on `../contracts/test-vectors/`; it imports no FastAPI or storage code.
+- `app/repositories/`: `base.py` holds a Protocol per table and the unit of work, `records.py` the rows, `memory.py` the `STORAGE=memory` implementation. `create_app` puts the storage on `app.state.storage`; `STORAGE=sql` refuses to start until M4.
