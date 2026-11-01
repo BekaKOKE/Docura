@@ -1,0 +1,1648 @@
+openapi: 3.1.0
+
+info:
+  title: Docura API
+  version: 1.0.0
+  description: |
+    The API of the Docura MVP, written from frontend/src/services (contracts.ts, types.ts, mock). `npm run gen:api` turns
+    it into frontend/src/services/api-types.ts, and src/services/api-types.check.ts fails `npm run typecheck` when
+    types.ts or the Services interface stop agreeing with it.
+
+    Wire format: JSON in camelCase. Money is integer tiyn in `...Tiyn`, quantities are thousandths (`qtyMilli`), rates are
+    basis points (`...Bp`), dates are `YYYY-MM-DD` in the company's time zone, timestamps are ISO 8601 UTC ending in `Z`,
+    ids are UUID strings. Lists take `limit` and `offset` and return `{items, total}`.
+
+    Errors are `{"error": {"code", "message", "fields"}}` with one of the eleven `ApiErrorCode` values. Anything the API
+    raises outside those codes (a body over 512 KB is 413, a server failure is 5xx) is the `default` response, with the
+    code `http_error`. It is not an ApiError: the http services reject with a plain Error, which screens show as their
+    generic failure. A 5xx body may not even be JSON.
+
+    What the http services (#52) do to fit the Services interface, which has no company id and hands back plain values:
+      - `{cid}` is the id of the signed-in user's only company, from `GET /api/me`. Screens never pass it.
+      - `auth.logout` makes no request: it forgets the bearer token.
+      - `company.logoUrl` reads `GET .../logo` with the bearer token into an object URL; 404 means null.
+      - `payments.list` returns the `items` of the page, reading every page there is.
+      - `public.get` returns `logoUrl` and `signatureImageUrl`, which an `<img>` loads directly. There is no service method
+        for the public logo operation, and it is the URL in `logoUrl`.
+      - `x-service-method` on an operation names the one services method it serves. `health` and the public logo have none.
+servers:
+  - url: http://127.0.0.1:8000
+
+security:
+  - bearerAuth: []
+
+tags:
+  - { name: system }
+  - { name: auth }
+  - { name: company }
+  - { name: clients }
+  - { name: articles }
+  - { name: documents }
+  - { name: payments }
+  - { name: dashboard }
+  - { name: public }
+
+paths:
+  /api/health:
+    get:
+      operationId: healthGet
+      tags: [system]
+      summary: Liveness
+      security: []
+      responses:
+        '200':
+          description: The API is up
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Health' }
+        default: { $ref: '#/components/responses/Unexpected' }
+
+  /api/auth/register:
+    post:
+      operationId: authRegister
+      x-service-method: auth.register
+      tags: [auth]
+      summary: Create a user and sign them in
+      description: A bad or taken email is a `validation_error` on `email`, never a 409.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterInput' }
+      responses:
+        '201':
+          description: The new user and their token
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthSession' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429':
+          description: Too many tries
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                rate_limited:
+                  value: { error: { code: rate_limited, message: 'Слишком много запросов: подождите минуту', fields: {} } }
+        default: { $ref: '#/components/responses/Unexpected' }
+
+  /api/auth/login:
+    post:
+      operationId: authLogin
+      x-service-method: auth.login
+      tags: [auth]
+      summary: Sign in with email and password
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginInput' }
+      responses:
+        '200':
+          description: The user and their token
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthSession' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429':
+          description: Too many tries
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                rate_limited:
+                  value: { error: { code: rate_limited, message: 'Слишком много запросов: подождите минуту', fields: {} } }
+        default: { $ref: '#/components/responses/Unexpected' }
+
+  /api/me:
+    get:
+      operationId: authMe
+      x-service-method: auth.me
+      tags: [auth]
+      summary: The signed-in user and their companies
+      responses:
+        '200':
+          description: One company at most in the MVP; none before onboarding
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Me' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        default: { $ref: '#/components/responses/Unexpected' }
+
+  /api/companies:
+    post:
+      operationId: companyCreate
+      x-service-method: company.create
+      tags: [company]
+      summary: Create the company of the signed-in user (onboarding)
+      description: A user who already has a company gets a `validation_error` with no `fields`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CompanyInput' }
+      responses:
+        '201':
+          description: The new company
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Company' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        default: { $ref: '#/components/responses/Unexpected' }
+
+  /api/companies/{cid}:
+    parameters:
+      - { $ref: '#/components/parameters/Cid' }
+    get:
+      operationId: companyGet
+      x-service-method: company.get
+      tags: [company]
+      summary: Read the company
+      responses:
+        '200':
+          description: The company
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Company' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Unexpected' }
+    patch:
+      operationId: companyUpdate
+      x-service-method: company.update
+      tags: [company]
+      summary: Update requisites, VAT and defaults
+      description: Documents already issued keep their snapshot.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CompanyPatch' }
+      responses:
+        '200':
+          description: The updated company
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Company' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        default: { $ref: '#/components/responses/Unexpected' }
+
+  /api/companies/{cid}/logo:
+    parameters:
+      - { $ref: '#/components/parameters/Cid' }
+    put:
+      operationId: companyUploadLogo
+      x-service-method: company.uploadLogo
+      tags: [company]
+      summary: Upload the logo
+      description: PNG or JPEG, at most 300 KB. Anything else is a `validation_error` on `logo`, not a 413.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        '204': { description: Saved }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        default: { $ref: '#/components/responses/Unexpected' }
+    get:
+      operationId: companyGetLogo
+      x-service-method: company.logoUrl
+      tags: [company]
+      summary: The logo image
+      description: 404 when the company has no logo (`hasLogo` is false).
+      responses:
+        '200':
+          description: The image
+          content:
+            image/png:
+              schema: { type: string, format: binary }
+            image/jpeg:
+              schema: { type: string, format: binary }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Unexpected' }
+
+  /api/companies/{cid}/clients:
+    parameters:
+      - { $ref: '#/components/parameters/Cid' }
+    get:
+      operationId: clientsList
+      x-service-method: clients.list
+      tags: [clients]
+      summary: List and search clients
+      parameters:
+        - { name: q, in: query, description: Search text; matched against searchName, schema: { type: string } }
+        - { name: archived, in: query, description: true lists archived clients; false or omitted lists active ones, schema: { type: boolean } }
+        - { name: limit, in: query, description: 'Defaults to 50; clamped to 1..200', schema: { type: integer } }
+        - { name: offset, in: query, description: 'Defaults to 0; negative counts as 0', schema: { type: integer } }
+      responses:
+        '200':
+          description: A page of clients
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ClientPage' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Unexpected' }
+    post:
+      operationId: clientsCreate
+      x-service-method: clients.create
+      tags: [clients]
+      summary: Create a client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ClientInput' }
+      responses:
+        '201':
+          description: The new client
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Client' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        default: { $ref: '#/components/responses/Unexpected' }
+
+  /api/companies/{cid}/clients/{id}:
+    parameters:
+      - { $ref: '#/components/parameters/Cid' }
+      - { $ref: '#/components/parameters/Id' }
+    get:
+      operationId: clientsGet
+      x-service-method: clients.get
+      tags: [clients]
+      summary: Read a client, with their documents
+      responses:
+        '200':
+          description: The client
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ClientDetail' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Unexpected' }
+    patch:
+      operationId: clientsUpdate
+      x-service-method: clients.update
+      tags: [clients]
+      summary: Update a client
+      description: Documents already issued keep their client snapshot.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ClientPatch' }
+      responses:
+        '200':
+          description: The updated client
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Client' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        default: { $ref: '#/components/responses/Unexpected' }
+    delete:
+      operationId: clientsRemove
+      x-service-method: clients.remove
+      tags: [clients]
+      summary: Delete an unused client, archive one that has documents
+      responses:
+        '204': { description: Deleted or archived }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Unexpected' }
+
+  /api/companies/{cid}/articles:
+    parameters:
+      - { $ref: '#/components/parameters/Cid' }
+    get:
+      operationId: articlesList
+      x-service-method: articles.list
+      tags: [articles]
+      summary: List and search the catalogue
+      parameters:
+        - { name: q, in: query, description: Search text; matched against searchTitle, schema: { type: string } }
+        - { name: kind, in: query, schema: { $ref: '#/components/schemas/ArticleKind' } }
+        - { name: limit, in: query, description: 'Defaults to 50; clamped to 1..200', schema: { type: integer } }
+        - { name: offset, in: query, description: 'Defaults to 0; negative counts as 0', schema: { type: integer } }
+      responses:
+        '200':
+          description: A page of items
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ArticlePage' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Unexpected' }
+    post:
+      operationId: articlesCreate
+      x-service-method: articles.create
+      tags: [articles]
+      summary: Create an item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ArticleInput' }
+      responses:
+        '201':
+          description: The new item
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Article' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        default: { $ref: '#/components/responses/Unexpected' }
+
+  /api/companies/{cid}/articles/{id}:
+    parameters:
+      - { $ref: '#/components/parameters/Cid' }
+      - { $ref: '#/components/parameters/Id' }
+    patch:
+      operationId: articlesUpdate
+      x-service-method: articles.update
+      tags: [articles]
+      summary: Update an item
+      description: Existing document lines are untouched, because they hold copies.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ArticlePatch' }
+      responses:
+        '200':
+          description: The updated item
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Article' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        default: { $ref: '#/components/responses/Unexpected' }
+    delete:
+      operationId: articlesRemove
+      x-service-method: articles.remove
+      tags: [articles]
+      summary: Archive an item
+      responses:
+        '204': { description: Archived }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Unexpected' }
+
+  /api/companies/{cid}/documents:
+    parameters:
+      - { $ref: '#/components/parameters/Cid' }
+    get:
+      operationId: documentsList
+      x-service-method: documents.list
+      tags: [documents]
+      summary: List documents, newest first
+      parameters:
+        - { name: type, in: query, schema: { $ref: '#/components/schemas/DocumentType' } }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/DocumentStatus' } }
+        - { name: paymentState, in: query, schema: { $ref: '#/components/schemas/PaymentState' } }
+        - { name: clientId, in: query, schema: { type: string, format: uuid } }
+        - { name: q, in: query, description: 'Search text: number or client name', schema: { type: string } }
+        - { name: from, in: query, description: 'Issue date, inclusive', schema: { type: string, format: date } }
+        - { name: to, in: query, description: 'Issue date, inclusive', schema: { type: string, format: date } }
+        - { name: limit, in: query, description: 'Defaults to 50; clamped to 1..200', schema: { type: integer } }
+        - { name: offset, in: query, description: 'Defaults to 0; negative counts as 0', schema: { type: integer } }
+      responses:
+        '200':
+          description: A page of document rows
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DocumentSummaryPage' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Unexpected' }
+    post:
+      operationId: documentsCreate
+      x-service-method: documents.create
+      tags: [documents]
+      summary: Create a draft quote, invoice or act
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DocumentInput' }
+      responses:
+        '200':
+          description: A replay of `clientRequestId`, with the document it made
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Document' }
+        '201':
+          description: The new draft
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Document' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        default: { $ref: '#/components/responses/Unexpected' }
+
+  /api/companies/{cid}/documents/{id}:
+    parameters:
+      - { $ref: '#/components/parameters/Cid' }
+      - { $ref: '#/components/parameters/Id' }
+    get:
+      operationId: documentsGet
+      x-service-method: documents.get
+      tags: [documents]
+      summary: 'A full document: lines, totals, link, signature summary, payment state, children'
+      responses:
+        '200':
+          description: The document
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Document' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Unexpected' }
+    put:
+      operationId: documentsUpdate
+      x-service-method: documents.update
+      tags: [documents]
+      summary: Replace an editable document, lines included
+      description: A quote is editable while draft or sent, an invoice or an act only as a draft.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DocumentUpdateInput' }
+      responses:
+        '200':
+          description: The saved document, with `version` bumped
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Document' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: '`version` is stale, or the document can no longer be edited'
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                version_conflict:
+                  value: { error: { code: version_conflict, message: 'Документ изменился: обновите страницу', fields: {} } }
+                document_locked:
+                  value: { error: { code: document_locked, message: Документ нельзя изменить, fields: {} } }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        default: { $ref: '#/components/responses/Unexpected' }
+    delete:
+      operationId: documentsRemove
+      x-service-method: documents.remove
+      tags: [documents]
+      summary: Delete a draft
+      responses:
+        '204': { description: Deleted }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: The document is not a draft
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                document_locked:
+                  value: { error: { code: document_locked, message: Документ нельзя изменить, fields: {} } }
+        default: { $ref: '#/components/responses/Unexpected' }
+
+  /api/companies/{cid}/documents/{id}/issue:
+    parameters:
+      - { $ref: '#/components/parameters/Cid' }
+      - { $ref: '#/components/parameters/Id' }
+    post:
+      operationId: documentsIssue
+      x-service-method: documents.issue
+      tags: [documents]
+      summary: Leave draft
+      description: Assigns the number, freezes the snapshots, creates the public link (`shareUrl`). The status becomes `sent` for a quote, `issued` otherwise.
+      responses:
+        '200':
+          description: The issued document
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Document' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: The document is not a draft
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                document_locked:
+                  value: { error: { code: document_locked, message: Документ нельзя изменить, fields: {} } }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        default: { $ref: '#/components/responses/Unexpected' }
+
+  /api/companies/{cid}/documents/{id}/convert:
+    parameters:
+      - { $ref: '#/components/parameters/Cid' }
+      - { $ref: '#/components/parameters/Id' }
+    post:
+      operationId: documentsConvert
+      x-service-method: documents.convert
+      tags: [documents]
+      summary: From a signed quote, make an invoice or an act
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ConvertInput' }
+      responses:
+        '200':
+          description: A replay of `clientRequestId`, with the document it made
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Document' }
+        '201':
+          description: The new invoice or act
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Document' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Not a signed quote, the quote already has an active act, or the invoices would pass the quote total
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                exceeds_quote_total:
+                  value: { error: { code: exceeds_quote_total, message: Сумма счетов не может быть больше суммы КП, fields: {} } }
+                document_locked:
+                  value: { error: { code: document_locked, message: Документ нельзя изменить, fields: {} } }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        default: { $ref: '#/components/responses/Unexpected' }
+
+  /api/companies/{cid}/documents/{id}/signature:
+    parameters:
+      - { $ref: '#/components/parameters/Cid' }
+      - { $ref: '#/components/parameters/Id' }
+    get:
+      operationId: documentsSignature
+      x-service-method: documents.signatureBlob
+      tags: [documents]
+      summary: The client's signature image of a signed document
+      description: 404 when the document has no drawn signature.
+      responses:
+        '200':
+          description: The image
+          content:
+            image/png:
+              schema: { type: string, format: binary }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Unexpected' }
+
+  /api/companies/{cid}/documents/{id}/payments:
+    parameters:
+      - { $ref: '#/components/parameters/Cid' }
+      - { $ref: '#/components/parameters/Id' }
+    get:
+      operationId: paymentsList
+      x-service-method: payments.list
+      tags: [payments]
+      summary: Payments on an invoice, oldest first
+      parameters:
+        - { name: limit, in: query, description: 'Defaults to 50; clamped to 1..200', schema: { type: integer } }
+        - { name: offset, in: query, description: 'Defaults to 0; negative counts as 0', schema: { type: integer } }
+      responses:
+        '200':
+          description: A page of payments
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaymentPage' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Unexpected' }
+    post:
+      operationId: paymentsCreate
+      x-service-method: payments.create
+      tags: [payments]
+      summary: Record a payment by hand
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PaymentInput' }
+      responses:
+        '200':
+          description: A replay of `clientRequestId`, with the payment it made and the invoice as it is now
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaymentResult' }
+        '201':
+          description: The new payment and the invoice's new state
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaymentResult' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: The payment passes the invoice balance, or the document is not an issued invoice
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                overpayment:
+                  value: { error: { code: overpayment, message: Оплата больше суммы счёта, fields: {} } }
+                document_locked:
+                  value: { error: { code: document_locked, message: Документ нельзя изменить, fields: {} } }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        default: { $ref: '#/components/responses/Unexpected' }
+
+  /api/companies/{cid}/payments/{pid}:
+    parameters:
+      - { $ref: '#/components/parameters/Cid' }
+      - { name: pid, in: path, required: true, schema: { type: string, format: uuid } }
+    delete:
+      operationId: paymentsRemove
+      x-service-method: payments.remove
+      tags: [payments]
+      summary: Remove a wrong entry
+      responses:
+        '204': { description: Removed }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        default: { $ref: '#/components/responses/Unexpected' }
+
+  /api/companies/{cid}/dashboard:
+    parameters:
+      - { $ref: '#/components/parameters/Cid' }
+    get:
+      operationId: dashboardGet
+      x-service-method: dashboard.get
+      tags: [dashboard]
+      summary: KPIs for the period
+      description: Defaults to the current month in the company's time zone. An end left out is the edge of the month of the other end.
+      parameters:
+        - { name: from, in: query, schema: { type: string, format: date } }
+        - { name: to, in: query, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: The numbers of the dashboard
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Dashboard' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        default: { $ref: '#/components/responses/Unexpected' }
+
+  /api/public/{token}:
+    parameters:
+      - { $ref: '#/components/parameters/Token' }
+    get:
+      operationId: publicGet
+      x-service-method: public.get
+      tags: [public]
+      summary: The client's view of a document
+      description: The token in the link is the credential. A bearer token is optional; a member of the company is not counted as a view. Viewing never expires.
+      security:
+        - {}
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Whitelisted fields only
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublicDocument' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '410':
+          description: The link was withdrawn
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                link_revoked:
+                  value: { error: { code: link_revoked, message: Ссылка отозвана, fields: {} } }
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                rate_limited:
+                  value: { error: { code: rate_limited, message: 'Слишком много запросов: подождите минуту', fields: {} } }
+        default: { $ref: '#/components/responses/Unexpected' }
+
+  /api/public/{token}/sign:
+    parameters:
+      - { $ref: '#/components/parameters/Token' }
+    post:
+      operationId: publicSign
+      x-service-method: public.sign
+      tags: [public]
+      summary: Sign a sent quote with the finger signature ("Подпись на экране")
+      description: Only a quote is signed on screen in the MVP; an act ends at `issued`. `already_signed` is what a repeated request gets, and the screen treats it as success.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PublicSignInput' }
+      responses:
+        '200':
+          description: The signed document
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublicDocument' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: The document changed, is already signed, or can't be signed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                version_conflict:
+                  value: { error: { code: version_conflict, message: 'Документ изменился: обновите страницу', fields: {} } }
+                already_signed:
+                  value: { error: { code: already_signed, message: Документ уже подписан, fields: {} } }
+                document_locked:
+                  value: { error: { code: document_locked, message: Документ нельзя изменить, fields: {} } }
+        '410':
+          description: The quote is past `validUntil`, or the link was withdrawn
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                link_expired:
+                  value: { error: { code: link_expired, message: Срок действия ссылки истёк, fields: {} } }
+                link_revoked:
+                  value: { error: { code: link_revoked, message: Ссылка отозвана, fields: {} } }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                rate_limited:
+                  value: { error: { code: rate_limited, message: 'Слишком много запросов: подождите минуту', fields: {} } }
+        default: { $ref: '#/components/responses/Unexpected' }
+
+  /api/public/{token}/logo:
+    parameters:
+      - { $ref: '#/components/parameters/Token' }
+    get:
+      operationId: publicGetLogo
+      tags: [public]
+      summary: The company logo
+      description: No services method. `PublicDocument.logoUrl` points here and an `<img>` loads it, so it needs no bearer token. 404 when the company has no logo.
+      security: []
+      responses:
+        '200':
+          description: The image
+          content:
+            image/png:
+              schema: { type: string, format: binary }
+            image/jpeg:
+              schema: { type: string, format: binary }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '410':
+          description: The link was withdrawn
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                link_revoked:
+                  value: { error: { code: link_revoked, message: Ссылка отозвана, fields: {} } }
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+              examples:
+                rate_limited:
+                  value: { error: { code: rate_limited, message: 'Слишком много запросов: подождите минуту', fields: {} } }
+        default: { $ref: '#/components/responses/Unexpected' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    Cid:
+      name: cid
+      in: path
+      required: true
+      description: The company. Another company's id is a 404.
+      schema: { type: string, format: uuid }
+    Id:
+      name: id
+      in: path
+      required: true
+      description: Another company's id is a 404.
+      schema: { type: string, format: uuid }
+    Token:
+      name: token
+      in: path
+      required: true
+      description: The token of the public link.
+      schema: { type: string }
+
+  responses:
+    Unauthorized:
+      description: Signed out, or a wrong email or password
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+          examples:
+            unauthorized:
+              value: { error: { code: unauthorized, message: Войдите в аккаунт, fields: {} } }
+    NotFound:
+      description: Unknown id, or another company's
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+          examples:
+            not_found:
+              value: { error: { code: not_found, message: Не найдено, fields: {} } }
+    ValidationError:
+      description: The input is not valid; `fields` has a message per camelCase field (`lines.0.qtyMilli` for nested ones)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+          examples:
+            validation_error:
+              value: { error: { code: validation_error, message: Проверьте введённые данные, fields: { name: Обязательное поле } } }
+    Unexpected:
+      description: A status outside the API error codes, such as 413 for a body over 512 KB or a 5xx; a 5xx body may not be JSON
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/HttpErrorResponse' }
+
+  schemas:
+    Health:
+      type: object
+      required: [ok]
+      properties:
+        ok: { type: boolean }
+
+    # ---------------------------------------------------------------- errors
+
+    ApiErrorCode:
+      type: string
+      description: Every error code of the API, with the status each travels with. Same list as frontend/src/services/errors.ts and backend/app/errors.py.
+      enum:
+        - validation_error     # 422
+        - unauthorized         # 401
+        - not_found            # 404
+        - version_conflict     # 409
+        - document_locked      # 409
+        - exceeds_quote_total  # 409
+        - overpayment          # 409
+        - already_signed       # 409
+        - link_expired         # 410
+        - link_revoked         # 410
+        - rate_limited         # 429
+    ErrorBody:
+      type: object
+      required: [code, message, fields]
+      properties:
+        code: { $ref: '#/components/schemas/ApiErrorCode' }
+        message: { type: string, description: In Russian; fit to show }
+        fields:
+          type: object
+          description: Per-field messages for `validation_error`; empty otherwise
+          additionalProperties: { type: string }
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error: { $ref: '#/components/schemas/ErrorBody' }
+    HttpErrorBody:
+      type: object
+      required: [code, message, fields]
+      properties:
+        code: { type: string, enum: [http_error] }
+        message: { type: string }
+        fields:
+          type: object
+          additionalProperties: { type: string }
+    HttpErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error: { $ref: '#/components/schemas/HttpErrorBody' }
+
+    # ---------------------------------------------------------------- auth
+
+    Locale:
+      type: string
+      enum: [ru, kk]
+    User:
+      type: object
+      required: [id, email, fullName, locale]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string }
+        fullName: { type: string }
+        locale: { $ref: '#/components/schemas/Locale' }
+    RegisterInput:
+      type: object
+      required: [email, password, fullName]
+      properties:
+        email: { type: string }
+        password: { type: string, description: At least 8 characters }
+        fullName: { type: string }
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string }
+        password: { type: string }
+    AuthSession:
+      type: object
+      required: [accessToken, user]
+      properties:
+        accessToken: { type: string }
+        user: { $ref: '#/components/schemas/User' }
+    Me:
+      type: object
+      required: [user, companies]
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+        companies:
+          type: array
+          items: { $ref: '#/components/schemas/Company' }
+
+    # ---------------------------------------------------------------- company
+
+    LegalForm:
+      type: string
+      enum: [ip, too, ao, other]
+    Currency:
+      type: string
+      enum: [KZT]
+    CompanyPatch:
+      type: object
+      description: The fields of a company, all optional. `CompanyInput` says which ones creating needs.
+      properties:
+        legalForm: { $ref: '#/components/schemas/LegalForm' }
+        legalName: { type: string }
+        binIin: { type: string, description: 12 digits with a valid checksum }
+        address: { type: string }
+        phone: { type: [string, 'null'] }
+        email: { type: [string, 'null'] }
+        directorName: { type: string, description: '"Сдал" on the АВР' }
+        directorPosition: { type: string }
+        vatPayer: { type: boolean }
+        vatCertificate: { type: [string, 'null'] }
+        bankName: { type: [string, 'null'] }
+        iik: { type: [string, 'null'], description: 'KZ IBAN, 20 characters' }
+        bik: { type: [string, 'null'] }
+        kbe: { type: [string, 'null'], description: 2 digits }
+        defaultKnp: { type: [string, 'null'], description: 'Default КНП, 3 digits' }
+        timezone: { type: string, description: 'IANA name, never a fixed offset. Defaults to Asia/Almaty' }
+        quoteValidityDays: { type: integer, description: Defaults to 14 }
+        invoiceDueDays: { type: integer, description: Defaults to 5 }
+    CompanyInput:
+      allOf:
+        - { $ref: '#/components/schemas/CompanyPatch' }
+      required: [legalForm, legalName, binIin, address, directorName, directorPosition, vatPayer]
+    Company:
+      type: object
+      required:
+        - id
+        - legalForm
+        - legalName
+        - binIin
+        - address
+        - phone
+        - email
+        - directorName
+        - directorPosition
+        - vatPayer
+        - bankName
+        - iik
+        - bik
+        - kbe
+        - defaultKnp
+        - timezone
+        - quoteValidityDays
+        - invoiceDueDays
+        - currency
+        - hasLogo
+      properties:
+        id: { type: string, format: uuid }
+        legalForm: { $ref: '#/components/schemas/LegalForm' }
+        legalName: { type: string }
+        binIin: { type: string }
+        address: { type: string }
+        phone: { type: [string, 'null'] }
+        email: { type: [string, 'null'] }
+        directorName: { type: string }
+        directorPosition: { type: string }
+        vatPayer: { type: boolean }
+        vatCertificate: { type: [string, 'null'] }
+        bankName: { type: [string, 'null'] }
+        iik: { type: [string, 'null'] }
+        bik: { type: [string, 'null'] }
+        kbe: { type: [string, 'null'] }
+        defaultKnp: { type: [string, 'null'] }
+        timezone: { type: string }
+        quoteValidityDays: { type: integer }
+        invoiceDueDays: { type: integer }
+        currency: { $ref: '#/components/schemas/Currency' }
+        hasLogo: { type: boolean, description: 'Derived: the company has a logo, so GET .../logo answers 200' }
+
+    # ---------------------------------------------------------------- clients
+
+    ClientKind:
+      type: string
+      enum: [person, company]
+    ClientPatch:
+      type: object
+      description: The fields of a client, all optional. `ClientInput` says which ones creating needs.
+      properties:
+        kind: { $ref: '#/components/schemas/ClientKind' }
+        name: { type: string }
+        binIin: { type: [string, 'null'], description: Optional; validated when given }
+        contactName: { type: [string, 'null'] }
+        phone: { type: [string, 'null'] }
+        email: { type: [string, 'null'] }
+        address: { type: [string, 'null'] }
+        notes: { type: [string, 'null'] }
+    ClientInput:
+      allOf:
+        - { $ref: '#/components/schemas/ClientPatch' }
+      required: [kind, name]
+    Client:
+      type: object
+      required: [id, companyId, kind, name, binIin, phone, email, address, searchName, archivedAt]
+      properties:
+        id: { type: string, format: uuid }
+        companyId: { type: string, format: uuid }
+        kind: { $ref: '#/components/schemas/ClientKind' }
+        name: { type: string }
+        binIin: { type: [string, 'null'] }
+        contactName: { type: [string, 'null'] }
+        phone: { type: [string, 'null'] }
+        email: { type: [string, 'null'] }
+        address: { type: [string, 'null'] }
+        notes: { type: [string, 'null'] }
+        searchName: { type: string, description: '`name` casefolded with ё → е: what the search compares against' }
+        archivedAt: { type: [string, 'null'], format: date-time, description: Set when a client with documents was removed }
+    ClientDetail:
+      allOf:
+        - { $ref: '#/components/schemas/Client' }
+        - type: object
+          required: [documents]
+          properties:
+            documents:
+              type: array
+              description: Newest first
+              items: { $ref: '#/components/schemas/DocumentSummary' }
+    ClientPage:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Client' }
+        total: { type: integer, description: 'Every match, not just `items`' }
+
+    # ---------------------------------------------------------------- articles (catalogue)
+
+    ArticleKind:
+      type: string
+      enum: [service, material]
+    ArticlePatch:
+      type: object
+      description: The fields of an item, all optional. `ArticleInput` says which ones creating needs.
+      properties:
+        kind: { $ref: '#/components/schemas/ArticleKind' }
+        title: { type: string }
+        description: { type: [string, 'null'] }
+        unit: { type: string, description: 'шт, м, м², м³, п.м., кг, т, л, ч, смена, компл., услуга' }
+        unitPriceTiyn: { type: integer }
+    ArticleInput:
+      allOf:
+        - { $ref: '#/components/schemas/ArticlePatch' }
+      required: [kind, title, unit, unitPriceTiyn]
+    Article:
+      type: object
+      required: [id, companyId, kind, title, searchTitle, unit, unitPriceTiyn, archivedAt]
+      properties:
+        id: { type: string, format: uuid }
+        companyId: { type: string, format: uuid }
+        kind: { $ref: '#/components/schemas/ArticleKind' }
+        title: { type: string }
+        searchTitle: { type: string, description: '`title` casefolded with ё → е' }
+        description: { type: [string, 'null'] }
+        unit: { type: string }
+        unitPriceTiyn: { type: integer }
+        archivedAt: { type: [string, 'null'], format: date-time }
+    ArticlePage:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Article' }
+        total: { type: integer, description: 'Every match, not just `items`' }
+
+    # ---------------------------------------------------------------- documents
+
+    DocumentType:
+      type: string
+      enum: [quote, invoice, act]
+    DocumentStatus:
+      type: string
+      description: 'quote: draft → sent → signed; invoice: draft → issued; act: draft → issued. No MVP operation leads to any other status.'
+      enum: [draft, sent, issued, signed]
+    PaymentState:
+      type: string
+      description: Derived from payments and `dueDate` on every read, never stored. Invoices only.
+      enum: [unpaid, partial, paid, overdue]
+    InvoiceBasis:
+      type: string
+      description: How an invoice was made from a quote
+      enum: [full, percent, amount, remaining]
+    PaymentSummary:
+      type: object
+      required: [state, paidTiyn, balanceTiyn]
+      properties:
+        state: { $ref: '#/components/schemas/PaymentState' }
+        paidTiyn: { type: integer }
+        balanceTiyn: { type: integer, description: '`grossTiyn` minus `paidTiyn`' }
+    ClientSnapshot:
+      type: object
+      description: The requisites of the client as printed. Frozen once the document is issued or signed.
+      required: [kind, name, binIin, phone, email, address]
+      properties:
+        kind: { $ref: '#/components/schemas/ClientKind' }
+        name: { type: string }
+        binIin: { type: [string, 'null'] }
+        contactName: { type: [string, 'null'] }
+        phone: { type: [string, 'null'] }
+        email: { type: [string, 'null'] }
+        address: { type: [string, 'null'] }
+    CompanySnapshot:
+      type: object
+      description: The requisites of the company as printed. Frozen once the document is issued or signed.
+      required: [legalForm, legalName, binIin, address, phone, directorName, directorPosition, vatPayer, bankName, iik, bik, kbe]
+      properties:
+        legalForm: { $ref: '#/components/schemas/LegalForm' }
+        legalName: { type: string }
+        binIin: { type: string }
+        address: { type: string }
+        phone: { type: [string, 'null'] }
+        email: { type: [string, 'null'] }
+        directorName: { type: string }
+        directorPosition: { type: string }
+        vatPayer: { type: boolean }
+        vatCertificate: { type: [string, 'null'] }
+        bankName: { type: [string, 'null'] }
+        iik: { type: [string, 'null'] }
+        bik: { type: [string, 'null'] }
+        kbe: { type: [string, 'null'] }
+        defaultKnp: { type: [string, 'null'] }
+    DocumentLineInput:
+      type: object
+      required: [kind, title, unit, qtyMilli, unitPriceTiyn]
+      properties:
+        articleId: { type: [string, 'null'], format: uuid, description: The catalogue item the line was copied from; the line keeps its own copy }
+        kind: { $ref: '#/components/schemas/ArticleKind' }
+        title: { type: string }
+        description: { type: [string, 'null'] }
+        unit: { type: string }
+        qtyMilli: { type: integer, description: 'Thousandths: 2500 is 2.5' }
+        unitPriceTiyn: { type: integer }
+        discountBp: { type: integer, description: Basis points; defaults to 0 }
+        workDate: { type: [string, 'null'], format: date, description: 'Act only: "дата выполнения работ" of the Р-1 form' }
+    DocumentLine:
+      type: object
+      required: [id, position, articleId, kind, title, unit, qtyMilli, unitPriceTiyn, discountBp, netTiyn, vatTiyn, grossTiyn]
+      properties:
+        id: { type: string, format: uuid }
+        position: { type: integer, description: 0-based order within the document }
+        articleId: { type: [string, 'null'], format: uuid }
+        kind: { $ref: '#/components/schemas/ArticleKind' }
+        title: { type: string }
+        description: { type: [string, 'null'] }
+        unit: { type: string }
+        qtyMilli: { type: integer }
+        unitPriceTiyn: { type: integer }
+        discountBp: { type: integer }
+        netTiyn: { type: integer, description: Before VAT }
+        vatTiyn: { type: integer }
+        grossTiyn: { type: integer }
+        workDate: { type: [string, 'null'], format: date }
+    DocumentSummary:
+      type: object
+      description: A row of a document list
+      required:
+        - id
+        - companyId
+        - type
+        - status
+        - number
+        - issueDate
+        - validUntil
+        - dueDate
+        - clientId
+        - clientName
+        - sourceDocumentId
+        - currency
+        - netTiyn
+        - vatTiyn
+        - grossTiyn
+        - version
+        - issuedAt
+        - signedAt
+        - isExpired
+        - payment
+      properties:
+        id: { type: string, format: uuid }
+        companyId: { type: string, format: uuid }
+        type: { $ref: '#/components/schemas/DocumentType' }
+        status: { $ref: '#/components/schemas/DocumentStatus' }
+        number: { type: [string, 'null'], description: '`КП-2026-0001`, `СЧ-2026-0001`, `АВР-2026-0001`; null while a draft' }
+        issueDate: { type: string, format: date }
+        validUntil: { type: [string, 'null'], format: date, description: Quote only }
+        dueDate: { type: [string, 'null'], format: date, description: Invoice only }
+        clientId: { type: string, format: uuid }
+        clientName: { type: string, description: 'From the client snapshot, so lists need no second call' }
+        sourceDocumentId: { type: [string, 'null'], format: uuid, description: The quote an invoice or an act was made from }
+        currency: { $ref: '#/components/schemas/Currency' }
+        netTiyn: { type: integer }
+        vatTiyn: { type: integer }
+        grossTiyn: { type: integer }
+        version: { type: integer, description: Bumped on every save; sent back to detect `version_conflict` }
+        issuedAt: { type: [string, 'null'], format: date-time }
+        signedAt: { type: [string, 'null'], format: date-time }
+        isExpired:
+          type: boolean
+          description: Derived on every read, never stored. A sent quote whose `validUntil` is before today in the company's time zone.
+        payment:
+          description: Derived on every read, never stored. Invoices only; null for quotes and acts.
+          oneOf:
+            - { $ref: '#/components/schemas/PaymentSummary' }
+            - { type: 'null' }
+    SignatureMethod:
+      type: string
+      enum: [drawn, typed]
+    SignatureSummary:
+      type: object
+      description: The sign-on-screen evidence shown next to a signed document. Always called "Подпись на экране".
+      required: [method, signerName, signedAt, documentVersion]
+      properties:
+        method: { $ref: '#/components/schemas/SignatureMethod' }
+        signerName: { type: string }
+        signedAt: { type: string, format: date-time }
+        documentVersion: { type: integer }
+    Document:
+      description: 'A full document: lines, totals, link, signature summary, payment state and the documents made from it'
+      allOf:
+        - { $ref: '#/components/schemas/DocumentSummary' }
+        - type: object
+          required:
+            - periodFrom
+            - periodTo
+            - contractRef
+            - clientSnapshot
+            - companySnapshot
+            - basis
+            - basisValue
+            - vatEnabled
+            - vatRateBp
+            - notes
+            - terms
+            - lines
+            - shareUrl
+            - signature
+            - children
+          properties:
+            periodFrom: { type: [string, 'null'], format: date }
+            periodTo: { type: [string, 'null'], format: date }
+            contractRef: { type: [string, 'null'] }
+            clientSnapshot: { $ref: '#/components/schemas/ClientSnapshot' }
+            companySnapshot: { $ref: '#/components/schemas/CompanySnapshot' }
+            basis:
+              description: 'Invoices made from a quote: how'
+              oneOf:
+                - { $ref: '#/components/schemas/InvoiceBasis' }
+                - { type: 'null' }
+            basisValue: { type: [integer, 'null'], description: 'Basis points for `percent`, tiyn for `amount`' }
+            vatEnabled: { type: boolean }
+            vatRateBp: { type: integer, description: 'Copied onto the document, so a later rate change does not rewrite it' }
+            notes: { type: [string, 'null'] }
+            terms: { type: [string, 'null'] }
+            lines:
+              type: array
+              items: { $ref: '#/components/schemas/DocumentLine' }
+            shareUrl: { type: [string, 'null'], description: 'The public address `{PUBLIC_BASE_URL}/p/{token}`; null while a draft' }
+            signature:
+              oneOf:
+                - { $ref: '#/components/schemas/SignatureSummary' }
+                - { type: 'null' }
+            children:
+              type: array
+              description: Invoices and acts made from this document (quotes only)
+              items: { $ref: '#/components/schemas/DocumentSummary' }
+    DocumentSummaryPage:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/DocumentSummary' }
+        total: { type: integer, description: 'Every match, not just `items`' }
+    DocumentInput:
+      type: object
+      required: [type, clientId, vatEnabled, lines]
+      properties:
+        type: { $ref: '#/components/schemas/DocumentType' }
+        clientId: { type: string, format: uuid }
+        issueDate: { type: string, format: date, description: "Defaults to today in the company's time zone" }
+        validUntil: { type: [string, 'null'], format: date }
+        dueDate: { type: [string, 'null'], format: date }
+        periodFrom: { type: [string, 'null'], format: date }
+        periodTo: { type: [string, 'null'], format: date }
+        contractRef: { type: [string, 'null'] }
+        vatEnabled: { type: boolean }
+        lines:
+          type: array
+          items: { $ref: '#/components/schemas/DocumentLineInput' }
+        notes: { type: [string, 'null'] }
+        terms: { type: [string, 'null'] }
+        clientRequestId: { type: string, format: uuid, description: 'Idempotency key: a replay returns the existing document' }
+    DocumentUpdateInput:
+      description: Replaces an editable document, lines included
+      allOf:
+        - { $ref: '#/components/schemas/DocumentInput' }
+        - type: object
+          required: [version]
+          properties:
+            version: { type: integer, description: The one the editor loaded }
+    ConvertCommon:
+      type: object
+      required: [clientRequestId]
+      properties:
+        issue: { type: boolean, description: Issue the new document at once instead of leaving a draft }
+        clientRequestId: { type: string, format: uuid, description: 'Idempotency key: a replay returns the existing document' }
+    ConvertToAct:
+      description: An act copies the quote lines. One active act per quote.
+      allOf:
+        - { $ref: '#/components/schemas/ConvertCommon' }
+        - type: object
+          required: [target]
+          properties:
+            target: { type: string, enum: [act] }
+    ConvertToInvoiceWhole:
+      description: '`full` copies the lines; `remaining` is one line for the quote total minus every invoice already made from it'
+      allOf:
+        - { $ref: '#/components/schemas/ConvertCommon' }
+        - type: object
+          required: [target, basis]
+          properties:
+            target: { type: string, enum: [invoice] }
+            basis: { type: string, enum: [full, remaining] }
+    ConvertToInvoicePercent:
+      description: A one-line prepayment invoice for a share of the quote
+      allOf:
+        - { $ref: '#/components/schemas/ConvertCommon' }
+        - type: object
+          required: [target, basis, basisValue]
+          properties:
+            target: { type: string, enum: [invoice] }
+            basis: { type: string, enum: [percent] }
+            basisValue: { type: integer, description: 'Basis points: 5000 is 50 %' }
+    ConvertToInvoiceAmount:
+      description: A one-line prepayment invoice for an amount
+      allOf:
+        - { $ref: '#/components/schemas/ConvertCommon' }
+        - type: object
+          required: [target, basis, basisValue]
+          properties:
+            target: { type: string, enum: [invoice] }
+            basis: { type: string, enum: [amount] }
+            basisValue: { type: integer, description: Tiyn }
+    ConvertInput:
+      description: What to make from a signed quote
+      oneOf:
+        - { $ref: '#/components/schemas/ConvertToAct' }
+        - { $ref: '#/components/schemas/ConvertToInvoiceWhole' }
+        - { $ref: '#/components/schemas/ConvertToInvoicePercent' }
+        - { $ref: '#/components/schemas/ConvertToInvoiceAmount' }
+
+    # ---------------------------------------------------------------- payments
+
+    PaymentMethod:
+      type: string
+      enum: [cash, transfer, card, kaspi, other]
+    PaymentInput:
+      type: object
+      required: [amountTiyn, method, paidOn, clientRequestId]
+      properties:
+        amountTiyn: { type: integer, description: Greater than 0 }
+        method: { $ref: '#/components/schemas/PaymentMethod' }
+        paidOn: { type: string, format: date }
+        note: { type: [string, 'null'] }
+        clientRequestId: { type: string, format: uuid, description: 'Idempotency key: a replay returns the existing payment' }
+    Payment:
+      type: object
+      required: [id, companyId, documentId, amountTiyn, currency, method, paidOn, note]
+      properties:
+        id: { type: string, format: uuid }
+        companyId: { type: string, format: uuid }
+        documentId: { type: string, format: uuid }
+        amountTiyn: { type: integer }
+        currency: { $ref: '#/components/schemas/Currency' }
+        method: { $ref: '#/components/schemas/PaymentMethod' }
+        paidOn: { type: string, format: date }
+        note: { type: [string, 'null'] }
+    PaymentPage:
+      type: object
+      required: [items, total]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Payment' }
+        total: { type: integer, description: 'Every match, not just `items`' }
+    PaymentResult:
+      type: object
+      description: "What recording a payment returns: the payment and the invoice's new state"
+      required: [payment, paymentState, balanceTiyn]
+      properties:
+        payment: { $ref: '#/components/schemas/Payment' }
+        paymentState: { $ref: '#/components/schemas/PaymentState' }
+        balanceTiyn: { type: integer }
+
+    # ---------------------------------------------------------------- dashboard
+
+    CountAndTotal:
+      type: object
+      required: [count, grossTiyn]
+      properties:
+        count: { type: integer }
+        grossTiyn: { type: integer }
+    CountAndBalance:
+      type: object
+      required: [count, balanceTiyn]
+      properties:
+        count: { type: integer }
+        balanceTiyn: { type: integer }
+    Outstanding:
+      description: Issued invoices not fully paid, as of today, with the part past its due date
+      allOf:
+        - { $ref: '#/components/schemas/CountAndBalance' }
+        - type: object
+          required: [overdue]
+          properties:
+            overdue: { $ref: '#/components/schemas/CountAndBalance' }
+    DocumentEventType:
+      type: string
+      enum: [created, updated, issued, viewed, signed, converted, payment_added, payment_removed]
+    DocumentEvent:
+      type: object
+      required: [id, documentId, type, actorKind, data, at]
+      properties:
+        id: { type: string, format: uuid }
+        documentId: { type: string, format: uuid }
+        type: { $ref: '#/components/schemas/DocumentEventType' }
+        actorKind: { type: string, enum: [user, client, system] }
+        data:
+          type: object
+          description: Event details, such as the payment amount
+          additionalProperties: true
+        at: { type: string, format: date-time }
+    DashboardEvent:
+      description: An activity row with the document it belongs to
+      allOf:
+        - { $ref: '#/components/schemas/DocumentEvent' }
+        - type: object
+          required: [documentType, documentNumber, clientName]
+          properties:
+            documentType: { $ref: '#/components/schemas/DocumentType' }
+            documentNumber: { type: [string, 'null'] }
+            clientName: { type: string }
+    Dashboard:
+      type: object
+      required: [from, to, awaitingSignature, signed, acceptanceRate, invoicedTiyn, cashedTiyn, outstanding, toInvoice, recentEvents]
+      properties:
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        awaitingSignature:
+          description: Sent quotes not yet signed, issued in the period
+          allOf:
+            - { $ref: '#/components/schemas/CountAndTotal' }
+        signed:
+          description: Quotes signed in the period
+          allOf:
+            - { $ref: '#/components/schemas/CountAndTotal' }
+        acceptanceRate: { type: [number, 'null'], description: 'Signed quotes as a share of the quotes decided in the period, 0 to 1; null when none were decided' }
+        invoicedTiyn: { type: integer, description: 'Gross of invoices issued in the period, by `issueDate`' }
+        cashedTiyn: { type: integer, description: 'Payments received in the period, by `paidOn`' }
+        outstanding: { $ref: '#/components/schemas/Outstanding' }
+        toInvoice:
+          type: array
+          description: Signed quotes not fully invoiced, as of today, newest first, top 5
+          items: { $ref: '#/components/schemas/DocumentSummary' }
+        recentEvents:
+          type: array
+          description: Always empty in the MVP; the activity feed comes later
+          items: { $ref: '#/components/schemas/DashboardEvent' }
+
+    # ---------------------------------------------------------------- public (the client, no account)
+
+    PublicDocument:
+      type: object
+      description: "The client's view of a document: whitelisted fields only, no internal ids and no other documents"
+      required:
+        - type
+        - status
+        - number
+        - issueDate
+        - validUntil
+        - dueDate
+        - periodFrom
+        - periodTo
+        - contractRef
+        - clientSnapshot
+        - companySnapshot
+        - vatEnabled
+        - vatRateBp
+        - currency
+        - netTiyn
+        - vatTiyn
+        - grossTiyn
+        - notes
+        - terms
+        - lines
+        - version
+        - canSign
+        - isExpired
+        - signature
+        - logoUrl
+        - signatureImageUrl
+      properties:
+        type: { $ref: '#/components/schemas/DocumentType' }
+        status: { $ref: '#/components/schemas/DocumentStatus' }
+        number: { type: [string, 'null'] }
+        issueDate: { type: string, format: date }
+        validUntil: { type: [string, 'null'], format: date }
+        dueDate: { type: [string, 'null'], format: date }
+        periodFrom: { type: [string, 'null'], format: date }
+        periodTo: { type: [string, 'null'], format: date }
+        contractRef: { type: [string, 'null'] }
+        clientSnapshot: { $ref: '#/components/schemas/ClientSnapshot' }
+        companySnapshot: { $ref: '#/components/schemas/CompanySnapshot' }
+        vatEnabled: { type: boolean }
+        vatRateBp: { type: integer }
+        currency: { $ref: '#/components/schemas/Currency' }
+        netTiyn: { type: integer }
+        vatTiyn: { type: integer }
+        grossTiyn: { type: integer }
+        notes: { type: [string, 'null'] }
+        terms: { type: [string, 'null'] }
+        lines:
+          type: array
+          description: '`articleId` is always null here: the catalogue is internal'
+          items: { $ref: '#/components/schemas/DocumentLine' }
+        version: { type: integer, description: Sent back on sign to detect `version_conflict` }
+        canSign: { type: boolean, description: 'Derived: a sent quote that is not expired' }
+        isExpired: { type: boolean, description: "Derived on every read: a sent quote whose `validUntil` is before today in the company's time zone" }
+        signature:
+          oneOf:
+            - { $ref: '#/components/schemas/SignatureSummary' }
+            - { type: 'null' }
+        logoUrl: { type: [string, 'null'], description: 'What an `<img>` loads: the public logo operation of this token; null without a logo' }
+        signatureImageUrl: { type: [string, 'null'], description: 'What an `<img>` loads: a `data:image/png;base64,` URL of the drawn signature, since no public operation serves it; null until signed' }
+    PublicSignInput:
+      type: object
+      required: [signerName, signaturePng, consentAccepted, personalDataConsent, version]
+      properties:
+        signerName: { type: string }
+        signaturePng: { type: string, description: 'The drawn signature as a base64 PNG, at most 200 KB decoded, without the `data:` prefix' }
+        consentAccepted: { type: boolean, enum: [true], description: '"Подпись на экране" consent' }
+        personalDataConsent: { type: boolean, enum: [true], description: 'Consent to process personal data (name, signature, IP)' }
+        version: { type: integer, description: The `version` of the document the client saw }
