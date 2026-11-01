@@ -1,7 +1,10 @@
+import { renderToString } from 'react-dom/server'
+import { MemoryRouter } from 'react-router'
 import { describe, expect, it } from 'vitest'
 import { screens, SCREEN_MAP_PATH, titleKey } from '../app/screens'
 import { formatIssues, t } from '../i18n/t'
 import { renderApp } from '../test/renderApp'
+import { Placeholder } from './Placeholder'
 
 const render = (url: string): string => renderApp(url)
 
@@ -14,10 +17,14 @@ describe('screen placeholders', () => {
   })
 
   it('names the M1 issue that builds the content', () => {
-    // S07 is built by #19, S13 by #22 and S14 by #27; the act's screen (S18) still shows a placeholder.
-    expect(render('/acts/demo')).toContain('#31')
-    // The invoice list and card (S15, S16) are built by #28; the dashboard (S04) still shows a placeholder.
-    expect(render('/')).toContain(formatIssues([32]))
+    // Every MVP screen is built now, so the placeholder is rendered on its own: it stays the fallback for a new screen.
+    const screen = screens.find((s) => s.id === 'S18')!
+    const html = renderToString(
+      <MemoryRouter>
+        <Placeholder screen={screen} path={screen.example} />
+      </MemoryRouter>,
+    )
+    expect(html).toContain(formatIssues([31]))
   })
 
   it('lists every screen on the screen map', () => {
