@@ -11,6 +11,10 @@
 - A document is only ever changed through `compare_and_set`, so every write that depends on what the caller read fails
   if the document moved on (architecture.md, "Races").
 
+- Every list has one exact order, which pages rely on: the keys each method gives, then `id` ascending as the final
+  tie-breaker (the contract words its orders the same way). Text sorts in code-point order: SQLite's default BINARY,
+  and COLLATE "C" on Postgres, whose default would sort by locale (architecture.md, "Search").
+
 Only portable behaviour belongs here: unique indexes and foreign keys, no locks and nothing inside JSON columns.
 """
 
@@ -67,7 +71,8 @@ class UserRepository(Protocol):
     def get_by_email(self, email: str) -> User | None: ...
     def update(self, record: User) -> User: ...
     def list_memberships(self, user_id: UUID) -> list[Membership]:
-        """The user's companies, for `GET /api/me`: the one read of memberships that starts from no company."""
+        """The user's companies, for `GET /api/me`: the one read of memberships that starts from no company.
+        By `created_at`."""
         ...
 
 
@@ -82,7 +87,9 @@ class CompanyRepository(Protocol):
 class MembershipRepository(Protocol):
     def add(self, company_id: UUID, record: Membership) -> Membership: ...
     def get(self, company_id: UUID, user_id: UUID) -> Membership | None: ...
-    def list_for_company(self, company_id: UUID) -> list[Membership]: ...
+    def list_for_company(self, company_id: UUID) -> list[Membership]:
+        """By `created_at`."""
+        ...
 
 
 @runtime_checkable
@@ -148,8 +155,8 @@ class DocumentRepository(Protocol):
         limit: int | None = None,
         offset: int = 0,
     ) -> Page[Document]:
-        """Newest `issue_date` first, then newest created first. `q` is a substring of `search_text`, the stored search
-        key of the number and the client's name as printed on the document. Dates are inclusive."""
+        """Newest `issue_date` first, then newest `created_at` first. `q` is a substring of `search_text`, the stored
+        search key of the number and the client's name as printed on the document. Dates are inclusive."""
         ...
 
     def compare_and_set(
@@ -196,7 +203,7 @@ class ShareLinkRepository(Protocol):
     def get(self, company_id: UUID, record_id: UUID) -> ShareLink | None: ...
     def get_by_token(self, company_id: UUID, token: str) -> ShareLink | None: ...
     def get_for_document(self, company_id: UUID, document_id: UUID) -> ShareLink | None:
-        """The document's newest link that isn't revoked."""
+        """The document's newest link that isn't revoked, by `created_at`."""
         ...
 
     def update(self, company_id: UUID, record: ShareLink) -> ShareLink: ...
@@ -217,13 +224,13 @@ class PaymentRepository(Protocol):
         ...
 
     def list_for_document(self, company_id: UUID, document_id: UUID) -> list[Payment]:
-        """Oldest `paid_on` first, then in the order they were recorded."""
+        """Oldest `paid_on` first, then oldest `created_at` first."""
         ...
 
     def list_paid_between(
         self, company_id: UUID, paid_from: date | None = None, paid_to: date | None = None
     ) -> list[Payment]:
-        """Inclusive; a missing bound is open. Oldest `paid_on` first, then in the order they were recorded."""
+        """Inclusive; a missing bound is open. Oldest `paid_on` first, then oldest `created_at` first."""
         ...
 
     def delete(self, company_id: UUID, record_id: UUID) -> None: ...
@@ -235,11 +242,11 @@ class DocumentEventRepository(Protocol):
 
     def add(self, company_id: UUID, record: DocumentEvent) -> DocumentEvent: ...
     def list_for_document(self, company_id: UUID, document_id: UUID) -> list[DocumentEvent]:
-        """Oldest first, by `at`."""
+        """Oldest first, by `at` and then `created_at`."""
         ...
 
     def list_recent(self, company_id: UUID, limit: int) -> list[DocumentEvent]:
-        """Newest first, by `at`."""
+        """Newest first, by `at` and then `created_at`."""
         ...
 
 

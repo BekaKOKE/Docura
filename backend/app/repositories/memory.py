@@ -13,6 +13,7 @@ from collections.abc import Callable, Iterable, Iterator, Mapping
 from copy import deepcopy
 from dataclasses import dataclass, field, fields, replace
 from datetime import date
+from operator import attrgetter
 from types import TracebackType
 from typing import Any, ClassVar, Self, TypeVar
 from uuid import UUID
@@ -62,6 +63,16 @@ def _check_unique(table: str, rows: Mapping[UUID, Any], record: Any) -> None:
             continue
         if any(row.id != record.id and key_of(row) == key for row in rows.values()):
             raise UniqueViolationError(constraint)
+
+
+def _ordered(rows: Iterable[R], *keys: str) -> list[R]:
+    """`keys` ascending, then `id`. Text compares by code point, as COLLATE "C" does."""
+    return sorted(rows, key=attrgetter(*keys, "id"))
+
+
+def _newest_first(rows: Iterable[R], *keys: str) -> list[R]:
+    """`keys` descending, then `id` ascending."""
+    return sorted(sorted(rows, key=attrgetter("id")), key=attrgetter(*keys), reverse=True)
 
 
 def _page(rows: list[R], limit: int | None, offset: int) -> Page[R]:
@@ -189,7 +200,9 @@ class MemoryUserRepository(_Repository):
         return self._store(replace(record, created_at=current.created_at, updated_at=utc_now()))
 
     def list_memberships(self, user_id: UUID) -> list[Membership]:
-        return deepcopy([row for row in self._tables.memberships.values() if row.user_id == user_id])
+        return deepcopy(
+            _ordered((row for row in self._tables.memberships.values() if row.user_id == user_id), "created_at")
+        )
 
 
 class MemoryCompanyRepository(_Repository):
@@ -221,7 +234,7 @@ class MemoryMembershipRepository(_AddMixin):
         return deepcopy(next((row for row in self._in_company(company_id) if row.user_id == user_id), None))
 
     def list_for_company(self, company_id: UUID) -> list[Membership]:
-        return deepcopy(list(self._in_company(company_id)))
+        return deepcopy(_ordered(self._in_company(company_id), "created_at"))
 
 
 class MemoryClientRepository(_AddMixin, _GetMixin, _UpdateMixin):
@@ -249,7 +262,7 @@ class MemoryClientRepository(_AddMixin, _GetMixin, _UpdateMixin):
             for row in self._in_company(company_id)
             if (row.archived_at is not None) == archived and query in row.search_name
         ]
-        return _page(sorted(rows, key=lambda row: row.search_name), limit, offset)
+        return _page(_ordered(rows, "search_name"), limit, offset)
 
 
 class MemoryArticleRepository(_AddMixin, _GetMixin, _UpdateMixin):
@@ -273,7 +286,7 @@ class MemoryArticleRepository(_AddMixin, _GetMixin, _UpdateMixin):
             and query in row.search_title
             and (kind is None or row.kind == kind)
         ]
-        return _page(sorted(rows, key=lambda row: row.search_title), limit, offset)
+        return _page(_ordered(rows, "search_title"), limit, offset)
 
 
 class MemoryDocumentRepository(_AddMixin, _GetMixin):
@@ -318,9 +331,7 @@ class MemoryDocumentRepository(_AddMixin, _GetMixin):
             )
 
         rows = [row for row in self._in_company(company_id) if matches(row)]
-        # Reversed first: the sort is stable, so equal dates stay newest-created first.
-        rows.reverse()
-        return _page(sorted(rows, key=lambda row: row.issue_date, reverse=True), limit, offset)
+        return _page(_newest_first(rows, "issue_date", "created_at"), limit, offset)
 
     def compare_and_set(
         self, company_id: UUID, record_id: UUID, expected_version: int, changes: Mapping[str, Any]
@@ -409,8 +420,8 @@ class MemoryShareLinkRepository(_AddMixin, _GetMixin, _UpdateMixin, _DocumentChi
         return deepcopy(next((row for row in self._in_company(company_id) if row.token == token), None))
 
     def get_for_document(self, company_id: UUID, document_id: UUID) -> ShareLink | None:
-        active = (row for row in reversed(self._for_document(company_id, document_id)) if row.revoked_at is None)
-        return deepcopy(next(active, None))
+        active = (row for row in self._for_document(company_id, document_id) if row.revoked_at is None)
+        return deepcopy(next(iter(_newest_first(active, "created_at")), None))
 
 
 class MemorySignatureRepository(_AddMixin, _DocumentChildRepository):
@@ -447,7 +458,7 @@ class MemoryPaymentRepository(_AddMixin, _GetMixin, _DocumentChildRepository):
 
     @staticmethod
     def _by_paid_on(rows: Iterable[Payment]) -> list[Payment]:
-        return deepcopy(sorted(rows, key=lambda row: row.paid_on))
+        return deepcopy(_ordered(rows, "paid_on", "created_at"))
 
 
 class MemoryDocumentEventRepository(_AddMixin, _DocumentChildRepository):
@@ -455,13 +466,10 @@ class MemoryDocumentEventRepository(_AddMixin, _DocumentChildRepository):
     references: ClassVar[dict[str, str]] = {"document_id": "documents", "actor_user_id": "users"}
 
     def list_for_document(self, company_id: UUID, document_id: UUID) -> list[DocumentEvent]:
-        return deepcopy(sorted(self._for_document(company_id, document_id), key=lambda row: row.at))
+        return deepcopy(_ordered(self._for_document(company_id, document_id), "at", "created_at"))
 
     def list_recent(self, company_id: UUID, limit: int) -> list[DocumentEvent]:
-        # Reversed first: the sort is stable, so equal times stay newest-recorded first.
-        rows = list(self._in_company(company_id))
-        rows.reverse()
-        return deepcopy(sorted(rows, key=lambda row: row.at, reverse=True)[:limit])
+        return deepcopy(_newest_first(self._in_company(company_id), "at", "created_at")[:limit])
 
 
 class MemoryUnitOfWork:

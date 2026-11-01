@@ -4,7 +4,7 @@ from collections.abc import Callable
 from dataclasses import replace
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import pytest
 from repo_factories import (
@@ -279,13 +279,16 @@ def test_document_search_filters_and_orders_newest_first(storage: Storage, tenan
     cid, client = tenant.id, tenant.client.id
     with storage.unit_of_work() as uow:
         old = uow.documents.add(cid, make_document(cid, client, issue_date=date(2026, 1, 15), notes="старый"))
-        same_day_first = uow.documents.add(cid, make_document(cid, client, issue_date=date(2026, 12, 1)))
+        same_day_first = uow.documents.add(
+            cid, make_document(cid, client, issue_date=date(2026, 12, 1), created_at=NOW)
+        )
         same_day_second = uow.documents.add(
             cid,
             make_document(
                 cid,
                 client,
                 issue_date=date(2026, 12, 1),
+                created_at=NOW + timedelta(seconds=1),
                 type="invoice",
                 status="issued",
                 number="СЧ-2026-0007",
@@ -336,6 +339,96 @@ def test_document_search_text_cannot_be_set_by_hand(storage: Storage, tenant: Te
         assert uow.documents.get(tenant.id, tenant.document.id) == tenant.document
 
 
+def ids_in_order(count: int) -> list[UUID]:
+    return sorted(uuid4() for _ in range(count))
+
+
+def test_equal_clients_and_articles_fall_back_to_id(storage: Storage, tenant: Tenant) -> None:
+    cid = tenant.id
+    first, second, third = ids_in_order(3)
+    with storage.unit_of_work() as uow:
+        for row_id in (second, third, first):
+            uow.clients.add(cid, make_client(cid, id=row_id, name="Общий"))
+            uow.articles.add(cid, make_article(cid, id=row_id, title="Общий"))
+        assert [row.id for row in uow.clients.search(cid, q="общий").items] == [first, second, third]
+        assert [row.id for row in uow.articles.search(cid, q="общий").items] == [first, second, third]
+
+
+def test_text_sorts_by_code_point_so_kazakh_letters_come_after_russian(storage: Storage, tenant: Tenant) -> None:
+    cid = tenant.id
+    with storage.unit_of_work() as uow:
+        for name in ("Ә общий", "я общий", "а общий", "Z общий"):
+            uow.clients.add(cid, make_client(cid, name=name))
+        assert [row.name for row in uow.clients.search(cid, q="общий").items] == [
+            "Z общий",
+            "а общий",
+            "я общий",
+            "Ә общий",
+        ]
+
+
+def test_documents_fall_back_to_newest_created_and_then_id(storage: Storage, tenant: Tenant) -> None:
+    cid, client, day = tenant.id, tenant.client.id, date(2027, 3, 1)
+    first, second, third = ids_in_order(3)
+    later = NOW + timedelta(seconds=1)
+    with storage.unit_of_work() as uow:
+        uow.documents.add(cid, make_document(cid, client, id=third, issue_date=day, created_at=later))
+        uow.documents.add(cid, make_document(cid, client, id=second, issue_date=day, created_at=later))
+        uow.documents.add(cid, make_document(cid, client, id=first, issue_date=day, created_at=NOW))
+        # `first` has the lowest id but was created earlier; among equals, the lower id comes first.
+        assert [row.id for row in uow.documents.search(cid, issued_from=day).items] == [second, third, first]
+
+
+def test_payments_fall_back_to_oldest_created_and_then_id(storage: Storage, tenant: Tenant) -> None:
+    cid, did, day = tenant.id, tenant.document.id, date(2027, 3, 1)
+    first, second, third = ids_in_order(3)
+    later = NOW + timedelta(seconds=1)
+    with storage.unit_of_work() as uow:
+        uow.payments.add(cid, make_payment(cid, did, id=first, paid_on=day, created_at=later))
+        uow.payments.add(cid, make_payment(cid, did, id=third, paid_on=day, created_at=NOW))
+        uow.payments.add(cid, make_payment(cid, did, id=second, paid_on=day, created_at=NOW))
+        assert [row.id for row in uow.payments.list_paid_between(cid, paid_from=day)] == [second, third, first]
+
+
+def test_events_fall_back_to_created_at_and_then_id(storage: Storage, tenant: Tenant) -> None:
+    cid = tenant.id
+    first, second, third = ids_in_order(3)
+    later = NOW + timedelta(seconds=1)
+    with storage.unit_of_work() as uow:
+        document = uow.documents.add(cid, make_document(cid, tenant.client.id))
+        for row_id, created_at in ((first, later), (third, NOW), (second, NOW)):
+            event = make_event(cid, document.id, id=row_id, at=NOW + timedelta(days=1), created_at=created_at)
+            uow.document_events.add(cid, event)
+        assert [row.id for row in uow.document_events.list_for_document(cid, document.id)] == [second, third, first]
+        assert [row.id for row in uow.document_events.list_recent(cid, 3)] == [first, second, third]
+
+
+def test_memberships_fall_back_to_id(storage: Storage, tenant: Tenant) -> None:
+    second_company = make_company()
+    first, second = ids_in_order(2)
+    with storage.unit_of_work() as uow:
+        uow.companies.add(second_company.id, second_company)
+        other_user = uow.users.add(make_user())
+        uow.memberships.add(
+            second_company.id,
+            Membership(id=second, company_id=second_company.id, user_id=tenant.user.id, created_at=NOW),
+        )
+        uow.memberships.add(
+            second_company.id, Membership(id=first, company_id=second_company.id, user_id=other_user.id, created_at=NOW)
+        )
+        assert [row.id for row in uow.memberships.list_for_company(second_company.id)] == [first, second]
+
+
+def test_the_newest_link_wins_a_tie_by_id(storage: Storage, tenant: Tenant) -> None:
+    cid, did = tenant.id, tenant.document.id
+    first, second = ids_in_order(2)
+    moment = tenant.link.created_at + timedelta(days=1)
+    with storage.unit_of_work() as uow:
+        uow.share_links.add(cid, make_link(cid, did, id=second, created_at=moment))
+        uow.share_links.add(cid, make_link(cid, did, id=first, created_at=moment))
+        assert uow.share_links.get_for_document(cid, did).id == first
+
+
 def test_lines_are_replaced_whole_and_kept_in_position_order(storage: Storage, tenant: Tenant) -> None:
     cid, did = tenant.id, tenant.document.id
     with storage.unit_of_work() as uow:
@@ -356,7 +449,7 @@ def test_a_document_has_one_active_link_the_newest(storage: Storage, tenant: Ten
     cid, did = tenant.id, tenant.document.id
     with storage.unit_of_work() as uow:
         assert uow.share_links.get_for_document(cid, did) == tenant.link
-        newer = uow.share_links.add(cid, make_link(cid, did))
+        newer = uow.share_links.add(cid, make_link(cid, did, created_at=tenant.link.created_at + timedelta(seconds=1)))
         assert uow.share_links.get_for_document(cid, did) == newer
         uow.share_links.update(cid, replace(newer, revoked_at=NOW))
         assert uow.share_links.get_for_document(cid, did) == tenant.link
