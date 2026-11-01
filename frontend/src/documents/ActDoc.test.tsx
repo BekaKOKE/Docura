@@ -58,6 +58,7 @@ describe('ActDoc: the Р-1 layout (AC 3, TC-3)', () => {
       'количество',
       'цена за единицу',
       'стоимость',
+      ...['1', '2', '3', '4', '5', '6', '7', '8'],
     ])
     expect(head).toContain('colSpan="3"')
   })
@@ -70,8 +71,8 @@ describe('ActDoc: the Р-1 layout (AC 3, TC-3)', () => {
   })
 
   it('keeps the lines of the form Docura has no data for, to fill in by hand', () => {
-    expect(text).toContain('Сведения об использовании запасов, полученных от заказчика:')
-    expect(text).toContain('Приложение: Перечень документации, в том числе отчет(ы) о маркетинговых, научных исследованиях, консультационных и прочих услугах (обязательны при его (их) наличии) на:')
+    expect(text).toContain('Сведения об использовании запасов, полученных от заказчика (наименование, количество, стоимость):')
+    expect(text).toContain('Приложение: Перечень документации, в том числе отчет(ы) о маркетинговых, научных исследованиях, консультационных и прочих услугах (обязательны при его (их) наличии) на страниц')
     expect(text.indexOf('Приложение')).toBeLessThan(text.indexOf('Сдал (Исполнитель)'))
   })
 
@@ -96,9 +97,9 @@ describe('ActDoc: the Р-1 layout (AC 3, TC-3)', () => {
     expect(html.match(/class="act-sign-row"/g)).toHaveLength(6)
     expect(html.match(/>должность</g)).toHaveLength(2)
     expect(html.match(/>подпись</g)).toHaveLength(2)
-    expect(html.match(/>расшифровка</g)).toHaveLength(2)
+    expect(html.match(/>расшифровка подписи</g)).toHaveLength(2)
     expect(html.match(/>М\.П\.</g)).toHaveLength(2)
-    expect(text).toContain('Дата подписания (принятия) работ:')
+    expect(text).toContain('Дата подписания (принятия) работ (услуг):')
     // The executor's position and name are filled in, the customer writes theirs by hand.
     expect(text).toContain('Индивидуальный предприниматель')
     expect(text).toContain('Сейткали Бекзат')

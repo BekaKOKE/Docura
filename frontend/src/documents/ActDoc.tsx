@@ -18,6 +18,7 @@ import { resolveTotals, type ResolvedTotals } from './totals'
 
 // A work date that is not filled in yet (a draft) is left as a dash, so the column keeps its shape.
 const MISSING = '—'
+const COLUMN_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8]
 
 function ActLines({ document, totals }: { document: RenderableDocument; totals: ResolvedTotals }) {
   return (
@@ -53,6 +54,11 @@ function ActLines({ document, totals }: { document: RenderableDocument; totals: 
           <th scope="col" className="doc-col-num">
             {t('act.doc.col.sum')}
           </th>
+        </tr>
+        <tr className="act-col-numbers" aria-hidden="true">
+          {COLUMN_NUMBERS.map((number) => (
+            <th key={number}>{number}</th>
+          ))}
         </tr>
       </thead>
       <tbody>
@@ -152,7 +158,7 @@ export function ActDoc({ document, signatureImageUrl, timeZone = DEFAULT_TIME_ZO
           <span className="doc-fact-label">{t('act.doc.stocks')}:</span> <span className="act-sign-blank" aria-hidden="true" />
         </p>
         <p className="act-sign-date">
-          <span className="doc-fact-label">{t('act.doc.attachments')}:</span> <span className="act-sign-blank" aria-hidden="true" />
+          <span className="doc-fact-label">{t('act.doc.attachments')}</span> <span className="act-sign-blank" aria-hidden="true" /> <span>{t('act.doc.attachments.pages')}</span>
         </p>
       </section>
       <footer className="act-signatures">
