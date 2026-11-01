@@ -243,6 +243,7 @@ paths:
       x-service-method: clients.list
       tags: [clients]
       summary: List and search clients
+      description: By `searchName` ascending, then `id`. A query value of the wrong type is a 422; `limit` and `offset` out of range are clamped.
       parameters:
         - { name: q, in: query, description: Search text; matched against searchName, schema: { type: string } }
         - { name: archived, in: query, description: true lists archived clients; false or omitted lists active ones, schema: { type: boolean } }
@@ -256,6 +257,7 @@ paths:
               schema: { $ref: '#/components/schemas/ClientPage' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
         default: { $ref: '#/components/responses/Unexpected' }
     post:
       operationId: clientsCreate
@@ -336,6 +338,7 @@ paths:
       x-service-method: articles.list
       tags: [articles]
       summary: List and search the catalogue
+      description: By `searchTitle` ascending, then `id`. A query value of the wrong type or outside its enum is a 422; `limit` and `offset` out of range are clamped.
       parameters:
         - { name: q, in: query, description: Search text; matched against searchTitle, schema: { type: string } }
         - { name: kind, in: query, schema: { $ref: '#/components/schemas/ArticleKind' } }
@@ -349,6 +352,7 @@ paths:
               schema: { $ref: '#/components/schemas/ArticlePage' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
         default: { $ref: '#/components/responses/Unexpected' }
     post:
       operationId: articlesCreate
@@ -415,11 +419,12 @@ paths:
       x-service-method: documents.list
       tags: [documents]
       summary: List documents, newest first
+      description: By `issueDate` descending, then creation descending, then `id`. A query value of the wrong type or outside its enum is a 422; `limit` and `offset` out of range are clamped. A `clientId` that is unknown or not a UUID matches nothing.
       parameters:
         - { name: type, in: query, schema: { $ref: '#/components/schemas/DocumentType' } }
         - { name: status, in: query, schema: { $ref: '#/components/schemas/DocumentStatus' } }
         - { name: paymentState, in: query, schema: { $ref: '#/components/schemas/PaymentState' } }
-        - { name: clientId, in: query, schema: { type: string, format: uuid } }
+        - { name: clientId, in: query, schema: { type: string } }
         - { name: q, in: query, description: 'Search text: number or client name', schema: { type: string } }
         - { name: from, in: query, description: 'Issue date, inclusive', schema: { type: string, format: date } }
         - { name: to, in: query, description: 'Issue date, inclusive', schema: { type: string, format: date } }
@@ -433,12 +438,17 @@ paths:
               schema: { $ref: '#/components/schemas/DocumentSummaryPage' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
         default: { $ref: '#/components/responses/Unexpected' }
     post:
       operationId: documentsCreate
       x-service-method: documents.create
       tags: [documents]
-      summary: Create a draft quote, invoice or act
+      summary: Create a draft quote
+      description: |
+        In the MVP this creates quotes only: any other `type` is a 422 on `type`. Invoices and acts come from convert.
+        A `clientId` that is not this company's, or not a UUID, is a 404, after the 422 checks.
+        An `articleId` that is not this company's is a 422 on `lines.N.articleId`.
       requestBody:
         required: true
         content:
@@ -483,7 +493,16 @@ paths:
       x-service-method: documents.update
       tags: [documents]
       summary: Replace an editable document, lines included
-      description: A quote is editable while draft or sent, an invoice or an act only as a draft.
+      description: |
+        For a quote in draft or sent, and an act in draft. Anything else, an invoice included, is a 409 `document_locked`.
+        `type` must be the document's own, or it is a 422 on `type`.
+
+        Quote in draft: a `clientId` that is not this company's, or not a UUID, is a 404, after the 422 checks. Quote in
+        sent: the client is frozen, so any other `clientId` is a 422 on `clientId`, and `lines` can't be empty. On both, an
+        `articleId` that is not this company's is a 422 on `lines.N.articleId`.
+
+        Act in draft: only the line work dates, the period and `contractRef` are saved. A different `clientId`, or a number
+        of `lines` other than the act's, is a 422.
       requestBody:
         required: true
         content:
@@ -626,6 +645,7 @@ paths:
       x-service-method: payments.list
       tags: [payments]
       summary: Payments on an invoice, oldest first
+      description: By `paidOn` ascending, then creation ascending, then `id`. A query value of the wrong type is a 422; `limit` and `offset` out of range are clamped.
       parameters:
         - { name: limit, in: query, description: 'Defaults to 50; clamped to 1..200', schema: { type: integer } }
         - { name: offset, in: query, description: 'Defaults to 0; negative counts as 0', schema: { type: integer } }
@@ -637,6 +657,7 @@ paths:
               schema: { $ref: '#/components/schemas/PaymentPage' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
         default: { $ref: '#/components/responses/Unexpected' }
     post:
       operationId: paymentsCreate
@@ -650,7 +671,7 @@ paths:
             schema: { $ref: '#/components/schemas/PaymentInput' }
       responses:
         '200':
-          description: A replay of `clientRequestId`, with the payment it made and the invoice as it is now
+          description: A replay of `clientRequestId`, with the payment it made and that payment's invoice as it is now
           content:
             application/json:
               schema: { $ref: '#/components/schemas/PaymentResult' }
@@ -677,7 +698,7 @@ paths:
   /api/companies/{cid}/payments/{pid}:
     parameters:
       - { $ref: '#/components/parameters/Cid' }
-      - { name: pid, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: pid, in: path, required: true, description: "Another company's id, or one that is not a UUID, is a 404, never a 422.", schema: { type: string } }
     delete:
       operationId: paymentsRemove
       x-service-method: payments.remove
@@ -757,7 +778,21 @@ paths:
       x-service-method: public.sign
       tags: [public]
       summary: Sign a sent quote with the finger signature ("Подпись на экране")
-      description: Only a quote is signed on screen in the MVP; an act ends at `issued`. `already_signed` is what a repeated request gets, and the screen treats it as success.
+      description: |
+        Only a quote is signed on screen in the MVP; an act ends at `issued`. The server composes the consent text stored
+        with the signature; the client sends only that it agreed.
+
+        The checks run in this order, and the first that fails answers:
+          1. 404 `not_found`: unknown token, or the link's document is a draft.
+          2. 410 `link_revoked`: the link was withdrawn.
+          3. 409 `already_signed`: a signature exists or the status is `signed`.
+          4. 410 `link_expired`: a sent quote past `validUntil`.
+          5. 409 `document_locked`: anything but a sent quote.
+          6. 409 `version_conflict`: `version` is not the document's.
+          7. 422 `validation_error`: name, image or consent.
+
+        So a retry after a lost response gets `already_signed`, never `version_conflict` (signing bumps `version`), and the
+        screen treats it as success. Validation comes last, after the state checks.
       security: []
       requestBody:
         required: true
@@ -852,14 +887,14 @@ components:
       name: cid
       in: path
       required: true
-      description: The company. Another company's id is a 404.
-      schema: { type: string, format: uuid }
+      description: The company. Another company's id, or one that is not a UUID, is a 404, never a 422.
+      schema: { type: string }
     Id:
       name: id
       in: path
       required: true
-      description: Another company's id is a 404.
-      schema: { type: string, format: uuid }
+      description: Another company's id, or one that is not a UUID, is a 404, never a 422.
+      schema: { type: string }
     Token:
       name: token
       in: path
@@ -1229,7 +1264,7 @@ components:
       type: object
       required: [kind, title, unit, qtyMilli, unitPriceTiyn]
       properties:
-        articleId: { type: [string, 'null'], format: uuid, description: The catalogue item the line was copied from; the line keeps its own copy }
+        articleId: { type: [string, 'null'], description: "The catalogue item the line was copied from; the line keeps its own copy. Not this company's: a 422 on lines.N.articleId" }
         kind: { $ref: '#/components/schemas/ArticleKind' }
         title: { type: string }
         description: { type: [string, 'null'] }
@@ -1381,9 +1416,12 @@ components:
       required: [type, clientId, vatEnabled, lines]
       properties:
         type: { $ref: '#/components/schemas/DocumentType' }
-        clientId: { type: string, format: uuid }
+        clientId: { type: string, description: See the operation for what an id that is not this company's does }
         issueDate: { type: string, format: date, description: "Defaults to today in the company's time zone" }
-        validUntil: { type: [string, 'null'], format: date }
+        validUntil:
+          type: [string, 'null']
+          format: date
+          description: Absent means `issueDate` + `quoteValidityDays`; null means no expiry. The two differ, so the server must tell them apart. Not before `issueDate`.
         dueDate: { type: [string, 'null'], format: date }
         periodFrom: { type: [string, 'null'], format: date }
         periodTo: { type: [string, 'null'], format: date }
@@ -1394,7 +1432,10 @@ components:
           items: { $ref: '#/components/schemas/DocumentLineInput' }
         notes: { type: [string, 'null'] }
         terms: { type: [string, 'null'] }
-        clientRequestId: { type: string, format: uuid, description: 'Idempotency key: a replay returns the existing document' }
+        clientRequestId:
+          type: string
+          format: uuid
+          description: Idempotency key, unique per company across create and convert. See `ConvertCommon.clientRequestId`.
     DocumentUpdateInput:
       description: Replaces an editable document, lines included
       allOf:
@@ -1408,7 +1449,13 @@ components:
       required: [clientRequestId]
       properties:
         issue: { type: boolean, description: Issue the new document at once instead of leaving a draft }
-        clientRequestId: { type: string, format: uuid, description: 'Idempotency key: a replay returns the existing document' }
+        clientRequestId:
+          type: string
+          format: uuid
+          description: |
+            Idempotency key, unique per company across create and convert (documents_request_uq). A key already used returns
+            the document it made, with 200, before any other check: whatever the body says, and from whichever quote the
+            request names. Nothing new is created. Deleting that draft frees the key.
     ConvertToAct:
       description: An act copies the quote lines. One active act per quote.
       allOf:
@@ -1467,7 +1514,14 @@ components:
         method: { $ref: '#/components/schemas/PaymentMethod' }
         paidOn: { type: string, format: date }
         note: { type: [string, 'null'] }
-        clientRequestId: { type: string, format: uuid, description: 'Idempotency key: a replay returns the existing payment' }
+        clientRequestId:
+          type: string
+          format: uuid
+          description: |
+            Idempotency key, unique per company (payments_request_uq), not per invoice. Once the invoice in the path is found,
+            a key already used returns the payment it made, with 200 and the state of the invoice that payment belongs to,
+            whatever the body says. Reused on another invoice, nothing is recorded there: check `payment.documentId`. Removing
+            the payment frees the key.
     Payment:
       type: object
       required: [id, companyId, documentId, amountTiyn, currency, method, paidOn, note]
