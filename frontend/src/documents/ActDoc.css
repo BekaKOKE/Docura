@@ -3,7 +3,14 @@
 
 .act-table .act-col-date { width: 58pt; white-space: nowrap; }
 .act-table thead .act-col-date { white-space: normal; }
-.act-table .act-col-report { width: 58pt; }
+/* The form's headings are long, so they are small, and the name of the work keeps the width it needs to read. */
+.act-table thead th { vertical-align: top; font-size: 7pt; line-height: 9pt; }
+.act-table .doc-col-title { width: 140pt; overflow-wrap: break-word; }
+.act-table .act-col-n { width: 28pt; }
+.act-table .act-col-report { width: 78pt; }
+.act-table .act-col-unit { width: 46pt; overflow-wrap: break-word; }
+.act-table .act-col-done { text-align: center; }
+.act-notes { display: grid; gap: 2pt; font-size: var(--doc-table); line-height: var(--doc-table-leading); color: var(--dc-color-text-muted); }
 
 /* The lines of the form that Docura has no data for: a label and a ruled line to fill in by hand. */
 .act-form-lines { display: grid; gap: 4pt; break-inside: avoid; }

@@ -4,6 +4,7 @@
 // The client signing the act on screen is post-MVP (spec D5); a signature record, if one is passed, is shown
 // as "Подпись на экране" like on the other documents.
 //
+// The wording of the columns, the lines and the footnotes is the form's own (appendix 50, old.adilet.zan.kz/rus/docs/V1200008265).
 // Docura holds no data for column 4 ("Сведения об отчёте", only "при наличии"), the stocks received from the customer
 // or the list of attachments, so they keep their place on the form and stay empty, to fill in by hand if they apply.
 
@@ -23,21 +24,26 @@ function ActLines({ document, totals }: { document: RenderableDocument; totals: 
     <table className="doc-table act-table" aria-label={t('doc.table.label')}>
       <thead>
         <tr>
-          <th scope="col" className="doc-col-n">
+          <th scope="col" rowSpan={2} className="doc-col-n act-col-n">
             {t('act.doc.col.n')}
           </th>
-          <th scope="col" className="doc-col-title">
+          <th scope="col" rowSpan={2} className="doc-col-title">
             {t('act.doc.col.title')}
           </th>
-          <th scope="col" className="act-col-date">
+          <th scope="col" rowSpan={2} className="act-col-date">
             {t('act.doc.col.date')}
           </th>
-          <th scope="col" className="act-col-report">
+          <th scope="col" rowSpan={2} className="act-col-report">
             {t('act.doc.col.report')}
           </th>
-          <th scope="col" className="doc-col-unit">
+          <th scope="col" rowSpan={2} className="act-col-unit">
             {t('act.doc.col.unit')}
           </th>
+          <th scope="colgroup" colSpan={3} className="act-col-done">
+            {t('act.doc.col.done')}
+          </th>
+        </tr>
+        <tr>
           <th scope="col" className="doc-col-num">
             {t('act.doc.col.qty')}
           </th>
@@ -52,14 +58,14 @@ function ActLines({ document, totals }: { document: RenderableDocument; totals: 
       <tbody>
         {document.lines.map((line, index) => (
           <tr key={index}>
-            <td className="doc-col-n">{index + 1}</td>
+            <td className="doc-col-n act-col-n">{index + 1}</td>
             <td className="doc-col-title">
               <Marked text={line.title} />
               {line.description && <span className="doc-line-note">{line.description}</span>}
             </td>
             <td className="act-col-date">{line.workDate ? <DocDate date={line.workDate} /> : MISSING}</td>
             <td className="act-col-report">{MISSING}</td>
-            <td className="doc-col-unit">{line.unit}</td>
+            <td className="act-col-unit">{line.unit}</td>
             <td className="doc-col-num">{formatQty(line.qtyMilli)}</td>
             <td className="doc-col-num">
               <Money tiyn={line.unitPriceTiyn} />
@@ -108,7 +114,7 @@ export function ActDoc({ document, signatureImageUrl, timeZone = DEFAULT_TIME_ZO
   return (
     <Sheet kind="act" label={`${title} ${document.number ?? t('doc.draft')}`}>
       <header className="doc-head">
-        <DocTitle title={title} number={document.number} />
+        <DocTitle title={`${title}*`} number={document.number} />
         <div className="doc-meta">
           <p>
             {t('doc.from')} <DocDate date={document.issueDate} />
@@ -178,6 +184,11 @@ export function ActDoc({ document, signatureImageUrl, timeZone = DEFAULT_TIME_ZO
         <p className="act-sign-date">
           <span className="doc-fact-label">{t('act.doc.signedOn')}:</span> <span className="act-sign-blank" aria-hidden="true" />
         </p>
+        <div className="act-notes">
+          <p>{t('act.doc.note1')}</p>
+          <p>{t('act.doc.note2')}</p>
+          <p>{t('act.doc.note3')}</p>
+        </div>
       </footer>
     </Sheet>
   )

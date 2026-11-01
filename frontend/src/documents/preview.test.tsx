@@ -38,7 +38,7 @@ describe('DocumentRenderer', () => {
     expect(hasRenderer('invoice')).toBe(true)
     expect(hasRenderer('act')).toBe(true)
     expect(plainText(renderToString(<DocumentRenderer type="act" document={seedDocument('АВР-2026-0001')} />))).toContain(
-      'Акт выполненных работ (оказанных услуг) № АВР-2026-0001',
+      'Акт выполненных работ (оказанных услуг)* № АВР-2026-0001',
     )
     expect(plainText(renderToString(<DocumentRenderer type="quote" document={referenceQuote()} />))).toContain(
       'Коммерческое предложение',

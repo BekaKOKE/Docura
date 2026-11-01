@@ -82,7 +82,7 @@ describe('S08 preview: the document', () => {
   it('draws an act with the same screen (#31)', () => {
     const act = seedDocument('АВР-2026-0001') as unknown as Document
     const out = html(<PreviewReady document={{ ...act, type: 'act' }} zoom="fit" onZoom={noop} onPrint={noop} />)
-    expect(plainText(out)).toContain('Акт выполненных работ (оказанных услуг) № АВР-2026-0001')
+    expect(plainText(out)).toContain('Акт выполненных работ (оказанных услуг)* № АВР-2026-0001')
   })
 
   it('says so instead of showing a blank page for a type that has no renderer', () => {

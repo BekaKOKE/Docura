@@ -30,7 +30,7 @@ describe('ActDoc: the Р-1 layout (AC 3, TC-3)', () => {
   const text = plainText(html)
 
   it('names the act and numbers it, with the date it was drawn up', () => {
-    expect(text).toContain('Акт выполненных работ (оказанных услуг) № АВР-2026-0003')
+    expect(text).toContain('Акт выполненных работ (оказанных услуг)* № АВР-2026-0003')
     expect(text).toContain('от 20.10.2026')
   })
 
@@ -48,7 +48,18 @@ describe('ActDoc: the Р-1 layout (AC 3, TC-3)', () => {
   it('has the columns of the form in order: №, name, date, report, unit, quantity, price, cost', () => {
     const head = html.slice(html.indexOf('<thead>'), html.indexOf('</thead>'))
     const columns = [...head.matchAll(/<th[^>]*>([^<]*)<\/th>/g)].map((m) => m[1])
-    expect(columns).toEqual(['№', 'Наименование работ (услуг)', 'Дата выполнения', 'Сведения об отчёте (при наличии)', 'Ед. изм.', 'Кол-во', 'Цена за единицу', 'Стоимость'])
+    expect(columns).toEqual([
+      'Номер по порядку',
+      'Наименование работ (услуг) (в разрезе их подвидов в соответствии с технической спецификацией, заданием, графиком выполнения работ (услуг) при их наличии)',
+      'Дата выполнения работ (оказания услуг)**',
+      'Сведения об отчете о научных исследованиях, маркетинговых, консультационных и прочих услугах (дата, номер, количество страниц) (при их наличии)***',
+      'Единица измерения',
+      'Выполнено работ (оказано услуг)',
+      'количество',
+      'цена за единицу',
+      'стоимость',
+    ])
+    expect(head).toContain('colSpan="3"')
   })
 
   it('gives each line its work date, quantity, unit, price and cost before VAT', () => {
@@ -60,8 +71,14 @@ describe('ActDoc: the Р-1 layout (AC 3, TC-3)', () => {
 
   it('keeps the lines of the form Docura has no data for, to fill in by hand', () => {
     expect(text).toContain('Сведения об использовании запасов, полученных от заказчика:')
-    expect(text).toContain('Приложение (перечень документации):')
+    expect(text).toContain('Приложение: Перечень документации, в том числе отчет(ы) о маркетинговых, научных исследованиях, консультационных и прочих услугах (обязательны при его (их) наличии) на:')
     expect(text.indexOf('Приложение')).toBeLessThan(text.indexOf('Сдал (Исполнитель)'))
+  })
+
+  it('carries the three footnotes of the form', () => {
+    expect(text).toContain('*Применяется для приемки-передачи выполненных работ (оказанных услуг), за исключением строительно-монтажных работ.')
+    expect(text).toContain('**Заполняется в случае, если даты выполненных работ (оказанных услуг) приходятся на различные периоды')
+    expect(text).toContain('***Заполняется в случае наличия отчета о научных исследованиях')
   })
 
   it('shows the total and the total in words', () => {
@@ -160,7 +177,7 @@ describe('ActDoc: a draft', () => {
     const doc = referenceAct()
     const draft = { ...doc, number: null, lines: doc.lines.map((line) => ({ ...line, workDate: null })) }
     const text = plainText(render(draft))
-    expect(text).toContain('Акт выполненных работ (оказанных услуг) (черновик)')
+    expect(text).toContain('Акт выполненных работ (оказанных услуг)* (черновик)')
     expect(text).toContain(`Укладка ламината — — м²`)
   })
 

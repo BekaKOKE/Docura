@@ -182,7 +182,7 @@ describe('S18 the card of a draft act (AC 1, AC 2, TC-1)', () => {
   it('draws the act as it will print, under the form, and links to the full-size preview', () => {
     expect(html).toContain('href="/documents/a-1/preview"')
     expect(html).toContain('data-doc="act"')
-    expect(plainText(html)).toContain('Акт выполненных работ (оказанных услуг) (черновик)')
+    expect(plainText(html)).toContain('Акт выполненных работ (оказанных услуг)* (черновик)')
     expect(plainText(html)).toContain('Отчётный период: с 15.10.2026 по 18.10.2026')
   })
 
@@ -214,7 +214,7 @@ describe('S18 the card of an issued act (AC 2, TC-2)', () => {
 
   it('draws the act with its number', () => {
     expect(html).toContain('data-doc="act"')
-    expect(plainText(html)).toContain('Акт выполненных работ (оказанных услуг) № АВР-2026-0002')
+    expect(plainText(html)).toContain('Акт выполненных работ (оказанных услуг)* № АВР-2026-0002')
   })
 
   it('has no claim about a signature on screen: the act is signed on paper in the MVP (spec D5)', () => {
