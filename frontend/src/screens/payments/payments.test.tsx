@@ -123,6 +123,12 @@ describe('the menu of a row (AC 1, TC-1, TC-8)', () => {
 })
 
 describe('the toast (AC 4, TC-4)', () => {
+  it('hides under an open sheet, so a tap meant for the sheet cannot undo the payment (AC 1)', () => {
+    const toast = { id: 3, kind: 'recorded', paymentId: 'p-1', invoiceId: 'i-1' } as const
+    expect(renderToString(withClient(<PaymentToast toast={toast} onDismiss={() => {}} covered />))).toContain('data-covered="true"')
+    expect(renderToString(withClient(<PaymentToast toast={toast} onDismiss={() => {}} />))).not.toContain('data-covered')
+  })
+
   it('says "Оплата записана" with an "Отменить" button', () => {
     const html = renderToString(withClient(<PaymentToast toast={{ id: 1, kind: 'recorded', paymentId: 'p-1', invoiceId: 'i-1' }} onDismiss={noop} />))
     expect(text(html)).toBe('Оплата записана Отменить')

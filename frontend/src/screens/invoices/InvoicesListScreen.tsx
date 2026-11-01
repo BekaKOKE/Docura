@@ -224,7 +224,7 @@ function InvoicesList({ unpaidOnly }: { unpaidOnly: boolean }) {
           }}
         />
       )}
-      {toast && <PaymentToast key={toast.id} toast={toast} onDismiss={dismiss} />}
+      {toast && <PaymentToast key={toast.id} toast={toast} onDismiss={dismiss} covered={Boolean(menuFor || recordFor)} />}
     </div>
   )
 }

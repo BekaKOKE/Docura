@@ -12,11 +12,13 @@ export interface PaymentToastProps {
   toast: PaymentToastState
   /** Called when the toast has been on screen long enough, or after the undo. Keep it stable (useCallback). */
   onDismiss: () => void
+  /** A sheet is open: the toast must not lie over it, or a tap meant for the sheet would undo the payment. Its time keeps running. */
+  covered?: boolean
 }
 
 // components.md "Toast": "Оплата записана · Отменить", 8 s; Отменить removes the payment again. A plain notice ("Оплата
 // удалена") has no action and goes sooner. The parent gives the toast `key={toast.id}`, so a new payment starts a new timer.
-export function PaymentToast({ toast, onDismiss }: PaymentToastProps) {
+export function PaymentToast({ toast, onDismiss, covered = false }: PaymentToastProps) {
   const client = useQueryClient()
   const [undo, setUndo] = useState<UndoState>('ready')
   const busy = useRef(false)
@@ -53,7 +55,7 @@ export function PaymentToast({ toast, onDismiss }: PaymentToastProps) {
 
   const action = recorded && (undo === 'ready' || undo === 'busy' || undo === 'failed')
   return (
-    <div className="pm-toast" role="status">
+    <div className="pm-toast" role="status" data-covered={covered || undefined}>
       <span className="pm-toast-text">{text}</span>
       {action && (
         <button type="button" className="pm-toast-action" aria-busy={undo === 'busy' || undefined} onClick={() => void undoPayment()}>

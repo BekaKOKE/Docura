@@ -188,7 +188,7 @@ export function InvoiceView({ invoice }: { invoice: Document }) {
           }}
         />
       )}
-      {toast && <PaymentToast key={toast.id} toast={toast} onDismiss={dismiss} />}
+      {toast && <PaymentToast key={toast.id} toast={toast} onDismiss={dismiss} covered={shareOpen || recordOpen || Boolean(removing)} />}
     </div>
   )
 }
