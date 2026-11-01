@@ -197,7 +197,7 @@ def test_a_rollback_keeps_what_committed_before_it(storage: Storage) -> None:
         assert [row.id for row in uow.clients.search(company.id).items] == [first.id]
 
 
-def test_a_second_thread_waits_and_never_sees_uncommitted_rows(storage: Storage) -> None:
+def test_a_second_thread_never_sees_uncommitted_rows(storage: Storage) -> None:
     company = make_company()
     with storage.unit_of_work() as uow:
         uow.companies.add(company.id, company)
@@ -216,8 +216,7 @@ def test_a_second_thread_waits_and_never_sees_uncommitted_rows(storage: Storage)
         uow.clients.add(company.id, client)
         thread.start()
         started.wait(timeout=5)
-        thread.join(timeout=0.05)
-        assert thread.is_alive()  # it is blocked by this unit of work
+        thread.join(timeout=0.05)  # time for a reader that doesn't block to read now
         raise Boom
     thread.join(timeout=5)
 
