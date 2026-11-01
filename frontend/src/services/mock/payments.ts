@@ -72,12 +72,13 @@ export function createMockPayments(getRuntime: () => MockRuntime): PaymentsServi
           const invoice = db.get('documents', documentId)
           const now = runtime.now()
 
-          // A repeated key is the same request: the payment that already exists, with the invoice as it is now.
+          // A repeated key is the same request: the payment that already exists, with its invoice as it is now. The key is
+          // unique per company (payments_request_uq in schema.sql), so on another invoice it records nothing either.
           const key = input.clientRequestId
           if (key) {
-            const existing = (db.rows('payments') as KeyedPayment[]).find((p) => p.documentId === invoice.id && p.clientRequestId === key)
+            const existing = (db.rows('payments') as KeyedPayment[]).find((p) => p.clientRequestId === key)
             if (existing) {
-              const { state, balanceTiyn } = stateOf(db, invoice, now)
+              const { state, balanceTiyn } = stateOf(db, db.get('documents', existing.documentId), now)
               return { payment: toWire(existing), paymentState: state, balanceTiyn }
             }
           }

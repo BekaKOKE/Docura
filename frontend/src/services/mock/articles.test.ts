@@ -50,6 +50,14 @@ describe('articles.list: search (AC 1)', () => {
     ])
   })
 
+  it('breaks a tie of the same title by id', async () => {
+    const { articles } = await setup()
+    for (let i = 0; i < 5; i += 1) await articles.create({ ...LAMINATE, title: 'Одно название' })
+    const ids = (await articles.list({ q: 'одно название' })).items.map((a) => a.id)
+    expect(ids).toHaveLength(5)
+    expect(ids).toEqual([...ids].sort())
+  })
+
   it('finds «Укладка ламината» by «ламинат» in any case (TC-1)', async () => {
     const { articles } = await setup()
     expect(titles(await articles.list({ q: 'ламинат' }))).toEqual(['Ламинат 33 класс', 'Укладка ламината'])

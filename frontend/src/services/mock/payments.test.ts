@@ -196,6 +196,22 @@ describe('payments.create', () => {
     expect((await services.documents.get(invoice.id)).payment?.paidTiyn).toBe(invoice.grossTiyn)
   })
 
+  it('a key is unique per company: reused on another invoice it records nothing and answers with the first payment', async () => {
+    const services = await signedIn()
+    const first = await invoiceIn(services, 'unpaid')
+    const other = await invoiceIn(services, 'overdue')
+    const before = (await services.payments.list(other.id)).length
+    const request = input(100, { clientRequestId: 'used-once' })
+
+    const made = await services.payments.create(first.id, request)
+    const reused = await services.payments.create(other.id, request)
+
+    expect(reused.payment).toEqual(made.payment)
+    expect(reused.payment.documentId).toBe(first.id)
+    expect(reused.balanceTiyn).toBe(made.balanceTiyn)
+    expect(await services.payments.list(other.id)).toHaveLength(before)
+  })
+
   it('refuses a bad amount, method or date with a message under its own field', async () => {
     const services = await signedIn()
     const invoice = await invoiceIn(services, 'unpaid')

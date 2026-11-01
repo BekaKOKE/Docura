@@ -351,6 +351,28 @@ describe('idempotency', () => {
     expect(children).toHaveLength(2)
   })
 
+  it('a key is shared by create and convert, and by every quote of the company', async () => {
+    const { services } = setup()
+    await services.auth.login(SEITKALI)
+    const quote = await signedQuote(services)
+    const other = await signedQuote(services)
+    const input = percent(5000)
+
+    const invoice = await services.documents.convert(quote.id, input)
+    const fromOtherQuote = await services.documents.convert(other.id, input)
+    const fromCreate = await services.documents.create({
+      type: 'quote',
+      clientId: kairat.id,
+      vatEnabled: true,
+      lines: [],
+      clientRequestId: input.clientRequestId,
+    })
+
+    expect(fromOtherQuote.id).toBe(invoice.id)
+    expect(fromCreate.id).toBe(invoice.id)
+    expect((await services.documents.get(other.id)).children).toEqual([])
+  })
+
   it('a different clientRequestId makes a second invoice', async () => {
     const { services } = setup()
     await services.auth.login(SEITKALI)

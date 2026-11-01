@@ -136,7 +136,7 @@ export function createMockClients(getRuntime: () => MockRuntime): ClientsService
             .rows('clients')
             .filter((row) => (row.archivedAt !== null) === archived)
             .filter((row) => query === '' || row.searchName.includes(query))
-            .sort((a, b) => a.searchName.localeCompare(b.searchName, 'ru'))
+            .sort((a, b) => a.searchName.localeCompare(b.searchName, 'ru') || (a.id < b.id ? -1 : 1))
           const { limit, offset } = clampPage(params.limit, params.offset)
           return { items: matches.slice(offset, offset + limit).map(toClient), total: matches.length }
         }),

@@ -65,6 +65,16 @@ describe('clients.list: search (AC 1)', () => {
   })
 })
 
+describe('clients.list: order', () => {
+  it('breaks a tie of the same name by id', async () => {
+    const { clients } = await setup()
+    for (let i = 0; i < 5; i += 1) await clients.create({ kind: 'person', name: 'Одно Имя' })
+    const ids = (await clients.list({ q: 'одно имя' })).items.map((c) => c.id)
+    expect(ids).toHaveLength(5)
+    expect(ids).toEqual([...ids].sort())
+  })
+})
+
 describe('clients.create and update (AC 2)', () => {
   it('saves a person with Kazakh letters unchanged and no ИИН', async () => {
     const { clients } = await setup()

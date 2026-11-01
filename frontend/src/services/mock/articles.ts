@@ -76,7 +76,7 @@ export function createMockArticles(getRuntime: () => MockRuntime): ArticlesServi
             .filter((row) => row.archivedAt === null)
             .filter((row) => params.kind === undefined || row.kind === params.kind)
             .filter((row) => query === '' || row.searchTitle.includes(query))
-            .sort((a, b) => a.searchTitle.localeCompare(b.searchTitle, 'ru'))
+            .sort((a, b) => a.searchTitle.localeCompare(b.searchTitle, 'ru') || (a.id < b.id ? -1 : 1))
           const { limit, offset } = clampPage(params.limit, params.offset)
           return { items: matches.slice(offset, offset + limit).map(toArticle), total: matches.length }
         }),
