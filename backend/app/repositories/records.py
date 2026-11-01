@@ -162,6 +162,7 @@ class Document(Record):
     type: str
     status: str = "draft"
     number: str | None = None
+    search_text: str = field(init=False)  # always search_key(number + the client's name as printed)
     issue_date: date
     valid_until: date | None = None
     due_date: date | None = None
@@ -190,6 +191,12 @@ class Document(Record):
     client_request_id: UUID | None = None
     created_at: datetime = field(default_factory=utc_now)
     updated_at: datetime = field(default_factory=utc_now)
+
+    def __post_init__(self) -> None:
+        object.__setattr__(
+            self, "search_text", search_key(f"{self.number or ''} {self.client_snapshot.get('name', '')}")
+        )
+        super().__post_init__()
 
 
 @dataclass(frozen=True, kw_only=True)

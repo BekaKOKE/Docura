@@ -148,8 +148,8 @@ class DocumentRepository(Protocol):
         limit: int | None = None,
         offset: int = 0,
     ) -> Page[Document]:
-        """Newest `issue_date` first, then newest created first. `q` is a substring of the search key of the number
-        and the client's name as printed on the document. Dates are inclusive."""
+        """Newest `issue_date` first, then newest created first. `q` is a substring of `search_text`, the stored search
+        key of the number and the client's name as printed on the document. Dates are inclusive."""
         ...
 
     def compare_and_set(

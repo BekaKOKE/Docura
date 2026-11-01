@@ -120,6 +120,7 @@ create table documents (
   type                varchar(10)  not null check (type in ('quote', 'invoice', 'act')),
   status              varchar(10)  not null default 'draft',
   number              varchar(30),            -- null while draft. КП-2026-0001, СЧ-2026-0001, АВР-2026-0001
+  search_text         text         not null,  -- casefold of number + client name as printed, in Python: SQLite lower() and LIKE only fold ASCII
   issue_date          date         not null,
   valid_until         date,                   -- quote only
   due_date            date,                   -- invoice only

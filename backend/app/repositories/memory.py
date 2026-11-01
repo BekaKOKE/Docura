@@ -314,7 +314,7 @@ class MemoryDocumentRepository(_AddMixin, _GetMixin):
                 and (source_document_id is None or row.source_document_id == source_document_id)
                 and (issued_from is None or row.issue_date >= issued_from)
                 and (issued_to is None or row.issue_date <= issued_to)
-                and query in search_key(f"{row.number or ''} {row.client_snapshot.get('name', '')}")
+                and query in row.search_text
             )
 
         rows = [row for row in self._in_company(company_id) if matches(row)]

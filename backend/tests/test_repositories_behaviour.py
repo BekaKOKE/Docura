@@ -308,6 +308,34 @@ def test_document_search_filters_and_orders_newest_first(storage: Storage, tenan
         assert uow.documents.search(cid, limit=1).total == 4
 
 
+def test_document_search_text_is_stored_and_follows_the_document(storage: Storage, tenant: Tenant) -> None:
+    cid, did = tenant.id, tenant.document.id
+    found = lambda uow, q: [row.id for row in uow.documents.search(cid, q=q).items]  # noqa: E731
+    with storage.unit_of_work() as uow:
+        assert uow.documents.get(cid, did).search_text == " қайрат"
+        assert found(uow, "кп-2026") == []
+
+        updated = uow.documents.compare_and_set(cid, did, 1, {"number": "КП-2026-0001"})
+        assert updated.search_text == "кп-2026-0001 қайрат"
+        assert found(uow, "кп-2026") == [did]
+
+        uow.documents.compare_and_set(cid, did, 2, {"client_snapshot": {"name": "Ёлкин"}})
+        assert found(uow, "елкин") == [did]
+        assert found(uow, "қайрат") == []
+
+        # The name as printed counts: renaming the client doesn't rewrite a document.
+        uow.clients.update(cid, replace(tenant.client, name="Другое имя"))
+        assert found(uow, "елкин") == [did]
+        assert found(uow, "другое") == []
+
+
+def test_document_search_text_cannot_be_set_by_hand(storage: Storage, tenant: Tenant) -> None:
+    with storage.unit_of_work() as uow:
+        with pytest.raises(ValueError, match="search_text"):
+            uow.documents.compare_and_set(tenant.id, tenant.document.id, 1, {"search_text": "подделка"})
+        assert uow.documents.get(tenant.id, tenant.document.id) == tenant.document
+
+
 def test_lines_are_replaced_whole_and_kept_in_position_order(storage: Storage, tenant: Tenant) -> None:
     cid, did = tenant.id, tenant.document.id
     with storage.unit_of_work() as uow:
