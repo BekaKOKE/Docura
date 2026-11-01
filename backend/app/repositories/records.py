@@ -1,12 +1,14 @@
 """The rows the repositories hand around, one frozen dataclass per table of `replica/schema.sql`, with its field names.
 
 They hold no storage code, so a service sees the same objects from the memory repositories and the SQL ones. A record
-is changed by making a new one with `dataclasses.replace`, then saving it. Two rules of the schema are enforced here,
-so that neither storage can break them: timestamps are aware and in UTC, and money, quantities and rates are integers.
+is changed by making a new one with `dataclasses.replace`, then saving it. Three rules of the schema are enforced here,
+so that neither storage can break them: timestamps are aware and in UTC, money, quantities and rates are integers, and
+JSON columns hold JSON.
 
 `document_counters` has no record: it is a counter, not an entity, and its repository deals in numbers.
 """
 
+import json
 from dataclasses import dataclass, field, fields
 from datetime import UTC, date, datetime
 from typing import Any, Generic, TypeVar
@@ -18,6 +20,7 @@ T = TypeVar("T")
 
 # Integer tiyn, thousandths and basis points. `basis_value` is basis points or tiyn, depending on `basis`.
 _INTEGER_FIELD_ENDINGS = ("_tiyn", "_milli", "_bp", "basis_value")
+_JSON_FIELDS = frozenset({"client_snapshot", "company_snapshot", "document_snapshot", "data"})
 
 
 def utc_now() -> datetime:
@@ -37,12 +40,22 @@ class Record:
     def __post_init__(self) -> None:
         for item in fields(self):
             value = getattr(self, item.name)
-            if isinstance(value, datetime):
+            if item.name in _JSON_FIELDS:
+                object.__setattr__(self, item.name, self._as_json(item.name, value))
+            elif isinstance(value, datetime):
                 if value.utcoffset() is None:
                     raise ValueError(f"{type(self).__name__}.{item.name}: a timestamp must carry its time zone")
                 object.__setattr__(self, item.name, value.astimezone(UTC))
             elif item.name.endswith(_INTEGER_FIELD_ENDINGS) and value is not None and type(value) is not int:
                 raise ValueError(f"{type(self).__name__}.{item.name}: must be an integer, got {value!r}")
+
+    def _as_json(self, name: str, value: Any) -> Any:
+        """The value as the database will give it back. A UUID, date or Decimal in it would pass in memory and break
+        on SQL, so it fails here on both."""
+        try:
+            return json.loads(json.dumps(value, allow_nan=False))
+        except (TypeError, ValueError) as error:
+            raise ValueError(f"{type(self).__name__}.{name}: not JSON: {error}") from error
 
 
 @dataclass(frozen=True, kw_only=True)
