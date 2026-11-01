@@ -49,18 +49,20 @@ describe('ActDoc: the Р-1 layout (AC 3, TC-3)', () => {
     const head = html.slice(html.indexOf('<thead>'), html.indexOf('</thead>'))
     const columns = [...head.matchAll(/<th[^>]*>([^<]*)<\/th>/g)].map((m) => m[1])
     expect(columns).toEqual([
+      'Выполнено работ (оказано услуг)',
       'Номер по порядку',
       'Наименование работ (услуг) (в разрезе их подвидов в соответствии с технической спецификацией, заданием, графиком выполнения работ (услуг) при их наличии)',
       'Дата выполнения работ (оказания услуг)**',
       'Сведения об отчете о научных исследованиях, маркетинговых, консультационных и прочих услугах (дата, номер, количество страниц) (при их наличии)***',
       'Единица измерения',
-      'Выполнено работ (оказано услуг)',
       'количество',
       'цена за единицу',
       'стоимость',
       ...['1', '2', '3', '4', '5', '6', '7', '8'],
     ])
     expect(head).toContain('colSpan="3"')
+    // Chrome stretches the rows of a table with a rowSpan in its header, and the totals then lie over the lines.
+    expect(head).not.toContain('rowSpan')
   })
 
   it('gives each line its work date, quantity, unit, price and cost before VAT', () => {

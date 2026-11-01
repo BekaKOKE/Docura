@@ -3,13 +3,25 @@
 
 .act-table .act-col-date { width: 58pt; white-space: nowrap; }
 .act-table thead .act-col-date { white-space: normal; }
-/* The form's headings are long, so they are small, and the name of the work keeps the width it needs to read. */
-.act-table thead th { vertical-align: top; font-size: 7pt; line-height: 9pt; }
-.act-table .doc-col-title { width: 140pt; overflow-wrap: anywhere; }
+/* The form's headings are long, so they are small. Whole words in the fixed columns; only the name of the work breaks a
+   long word, so it gives up its width first and the table stays inside the page. */
+.act-table thead th { vertical-align: top; font-size: 7pt; line-height: 9pt; overflow-wrap: normal; }
+.act-table .doc-col-title { width: 110pt; }
+.act-table tbody .doc-col-title { overflow-wrap: anywhere; }
+.act-table thead .doc-col-title { overflow-wrap: break-word; }
 .act-table .act-col-n { width: 28pt; }
-.act-table .act-col-report { width: 78pt; overflow-wrap: anywhere; }
-.act-table .act-col-unit { width: 46pt; overflow-wrap: anywhere; }
+.act-table .act-col-report { width: 78pt; }
+.act-table .act-col-unit { width: 52pt; }
 .act-table .act-col-done { text-align: center; }
+/* The empty start of the group row reads as one heading cell with the names under it. */
+.act-table .act-col-group td {
+  background: var(--dc-color-surface-sunken);
+  border-top: var(--dc-border-hairline) solid var(--dc-color-border-input);
+  border-bottom: 0;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+.act-table .act-col-names th:nth-child(-n + 5) { border-top: 0; }
 .act-table .act-col-numbers th { text-align: center; }
 .act-notes { display: grid; gap: 2pt; font-size: var(--doc-table); line-height: var(--doc-table-leading); color: var(--dc-color-text-muted); }
 

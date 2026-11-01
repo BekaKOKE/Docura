@@ -24,27 +24,29 @@ function ActLines({ document, totals }: { document: RenderableDocument; totals: 
   return (
     <table className="doc-table act-table" aria-label={t('doc.table.label')}>
       <thead>
-        <tr>
-          <th scope="col" rowSpan={2} className="doc-col-n act-col-n">
-            {t('act.doc.col.n')}
-          </th>
-          <th scope="col" rowSpan={2} className="doc-col-title">
-            {t('act.doc.col.title')}
-          </th>
-          <th scope="col" rowSpan={2} className="act-col-date">
-            {t('act.doc.col.date')}
-          </th>
-          <th scope="col" rowSpan={2} className="act-col-report">
-            {t('act.doc.col.report')}
-          </th>
-          <th scope="col" rowSpan={2} className="act-col-unit">
-            {t('act.doc.col.unit')}
-          </th>
+        {/* No rowSpan: Chrome stretches the rows of a table whose header uses it, and the totals then lie over the lines. */}
+        <tr className="act-col-group">
+          <td colSpan={5} aria-hidden="true" />
           <th scope="colgroup" colSpan={3} className="act-col-done">
             {t('act.doc.col.done')}
           </th>
         </tr>
-        <tr>
+        <tr className="act-col-names">
+          <th scope="col" className="doc-col-n act-col-n">
+            {t('act.doc.col.n')}
+          </th>
+          <th scope="col" className="doc-col-title">
+            {t('act.doc.col.title')}
+          </th>
+          <th scope="col" className="act-col-date">
+            {t('act.doc.col.date')}
+          </th>
+          <th scope="col" className="act-col-report">
+            {t('act.doc.col.report')}
+          </th>
+          <th scope="col" className="act-col-unit">
+            {t('act.doc.col.unit')}
+          </th>
           <th scope="col" className="doc-col-num">
             {t('act.doc.col.qty')}
           </th>
