@@ -369,6 +369,10 @@ function Editor({ company, quote, savedTime, sendError }: EditorProps) {
               aria-invalid={clientError ? 'true' : undefined}
               aria-describedby={clientError ? 'qe-client-error' : undefined}
               onClick={() => setSheet('client')}
+              // Focus going into the sheet that was just opened is not leaving the field.
+              onBlur={() => {
+                if (sheet === null) show(['client'])
+              }}
             >
               <span className="dc-label">{t('qe.client.choose')}</span>
             </button>
