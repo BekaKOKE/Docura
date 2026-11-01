@@ -5,6 +5,14 @@ from fastapi.testclient import TestClient
 
 from app.config import Settings
 from app.main import create_app
+from app.repositories.base import Storage
+from app.repositories.memory import MemoryStorage
+
+
+@pytest.fixture(params=["memory"])
+def storage(request: pytest.FixtureRequest) -> Storage:
+    """The storage under test. M4 adds "sql" to `params`, and every repository test runs on both."""
+    return MemoryStorage()
 
 
 @pytest.fixture
