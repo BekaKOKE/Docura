@@ -9,6 +9,9 @@
 //   timestamps   ISO 8601 strings in UTC, ending in `Z`.
 //   ids          UUID strings.
 // Totals are computed by src/domain (#12) and by the backend; these types only carry them.
+//
+// contracts/openapi.yaml is the source of truth for the wire: api-types.check.ts fails `npm run typecheck` when these
+// types stop agreeing with the generated api-types.ts. It also names the few things kept here that the wire doesn't have.
 
 /** UUID string. */
 export type Id = string
@@ -210,6 +213,7 @@ export type DocumentType = 'quote' | 'invoice' | 'act'
 /**
  * quote: draft → sent → signed | declined; invoice: draft → issued; act: draft → issued → signed.
  * `cancelled` is allowed on all three (schema.sql); the MVP has no screen that sets it.
+ * `declined` and `cancelled` are not in the API contract: no MVP operation leads to them (docs/spec.md, D5).
  */
 export type DocumentStatus = 'draft' | 'sent' | 'issued' | 'signed' | 'declined' | 'cancelled'
 
@@ -348,7 +352,8 @@ export interface Document extends DocumentSummary {
   vatRateBp: BasisPoints
   notes: string | null
   terms: string | null
-  cancelledAt: IsoTimestamp | null
+  /** Not on the wire in the MVP: nothing cancels a document (docs/spec.md, D5). The mock store still carries it. */
+  cancelledAt?: IsoTimestamp | null
   lines: DocumentLine[]
   /** The public link `{PUBLIC_BASE_URL}/p/{token}`; null while the document is a draft. */
   shareUrl: string | null
@@ -417,12 +422,9 @@ export type DocumentEventType =
   | 'issued'
   | 'viewed'
   | 'signed'
-  | 'declined'
   | 'converted'
   | 'payment_added'
   | 'payment_removed'
-  | 'cancelled'
-  | 'link_rotated'
 
 export interface DocumentEvent {
   id: Id
