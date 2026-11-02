@@ -72,8 +72,8 @@ function document(patch: Partial<Document> = {}): Document {
     terms: null,
     cancelledAt: null,
     lines: [
-      { id: 'l-1', position: 0, articleId: null, kind: 'service', title: 'Укладка ламината', unit: 'м²', qtyMilli: 12_500, unitPriceTiyn: 1_850_000, discountBp: 0, netTiyn: 23_125_000, vatTiyn: 3_700_000, grossTiyn: 26_825_000, workDate: '2026-10-15' },
-      { id: 'l-2', position: 1, articleId: null, kind: 'material', title: 'Плинтус, монтаж', unit: 'п.м.', qtyMilli: 32_000, unitPriceTiyn: 150_000, discountBp: 0, netTiyn: 4_800_000, vatTiyn: 768_000, grossTiyn: 5_568_000, workDate: '2026-10-18' },
+      { id: 'l-1', position: 0, articleId: null, kind: 'service', title: 'Укладка ламината', unit: 'м²', qtyMilli: 12_500, unitPriceTiyn: 1_850_000, netTiyn: 23_125_000, vatTiyn: 3_700_000, grossTiyn: 26_825_000, workDate: '2026-10-15' },
+      { id: 'l-2', position: 1, articleId: null, kind: 'material', title: 'Плинтус, монтаж', unit: 'п.м.', qtyMilli: 32_000, unitPriceTiyn: 150_000, netTiyn: 4_800_000, vatTiyn: 768_000, grossTiyn: 5_568_000, workDate: '2026-10-18' },
     ],
     shareUrl: 'http://localhost:5173/p/token-123',
     signature: null,

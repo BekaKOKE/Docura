@@ -97,7 +97,7 @@ function publicView(db: ScopedDb, row: StoredDocument, now: Date): PublicDocumen
     notes: row.notes,
     terms: row.terms,
     // The catalog's article id is internal; the client has no use for it.
-    lines: row.lines.map(({ qtyText: _qtyText, ...line }) => ({ ...line, articleId: null })),
+    lines: row.lines.map(({ qtyText: _qtyText, discountBp: _discountBp, ...line }) => ({ ...line, articleId: null })),
     version: row.version,
     canSign: row.type === 'quote' && row.status === 'sent' && !isExpired,
     isExpired,

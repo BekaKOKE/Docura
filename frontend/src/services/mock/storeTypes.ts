@@ -52,6 +52,7 @@ export interface StoredDocumentLine {
   qtyText?: string
   qtyMilli: QtyMilli
   unitPriceTiyn: Tiyn
+  /** Always 0: the schema keeps `discount_bp`, but the MVP API has no line discounts (docs/spec.md, D2). */
   discountBp: BasisPoints
   netTiyn: Tiyn
   vatTiyn: Tiyn

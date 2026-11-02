@@ -230,7 +230,6 @@ describe('public.sign', () => {
         unit: l.unit,
         qtyMilli: l.qtyMilli,
         unitPriceTiyn: l.unitPriceTiyn,
-        discountBp: l.discountBp,
       })),
     })
 

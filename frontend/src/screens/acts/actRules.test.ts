@@ -14,7 +14,6 @@ const line = (id: string, workDate: string | null) => ({
   unit: 'шт',
   qtyMilli: 2000,
   unitPriceTiyn: 1_200_000,
-  discountBp: 0,
   netTiyn: 2_400_000,
   vatTiyn: 384_000,
   grossTiyn: 2_784_000,

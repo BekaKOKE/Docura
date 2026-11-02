@@ -69,7 +69,6 @@ export function updateInput(act: Document, values: DraftValues): DocumentUpdateI
     unit: line.unit,
     qtyMilli: line.qtyMilli,
     unitPriceTiyn: line.unitPriceTiyn,
-    discountBp: line.discountBp,
     workDate: values.workDates[index] || null,
   }))
   return {

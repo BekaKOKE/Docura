@@ -55,8 +55,9 @@ describe('types.ts conventions', () => {
 describe('types.ts against contracts/fixtures/seed.json', () => {
   // Fields of the seed that are not wire fields of the type on purpose.
   const NOT_ON_THE_WIRE: Record<string, string[]> = {
-    // The text the user typed in the quantity box; the schema stores only qty_milli.
-    lines: ['qtyText'],
+    // The text the user typed in the quantity box; the schema stores only qty_milli. The schema keeps discount_bp,
+    // always 0, but the MVP API has no line discounts (docs/spec.md, D2).
+    lines: ['qtyText', 'discountBp'],
   }
 
   function checkKeys(label: string, rows: Record<string, unknown>[]) {
@@ -220,7 +221,6 @@ describe('sample values typecheck', () => {
           unit: article.unit,
           qtyMilli: 12500,
           unitPriceTiyn: article.unitPriceTiyn,
-          discountBp: 0,
           netTiyn: 23125000,
           vatTiyn: 3700000,
           grossTiyn: 26825000,

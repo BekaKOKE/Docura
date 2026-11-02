@@ -269,8 +269,6 @@ export interface DocumentLineInput {
   unit: string
   qtyMilli: QtyMilli
   unitPriceTiyn: Tiyn
-  /** Line discount in basis points. The MVP has no screen for it; defaults to 0. */
-  discountBp?: BasisPoints
   /** Act only: "дата выполнения работ" of the Р-1 form. */
   workDate?: IsoDate | null
 }
@@ -286,7 +284,6 @@ export interface DocumentLine {
   unit: string
   qtyMilli: QtyMilli
   unitPriceTiyn: Tiyn
-  discountBp: BasisPoints
   /** Before VAT. */
   netTiyn: Tiyn
   vatTiyn: Tiyn

@@ -1294,11 +1294,10 @@ components:
         unit: { type: string }
         qtyMilli: { type: integer, description: 'Thousandths: 2500 is 2.5' }
         unitPriceTiyn: { type: integer }
-        discountBp: { type: integer, description: Basis points; defaults to 0 }
         workDate: { type: [string, 'null'], format: date, description: 'Act only: "дата выполнения работ" of the Р-1 form' }
     DocumentLine:
       type: object
-      required: [id, position, articleId, kind, title, unit, qtyMilli, unitPriceTiyn, discountBp, netTiyn, vatTiyn, grossTiyn]
+      required: [id, position, articleId, kind, title, unit, qtyMilli, unitPriceTiyn, netTiyn, vatTiyn, grossTiyn]
       properties:
         id: { type: string, format: uuid }
         position: { type: integer, description: 0-based order within the document }
@@ -1309,7 +1308,6 @@ components:
         unit: { type: string }
         qtyMilli: { type: integer }
         unitPriceTiyn: { type: integer }
-        discountBp: { type: integer }
         netTiyn: { type: integer, description: Before VAT }
         vatTiyn: { type: integer }
         grossTiyn: { type: integer }

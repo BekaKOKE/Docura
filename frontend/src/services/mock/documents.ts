@@ -126,10 +126,6 @@ function lineProblems(line: DocumentLineInput, db: ScopedDb): Record<string, str
   if (!Number.isSafeInteger(line.unitPriceTiyn) || line.unitPriceTiyn < 0) {
     problems.unitPriceTiyn = t('document.error.priceInvalid')
   }
-  const discount = line.discountBp ?? 0
-  if (!Number.isSafeInteger(discount) || discount < 0 || discount > 10000) {
-    problems.discountBp = t('document.error.discountInvalid')
-  }
   if (line.articleId && !db.find('articles', line.articleId)) problems.articleId = t('document.error.articleMissing')
   if (line.workDate != null && !isIsoDate(line.workDate)) problems.workDate = t('document.error.dateInvalid')
   return problems
@@ -187,7 +183,7 @@ function checkInput(db: ScopedDb, input: DocumentInput, today: IsoDate, quoteVal
       unit: line.unit.trim(),
       qtyMilli: line.qtyMilli,
       unitPriceTiyn: line.unitPriceTiyn,
-      discountBp: line.discountBp ?? 0,
+      discountBp: 0,
       workDate: null,
     })),
   }
@@ -462,7 +458,7 @@ function createView(db: ScopedDb, now: Date): View {
           documentVersion: signature.documentVersion,
         }
       : null
-    const lines: DocumentLine[] = row.lines.map(({ qtyText: _qtyText, ...line }) => line)
+    const lines: DocumentLine[] = row.lines.map(({ qtyText: _qtyText, discountBp: _discountBp, ...line }) => line)
     return {
       ...summary(row),
       periodFrom: row.periodFrom,

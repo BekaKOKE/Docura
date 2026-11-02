@@ -188,7 +188,7 @@ function invoiceDoc(patch: Partial<Document> = {}): Document {
     terms: null,
     cancelledAt: null,
     lines: [
-      { id: 'l-1', position: 0, articleId: null, kind: 'service', title: 'Укладка ламината', unit: 'м²', qtyMilli: 5_000, unitPriceTiyn: 2_000_000, discountBp: 0, netTiyn: 10_000_000, vatTiyn: 0, grossTiyn: 10_000_000 },
+      { id: 'l-1', position: 0, articleId: null, kind: 'service', title: 'Укладка ламината', unit: 'м²', qtyMilli: 5_000, unitPriceTiyn: 2_000_000, netTiyn: 10_000_000, vatTiyn: 0, grossTiyn: 10_000_000 },
     ],
     shareUrl: 'http://localhost:5173/p/tokinv',
     signature: null,

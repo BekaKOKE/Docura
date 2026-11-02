@@ -50,8 +50,8 @@ function publicDoc(patch: Partial<PublicDocument> = {}): PublicDocument {
     notes: 'Работы начнём в понедельник.',
     terms: null,
     lines: [
-      { id: 'l-1', position: 0, articleId: null, kind: 'service', title: 'Укладка ламината', unit: 'м²', qtyMilli: 12_500, unitPriceTiyn: 1_850_000, discountBp: 0, netTiyn: 23_125_000, vatTiyn: 3_700_000, grossTiyn: 26_825_000 },
-      { id: 'l-2', position: 1, articleId: null, kind: 'service', title: 'Плинтус, монтаж', unit: 'п.м.', qtyMilli: 32_000, unitPriceTiyn: 150_000, discountBp: 0, netTiyn: 4_800_000, vatTiyn: 768_000, grossTiyn: 5_568_000 },
+      { id: 'l-1', position: 0, articleId: null, kind: 'service', title: 'Укладка ламината', unit: 'м²', qtyMilli: 12_500, unitPriceTiyn: 1_850_000, netTiyn: 23_125_000, vatTiyn: 3_700_000, grossTiyn: 26_825_000 },
+      { id: 'l-2', position: 1, articleId: null, kind: 'service', title: 'Плинтус, монтаж', unit: 'п.м.', qtyMilli: 32_000, unitPriceTiyn: 150_000, netTiyn: 4_800_000, vatTiyn: 768_000, grossTiyn: 5_568_000 },
     ],
     version: 1,
     canSign: true,

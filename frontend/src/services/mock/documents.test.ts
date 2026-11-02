@@ -210,6 +210,18 @@ describe('totals (AC 6, TC-6)', () => {
     const doc = await services.documents.create(quote(kairat.id, { lines: [line, line, line] }))
     expect([doc.netTiyn, doc.vatTiyn, doc.grossTiyn]).toEqual([99, 15, 114])
   })
+
+  it('take no line discount: the MVP API has none (docs/spec.md, D2), so one sent anyway is ignored', async () => {
+    const { services } = setup()
+    await signInSeitkali(services)
+    const lines = REFERENCE_LINES.map((line) => ({ ...line, discountBp: 5000 }))
+    const doc = await services.documents.create(quote(kairat.id, { lines }))
+    expect(doc.grossTiyn).toBe(32393000)
+    for (const line of doc.lines) expect(Object.keys(line)).not.toContain('discountBp')
+    const sent = await services.documents.issue(doc.id)
+    const page = await services.public.get(sent.shareUrl!.split('/p/')[1]!)
+    for (const line of page.lines) expect(Object.keys(line)).not.toContain('discountBp')
+  })
 })
 
 describe('updating (AC 4, TC-4)', () => {

@@ -171,7 +171,6 @@ export const ru = {
   'document.error.unitTooLong': 'Единица измерения не длиннее 20 символов.',
   'document.error.qtyInvalid': 'Количество должно быть больше нуля.',
   'document.error.priceInvalid': 'Цена не может быть отрицательной.',
-  'document.error.discountInvalid': 'Скидка бывает от 0 до 100 %.',
   'document.error.articleMissing': 'Такой позиции нет в каталоге.',
   'document.error.amountTooLarge': 'Сумма слишком большая.',
   'document.error.versionInvalid': 'Не указана версия документа.',
