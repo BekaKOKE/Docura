@@ -4,7 +4,7 @@
 
 import { parsePriceInput } from '../../domain/article'
 import type { MessageKey } from '../../i18n/t'
-import type { BasisPoints, ConvertInput, Document, Tiyn } from '../../services'
+import type { BasisPoints, ConvertInput, Document, Id, Tiyn } from '../../services'
 
 export type Basis = 'full' | 'remaining' | 'percent' | 'amount'
 
@@ -58,7 +58,7 @@ export type InvoiceRequest =
   | { target: 'invoice'; basis: 'amount'; basisValue: Tiyn }
 
 // Checked against the contract: every request plus its key is a ConvertInput.
-const _contract = (request: InvoiceRequest): ConvertInput => ({ ...request, clientRequestId: 'k' })
+const _contract = (request: InvoiceRequest, clientRequestId: Id): ConvertInput => ({ ...request, clientRequestId })
 void _contract
 
 export type Choice = { ok: true; input: InvoiceRequest; tiyn: Tiyn } | { ok: false; error: MessageKey }

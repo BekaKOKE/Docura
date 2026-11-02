@@ -3,17 +3,12 @@ import { TriangleAlert } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router'
 import { t } from '../../i18n/t'
-import { ApiError, isApiError, services } from '../../services'
+import { ApiError, isApiError, newRequestId, services } from '../../services'
 import { quoteKey, useQuote } from '../quotes/quoteQueries'
 import { ErrorState, PageLoading } from '../ui'
 import { activeActOf } from './actRules'
 import { ActView } from './ActView'
 import './acts.css'
-
-/** An idempotency key for one request: the same key twice makes one act (a repeated tap, a lost answer). */
-function newRequestId(): string {
-  return `act-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
-}
 
 /** What the screen shows while the act is being made from a quote. */
 function Creating() {

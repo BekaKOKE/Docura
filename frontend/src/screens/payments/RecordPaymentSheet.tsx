@@ -4,7 +4,7 @@ import { MoneyInput } from '../../components/MoneyInput'
 import { moneyInputTextFromTiyn } from '../../components/moneyInputText'
 import { isIsoDate, todayInZone } from '../../domain/dates'
 import { t } from '../../i18n/t'
-import { isApiError, services, type DocumentSummary, type Payment, type PaymentMethod } from '../../services'
+import { isApiError, newRequestId, services, type DocumentSummary, type Payment, type PaymentMethod } from '../../services'
 import { BottomSheet } from '../../shell/BottomSheet'
 import { Banner, Money } from '../clients/parts'
 import { errorText } from '../errorText'
@@ -13,7 +13,6 @@ import { refreshAfterPaymentChange } from './paymentQueries'
 import {
   checkAmount,
   DEFAULT_METHOD,
-  newPaymentRequestId,
   NOTE_MAX,
   PAYMENT_METHODS,
   readLastMethod,
@@ -53,7 +52,7 @@ function PaymentForm({ invoice, timeZone, onRecorded }: Omit<RecordPaymentSheetP
   const [serverNote, setServerNote] = useState<string | null>(null)
   const [banner, setBanner] = useState<string | null>(null)
   // One key for this opened sheet, reused on every retry: a second tap or a resent request makes one payment.
-  const [requestId] = useState(newPaymentRequestId)
+  const [requestId] = useState(newRequestId)
   const busy = useRef(false)
   const amountField = useRef<HTMLInputElement>(null)
 

@@ -52,11 +52,6 @@ export function submitLabel(text: string, balanceTiyn: Tiyn): string {
   return check.ok ? t('pm.submit.amount', { amount: formatMoney(check.tiyn) }) : t('pm.submit')
 }
 
-/** An idempotency key for one opened sheet: the same key twice makes one payment (a repeated tap, a lost answer). */
-export function newPaymentRequestId(): string {
-  return `pm-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
-}
-
 // ---------------------------------------------------------------- the method remembered between payments
 
 export const LAST_METHOD_KEY = 'docura.payments.lastMethod'

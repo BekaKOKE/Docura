@@ -8,7 +8,7 @@ import { addDays, todayInZone } from '../../domain/dates'
 import { EditorWithPreview } from '../../documents'
 import { formatDate, formatDateTime } from '../../documents/format'
 import { t, tCount, type MessageKey } from '../../i18n/t'
-import { services, type Article, type Client, type ClientSnapshot, type Company, type Document } from '../../services'
+import { newRequestId, services, type Article, type Client, type ClientSnapshot, type Company, type Document } from '../../services'
 import { Banner, EmptyState } from '../clients/parts'
 import { useCompany } from '../company/queries'
 import { errorText } from '../errorText'
@@ -119,7 +119,7 @@ function Editor({ company, quote, savedTime, sendError }: EditorProps) {
 
   const savedQuote = useRef({ id: quote?.id ?? null, version: quote?.version ?? 0 })
   // One key per opened editor: a create that is sent twice (a lost answer, a repeated tap) makes one quote.
-  const [requestId] = useState(() => `qe-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`)
+  const [requestId] = useState(newRequestId)
   const busy = useRef(false)
   const removals = useRef(0)
   const errorBox = useRef<HTMLDivElement>(null)

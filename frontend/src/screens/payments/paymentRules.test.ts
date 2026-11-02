@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { t } from '../../i18n/t'
+import { newRequestId } from '../../services'
 import {
   checkAmount,
   DEFAULT_METHOD,
   isPaymentMethod,
   isSwipeLeft,
   LAST_METHOD_KEY,
-  newPaymentRequestId,
   NOTICE_MS,
   PAYMENT_METHODS,
   readLastMethod,
@@ -146,9 +146,9 @@ describe('the toast and the request key (AC 4, AC 6)', () => {
     expect(NOTICE_MS).toBeLessThan(UNDO_MS)
   })
 
-  it('makes a different key for every sheet', () => {
-    const keys = new Set(Array.from({ length: 50 }, newPaymentRequestId))
+  it('makes a different key for every sheet, a v4 UUID as the contract says (#83)', () => {
+    const keys = new Set(Array.from({ length: 50 }, newRequestId))
     expect(keys.size).toBe(50)
-    for (const key of keys) expect(key).toMatch(/^pm-[a-z0-9]+-[a-z0-9]+$/)
+    for (const key of keys) expect(key).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/)
   })
 })

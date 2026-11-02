@@ -11,6 +11,7 @@ export const services: Services = selectServices(import.meta.env.VITE_API_MODE)
 export { API_MODES, resolveApiMode, selectServices } from './select'
 export type { ApiMode } from './select'
 export { NotImplementedError } from './notImplemented'
+export { isUuid, newRequestId } from './uuid'
 // For the development panel only (src/dev); nothing else uses these, and the production build drops them.
 export {
   clearForcedErrors,

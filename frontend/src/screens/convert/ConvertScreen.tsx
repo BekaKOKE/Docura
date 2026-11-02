@@ -5,7 +5,7 @@ import { Link, useParams } from 'react-router'
 import { MoneyInput } from '../../components/MoneyInput'
 import { formatMoney } from '../../domain'
 import { t } from '../../i18n/t'
-import { services, type Document } from '../../services'
+import { newRequestId, services, type Document } from '../../services'
 import { Banner, Money } from '../clients/parts'
 import { errorText } from '../errorText'
 import { FieldFrame } from '../fields'
@@ -13,11 +13,6 @@ import { ErrorState, PageLoading } from '../ui'
 import { quoteKey, useQuote } from '../quotes/quoteQueries'
 import { availableTiyn, choose, invoicedTiyn, offeredBases, type Basis, type Typed } from './convertRules'
 import './convert.css'
-
-/** An idempotency key for one request: the same key twice makes one invoice (a repeated tap, a lost answer). */
-function newRequestId(): string {
-  return `cv-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
-}
 
 const TITLE: Record<Basis, 'cv.basis.full' | 'cv.basis.remaining' | 'cv.basis.percent' | 'cv.basis.amount'> = {
   full: 'cv.basis.full',
