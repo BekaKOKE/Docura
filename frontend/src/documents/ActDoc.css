@@ -3,12 +3,16 @@
 
 .act-table .act-col-date { width: 58pt; white-space: nowrap; }
 .act-table thead .act-col-date { white-space: normal; }
-/* The form's headings are long, so they are small. Whole words in the fixed columns; only the name of the work breaks a
-   long word, so it gives up its width first and the table stays inside the page. */
-.act-table thead th { vertical-align: top; font-size: 7pt; line-height: 9pt; overflow-wrap: normal; }
-.act-table .doc-col-title { width: 110pt; }
-.act-table tbody .doc-col-title { overflow-wrap: anywhere; }
-.act-table thead .doc-col-title { overflow-wrap: break-word; }
+/* Eight columns on A4: tighter cells than the other sheets, so the name of the work keeps room for whole words. The
+   form's headings are long, so they are small. Only the name of the work may break a word, so when amounts are huge it
+   gives up its width first and the table stays inside the page. */
+.act-table { font-size: 8.5pt; line-height: 11pt; }
+.act-table th, .act-table td { padding-inline: 3pt; }
+.act-table thead th { vertical-align: top; font-size: 6.5pt; line-height: 8pt; overflow-wrap: normal; }
+/* An amount of 100 million tenge or more needs far more room: the whole table goes smaller, so the name stays readable. */
+.act-table[data-wide] { font-size: 7pt; line-height: 9pt; }
+.act-table[data-wide] thead th { font-size: 6pt; line-height: 7.5pt; }
+.act-table .doc-col-title { width: 120pt; overflow-wrap: anywhere; }
 .act-table .act-col-n { width: 28pt; }
 .act-table .act-col-report { width: 78pt; }
 .act-table .act-col-unit { width: 52pt; }

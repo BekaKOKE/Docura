@@ -19,10 +19,13 @@ import { resolveTotals, type ResolvedTotals } from './totals'
 // A work date that is not filled in yet (a draft) is left as a dash, so the column keeps its shape.
 const MISSING = '—'
 const COLUMN_NUMBERS = [1, 2, 3, 4, 5, 6, 7, 8]
+// 100 000 000 ₸ in tiyn: from here on two amounts on a line leave the name of the work too little room.
+const WIDE_AMOUNT_TIYN = 10_000_000_000
 
 function ActLines({ document, totals }: { document: RenderableDocument; totals: ResolvedTotals }) {
+  const wide = document.lines.some((line, index) => line.unitPriceTiyn >= WIDE_AMOUNT_TIYN || totals.lines[index].netTiyn >= WIDE_AMOUNT_TIYN)
   return (
-    <table className="doc-table act-table" aria-label={t('doc.table.label')}>
+    <table className="doc-table act-table" data-wide={wide || undefined} aria-label={t('doc.table.label')}>
       <thead>
         {/* No rowSpan: Chrome stretches the rows of a table whose header uses it, and the totals then lie over the lines. */}
         <tr className="act-col-group">

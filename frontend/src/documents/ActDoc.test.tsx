@@ -78,6 +78,13 @@ describe('ActDoc: the Р-1 layout (AC 3, TC-3)', () => {
     expect(text.indexOf('Приложение')).toBeLessThan(text.indexOf('Сдал (Исполнитель)'))
   })
 
+  it('goes smaller only for an amount of 100 million tenge or more', () => {
+    expect(html).not.toContain('data-wide')
+    const doc = referenceAct()
+    const big = { ...doc, netTiyn: undefined, vatTiyn: undefined, grossTiyn: undefined, lines: doc.lines.map((line) => ({ ...line, qtyMilli: 1000, unitPriceTiyn: 10_000_000_000 })) }
+    expect(render(big)).toContain('data-wide="true"')
+  })
+
   it('carries the three footnotes of the form', () => {
     expect(text).toContain('*Применяется для приемки-передачи выполненных работ (оказанных услуг), за исключением строительно-монтажных работ.')
     expect(text).toContain('**Заполняется в случае, если даты выполненных работ (оказанных услуг) приходятся на различные периоды')
