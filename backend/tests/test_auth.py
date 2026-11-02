@@ -11,7 +11,7 @@ from fastapi.testclient import TestClient
 from app.config import Settings
 from app.errors import DEFAULT_MESSAGES
 from app.main import create_app
-from app.rate_limit import RateLimiter
+from app.rate_limit import MAX_KEYS, MAX_KEYS_PER_GROUP, RateLimiter
 
 EMAIL = "aliya@example.kz"
 PASSWORD = "Тест-Пароль-2026"
@@ -313,3 +313,72 @@ class TestRateLimit:
 
     def test_each_app_has_its_own_limiter(self, app: FastAPI) -> None:
         assert create_app(Settings(_env_file=None)).state.auth_rate_limiter is not app.state.auth_rate_limiter
+
+
+class TestFloodCannotResetACount:
+    """#39 FAIL on AC 2: 10 050 junk registrations from the attacker's IP pushed its login count out of the limiter,
+    and the sixth login, 32 s after the first, got a token. The caps are small here so the test stays fast; the
+    sequence is QA's."""
+
+    MAX_KEYS = 50
+    PER_IP = 10
+
+    @pytest.fixture
+    def clock(self, app: FastAPI) -> FakeClock:
+        clock = FakeClock()
+        app.state.auth_rate_limiter = RateLimiter(clock=clock, max_keys=self.MAX_KEYS, max_keys_per_group=self.PER_IP)
+        return clock
+
+    def junk_registrations(self, client: TestClient, count: int) -> list[int]:
+        body = {"password": "x", "fullName": ""}
+        return [client.post("/api/auth/register", json={**body, "email": f"junk{n}"}).status_code for n in range(count)]
+
+    def junk_logins(self, client: TestClient, count: int) -> list[int]:
+        return [json_login(client, f"junk{n}@example.kz", "x").status_code for n in range(count)]
+
+    @pytest.mark.parametrize("flood", ["junk_registrations", "junk_logins"])
+    def test_the_sixth_login_after_a_flood_is_still_refused(
+        self, client: TestClient, clock: FakeClock, flood: str
+    ) -> None:
+        register(client)
+        assert [json_login(client, EMAIL, "wrong-password").status_code for _ in range(5)] == [401] * 5
+        statuses = getattr(self, flood)(client, self.MAX_KEYS + 50)
+        assert 429 in statuses
+        assert statuses.count(429) >= self.MAX_KEYS + 50 - self.PER_IP
+        clock.now += 32
+        assert_error(json_login(client), 429, "rate_limited")
+
+    def test_a_key_with_three_tries_survives_a_flood(self, client: TestClient, clock: FakeClock) -> None:
+        register(client)
+        for _ in range(3):
+            json_login(client, EMAIL, "wrong-password")
+        self.junk_registrations(client, self.MAX_KEYS + 50)
+        assert [json_login(client).status_code for _ in range(3)] == [200, 200, 429]
+
+    def test_the_flood_does_not_lock_out_another_ip(self, app: FastAPI, client: TestClient, clock: FakeClock) -> None:
+        register(client)
+        self.junk_registrations(client, self.MAX_KEYS + 50)
+        with TestClient(app, client=("203.0.113.9", 50000)) as other:
+            assert json_login(other).status_code == 200
+
+    def test_the_flooding_ip_gets_new_keys_again_after_the_minute(self, client: TestClient, clock: FakeClock) -> None:
+        register(client)
+        self.junk_registrations(client, self.PER_IP + 1)
+        assert_error(json_login(client), 429, "rate_limited")
+        clock.now += 60
+        assert json_login(client).status_code == 200
+
+    def test_ipv6_addresses_of_one_slash_64_share_the_cap(
+        self, app: FastAPI, client: TestClient, clock: FakeClock
+    ) -> None:
+        for number in range(self.PER_IP):
+            with TestClient(app, client=(f"2001:db8::{number + 1:x}", 50000)) as host:
+                json_login(host, f"junk{number}@example.kz", "x")
+        with TestClient(app, client=("2001:db8::ffff", 50000)) as host:
+            assert_error(json_login(host, "new@example.kz", "x"), 429, "rate_limited")
+        with TestClient(app, client=("2001:db8:0:1::1", 50000)) as other:
+            assert json_login(other, "new@example.kz", "x").status_code == 401
+
+    def test_the_default_limiter_caps_each_ip(self, app: FastAPI) -> None:
+        limiter = app.state.auth_rate_limiter
+        assert limiter._max_keys_per_group == MAX_KEYS_PER_GROUP < limiter._max_keys == MAX_KEYS

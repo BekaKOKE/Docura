@@ -18,6 +18,6 @@ PowerShell: `$env:STORAGE="memory"; uv run uvicorn app.main:app --reload --port 
 - `app/schemas/base.py`: `CamelModel`, the base of every wire model (camelCase JSON).
 - `app/domain/`: pure business rules, tested on `../contracts/test-vectors/`; it imports no FastAPI or storage code.
 - `app/api/`: the routers. `deps.py` has the signed-in user and `require_member`, which every `/api/companies/{cid}` route takes: another company's id is a 404, like an unknown one.
-- `app/services/`: what the routes do, through a unit of work; `app/security.py`: argon2id passwords and the 12 h HS256 token; `app/rate_limit.py`: 5 tries a minute per IP and email on login and on register, in process.
+- `app/services/`: what the routes do, through a unit of work; `app/security.py`: argon2id passwords and the 12 h HS256 token; `app/rate_limit.py`: 5 tries a minute per IP and email on login and on register, in process. A count is never forgotten while it is live; instead an IP (an IPv6 /64) holds at most 20 live keys and the store 10 000, and past a cap a new key gets 429.
 - `tests/tenant_isolation.py`: the tenant-isolation helper for every company route (see its docstring).
 - `app/repositories/`: `base.py` holds a Protocol per table and the unit of work, `records.py` the rows, `memory.py` the `STORAGE=memory` implementation. `create_app` puts the storage on `app.state.storage`; `STORAGE=sql` refuses to start until M4.

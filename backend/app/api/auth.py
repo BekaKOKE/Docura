@@ -1,3 +1,4 @@
+from ipaddress import ip_address, ip_network
 from typing import Annotated, Any, NamedTuple
 
 from fastapi import APIRouter, Depends, Request
@@ -55,10 +56,22 @@ async def _login_credentials(request: Request) -> _Credentials:
     return _Credentials(login_input.email, login_input.password, False)
 
 
+def _client_group(host: str) -> str:
+    """Whose tries these are: the address, or its /64 for IPv6, since one machine is usually given a whole /64."""
+    try:
+        address = ip_address(host)
+    except ValueError:
+        return host
+    if address.version == 6:
+        return str(ip_network(f"{address}/64", strict=False))
+    return str(address)
+
+
 def _check_rate(rate_limiter: RateLimiter, route: str, request: Request, email: str) -> None:
-    """5 tries a minute per IP and email, counted apart for each route."""
-    host = request.client.host if request.client else "unknown"
-    if not rate_limiter.allow((route, host, normalize_email(email)[:MAX_EMAIL_LENGTH])):
+    """5 tries a minute per IP and email, counted apart for each route. Every try counts, before the body's rules are
+    checked: junk can't flood the limiter for free, as it uses up the sender's own keys like any other try."""
+    group = _client_group(request.client.host if request.client else "unknown")
+    if not rate_limiter.allow((route, group, normalize_email(email)[:MAX_EMAIL_LENGTH]), group):
         raise ApiError("rate_limited")
 
 
