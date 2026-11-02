@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { formatMoney } from '../../domain'
 import { isApiError } from '../errors'
 import type { PaymentInput } from '../types'
+import { newRequestId } from '../uuid'
 import { createMockServices } from './index'
 import { createMockRuntime } from './runtime'
 import { DEV_PASSWORD } from './seed'
@@ -76,7 +77,7 @@ const input = (amountTiyn: number, patch: Partial<PaymentInput> = {}): PaymentIn
   amountTiyn,
   method: 'kaspi',
   paidOn: '2026-10-20',
-  clientRequestId: `key-${Math.random().toString(36).slice(2)}`,
+  clientRequestId: newRequestId(),
   ...patch,
 })
 
@@ -184,7 +185,7 @@ describe('payments.create', () => {
   it('a repeated clientRequestId is one payment, also after the invoice is paid (AC 6, TC-6)', async () => {
     const services = await signedIn()
     const invoice = await invoiceIn(services, 'unpaid')
-    const request = input(invoice.payment!.balanceTiyn, { clientRequestId: 'one-tap' })
+    const request = input(invoice.payment!.balanceTiyn, { clientRequestId: '0b7c3e8a-1d2f-4a5b-9c6d-7e8f9a0b1c2d' })
 
     const [a, b] = await Promise.all([services.payments.create(invoice.id, request), services.payments.create(invoice.id, request)])
     const again = await services.payments.create(invoice.id, request)
@@ -201,7 +202,7 @@ describe('payments.create', () => {
     const first = await invoiceIn(services, 'unpaid')
     const other = await invoiceIn(services, 'overdue')
     const before = (await services.payments.list(other.id)).length
-    const request = input(100, { clientRequestId: 'used-once' })
+    const request = input(100, { clientRequestId: '5f4e3d2c-1b0a-4987-a654-3210fedcba98' })
 
     const made = await services.payments.create(first.id, request)
     const reused = await services.payments.create(other.id, request)
@@ -253,7 +254,7 @@ describe('payments.create', () => {
   it('is a draft invoice document_locked too', async () => {
     const services = await signedIn()
     const quote = (await services.documents.list({ type: 'quote', limit: 200 })).items.find((q) => q.status === 'signed')!
-    const draft = await services.documents.convert(quote.id, { target: 'invoice', basis: 'amount', basisValue: 100_000, clientRequestId: 'draft-invoice' })
+    const draft = await services.documents.convert(quote.id, { target: 'invoice', basis: 'amount', basisValue: 100_000, clientRequestId: 'd7a1c9e2-3b4f-4c5d-8e6f-0a1b2c3d4e5f' })
     expect(draft.status).toBe('draft')
     const error = await caught(services.payments.create(draft.id, input(100)))
     expect(isApiError(error) && error.code).toBe('document_locked')

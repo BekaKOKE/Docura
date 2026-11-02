@@ -37,7 +37,7 @@ import type {
   PaymentSummary,
   SignatureSummary,
 } from '../types'
-import { newId, newToken } from './ids'
+import { checkRequestId, newId, newToken } from './ids'
 import { takeNextNumber } from './numbering'
 import type { MockRuntime } from './runtime'
 import { notFound, type ScopedDb } from './scopedDb'
@@ -499,6 +499,7 @@ function convertToAct(
   quoteId: Id,
   input: Extract<ConvertInput, { target: 'act' }>,
 ): Document {
+  checkRequestId(input.clientRequestId, true)
   // A replay of the same request returns the document it made.
   if (input.clientRequestId) {
     const existing = db.rows('documents').find((d) => d.clientRequestId === input.clientRequestId)
@@ -641,6 +642,7 @@ export function createMockDocuments(getRuntime: () => MockRuntime): DocumentsSer
 
     create(input) {
       return write((db, view, now) => {
+        checkRequestId(input.clientRequestId, false)
         // A replay of the same request returns the document it made.
         if (input.clientRequestId) {
           const existing = db.rows('documents').find((d) => d.clientRequestId === input.clientRequestId)
@@ -784,6 +786,7 @@ export function createMockDocuments(getRuntime: () => MockRuntime): DocumentsSer
     convert(id, input) {
       if (input.target === 'act') return write((db, view, now) => convertToAct(db, view, now, id, input))
       return write((db, view, now) => {
+        checkRequestId(input.clientRequestId, true)
         // A replay of the same request returns the document it made.
         if (input.clientRequestId) {
           const existing = db.rows('documents').find((d) => d.clientRequestId === input.clientRequestId)

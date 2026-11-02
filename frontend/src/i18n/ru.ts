@@ -217,6 +217,7 @@ export const ru = {
   'validation.kbe.format': 'Кбе состоит из 2 цифр',
   'validation.required': 'Заполните это поле.',
   'validation.unknown': 'Проверьте значение.',
+  'validation.requestIdInvalid': 'Запрос не отправлен. Обновите страницу и попробуйте ещё раз.',
 
   'company.error.legalName': 'Укажите название компании.',
   'company.error.address': 'Укажите адрес.',

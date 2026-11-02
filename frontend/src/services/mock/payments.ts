@@ -9,7 +9,7 @@ import { t } from '../../i18n/t'
 import type { PaymentsService } from '../contracts'
 import { ApiError } from '../errors'
 import type { Payment, PaymentMethod, PaymentResult, PaymentState } from '../types'
-import { newId } from './ids'
+import { checkRequestId, newId } from './ids'
 import type { MockRuntime } from './runtime'
 import type { ScopedDb } from './scopedDb'
 import type { StoredDocument } from './storeTypes'
@@ -69,6 +69,7 @@ export function createMockPayments(getRuntime: () => MockRuntime): PaymentsServi
       const runtime = getRuntime()
       return runtime.call(() =>
         runtime.store.write((db): PaymentResult => {
+          checkRequestId(input.clientRequestId, true)
           const invoice = db.get('documents', documentId)
           const now = runtime.now()
 
