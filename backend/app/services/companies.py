@@ -7,6 +7,7 @@ from uuid import UUID
 from pydantic.alias_generators import to_camel
 
 from app.domain.company import COMPANY_EXISTS, cleaned_company_values, company_problems
+from app.domain.logo import detect_logo_type, logo_problem
 from app.errors import ApiError
 from app.repositories.base import Storage, UnitOfWork
 from app.repositories.records import Company, Membership, User
@@ -46,3 +47,20 @@ def update_company(storage: Storage, company_id: UUID, values: dict[str, Any]) -
     changes = _checked(values, require_all=False)
     with storage.unit_of_work() as uow:
         return uow.companies.update(company_id, replace(_existing(uow, company_id), **changes))
+
+
+def set_logo(storage: Storage, company_id: UUID, content: bytes) -> None:
+    problem = logo_problem(content)
+    if problem:
+        raise ApiError("validation_error", fields={"logo": problem})
+    with storage.unit_of_work() as uow:
+        company = _existing(uow, company_id)
+        uow.companies.update(company_id, replace(company, logo=content, logo_mime=detect_logo_type(content)))
+
+
+def get_logo(storage: Storage, company_id: UUID) -> tuple[bytes, str]:
+    """The logo and its type. A company without one is a 404."""
+    company = get_company(storage, company_id)
+    if company.logo is None or company.logo_mime is None:
+        raise ApiError("not_found")
+    return company.logo, company.logo_mime

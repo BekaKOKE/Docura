@@ -16,6 +16,8 @@ from tenant_isolation import (
 
 from app.errors import ApiError
 
+PNG_HEAD = b"\x89PNG\r\n\x1a\n"
+
 
 @pytest.fixture
 def owner(client: TestClient) -> Account:
@@ -153,17 +155,21 @@ class TestTenantIsolation:
     """AC 5, TC-8."""
 
     def test_another_companys_id_is_a_404(self, client: TestClient, owner: Account, stranger: Account) -> None:
+        """TC-8: GET, PATCH, PUT logo and GET logo, and the owner's company and logo stay as they were."""
         company = create_company(client, owner)
         path = f"/api/companies/{company['id']}"
+        client.put(f"{path}/logo", files={"file": ("logo.png", png(1000), "image/png")}, headers=owner.headers)
         assert_foreign_ids_are_hidden(
             client,
             stranger,
             [
                 TenantRoute("GET", path),
                 TenantRoute("PATCH", path, {"json": {"vatPayer": False}}),
+                TenantRoute("PUT", f"{path}/logo", {"files": {"file": ("logo.png", png(2000), "image/png")}}),
+                TenantRoute("GET", f"{path}/logo"),
             ],
             owner=owner,
-            reads=[path],
+            reads=[path, f"{path}/logo"],
         )
 
     def test_a_stranger_with_a_company_of_their_own_gets_the_same(
@@ -188,7 +194,83 @@ class TestTenantIsolation:
     ) -> None:
         company = create_company(client, owner)
         routes = assert_every_company_route_is_guarded(app, client, company["id"], stranger)
-        assert {(route.method, route.path.split(company["id"])[1]) for route in routes} >= {("GET", ""), ("PATCH", "")}
+        assert {(route.method, route.path.split(company["id"])[1]) for route in routes} == {
+            ("GET", ""),
+            ("PATCH", ""),
+            ("PUT", "/logo"),
+            ("GET", "/logo"),
+        }
+
+
+def png(size: int) -> bytes:
+    return PNG_HEAD.ljust(size, b"\0")
+
+
+class TestLogo:
+    """AC 4, TC-7."""
+
+    @pytest.fixture
+    def path(self, client: TestClient, owner: Account) -> str:
+        return f"/api/companies/{create_company(client, owner)['id']}"
+
+    def upload(self, client: TestClient, owner: Account, path: str, content: bytes, name: str, kind: str):
+        return client.put(f"{path}/logo", files={"file": (name, content, kind)}, headers=owner.headers)
+
+    def test_a_png_of_120_kb_is_saved_and_read_back(self, client: TestClient, owner: Account, path: str) -> None:
+        content = png(120 * 1024)
+        response = self.upload(client, owner, path, content, "logo.png", "image/png")
+        assert response.status_code == 204
+        assert response.content == b""
+        logo = client.get(f"{path}/logo", headers=owner.headers)
+        assert logo.status_code == 200
+        assert logo.content == content
+        assert logo.headers["content-type"] == "image/png"
+        assert client.get(path, headers=owner.headers).json()["hasLogo"] is True
+
+    def test_a_jpeg_is_saved_with_its_type(self, client: TestClient, owner: Account, path: str) -> None:
+        content = b"\xff\xd8\xff\xe0".ljust(5000, b"\0")
+        assert self.upload(client, owner, path, content, "logo.jpg", "image/jpeg").status_code == 204
+        logo = client.get(f"{path}/logo", headers=owner.headers)
+        assert (logo.content, logo.headers["content-type"]) == (content, "image/jpeg")
+
+    def test_exactly_300_kb_is_accepted(self, client: TestClient, owner: Account, path: str) -> None:
+        assert self.upload(client, owner, path, png(300 * 1024), "logo.png", "image/png").status_code == 204
+
+    def test_the_type_comes_from_the_bytes_not_the_name(self, client: TestClient, owner: Account, path: str) -> None:
+        content = png(1000)
+        assert self.upload(client, owner, path, content, "logo.txt", "text/plain").status_code == 204
+        assert client.get(f"{path}/logo", headers=owner.headers).headers["content-type"] == "image/png"
+
+    @pytest.mark.parametrize(
+        ("content", "name", "kind", "message"),
+        [
+            (png(301 * 1024), "logo.png", "image/png", "Файл больше 300 КБ. Выберите логотип поменьше."),
+            (b"GIF89a".ljust(50 * 1024, b"\0"), "logo.gif", "image/gif", "Логотип должен быть в формате PNG или JPEG."),
+            ("Это не картинка".encode(), "logo.png", "image/png", "Логотип должен быть в формате PNG или JPEG."),
+            (b"", "logo.png", "image/png", "Логотип должен быть в формате PNG или JPEG."),
+        ],
+    )
+    def test_anything_else_is_refused_and_the_old_logo_stays(
+        self, client: TestClient, owner: Account, path: str, content: bytes, name: str, kind: str, message: str
+    ) -> None:
+        """TC-7: 301 KB, a GIF and a text file named logo.png."""
+        old = png(1000)
+        self.upload(client, owner, path, old, "logo.png", "image/png")
+        response = self.upload(client, owner, path, content, name, kind)
+        assert assert_error(response, 422, "validation_error")["fields"] == {"logo": message}
+        assert client.get(f"{path}/logo", headers=owner.headers).content == old
+
+    def test_no_logo_is_a_404(self, client: TestClient, owner: Account, path: str) -> None:
+        assert_error(client.get(f"{path}/logo", headers=owner.headers), 404, "not_found")
+
+    def test_a_new_logo_replaces_the_old_one(self, client: TestClient, owner: Account, path: str) -> None:
+        self.upload(client, owner, path, png(1000), "a.png", "image/png")
+        self.upload(client, owner, path, png(2000), "b.png", "image/png")
+        assert len(client.get(f"{path}/logo", headers=owner.headers).content) == 2000
+
+    def test_the_logo_is_not_sniffed(self, client: TestClient, owner: Account, path: str) -> None:
+        self.upload(client, owner, path, png(1000), "logo.png", "image/png")
+        assert client.get(f"{path}/logo", headers=owner.headers).headers["x-content-type-options"] == "nosniff"
 
 
 class TestTheHelperItself:
