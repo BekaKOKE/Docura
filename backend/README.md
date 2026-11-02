@@ -12,6 +12,8 @@ FastAPI app managed with uv. Run everything from this folder; settings are docum
 
 PowerShell: `$env:STORAGE="memory"; uv run uvicorn app.main:app --reload --port 8000`.
 
+`JWT_SECRET` signs the bearer tokens. Without it (unset or blank) each process makes up a random secret and logs a warning at startup: everyone is signed out on every restart, `--reload` included. **Production must set it** to a long random value, such as `python -c "import secrets; print(secrets.token_urlsafe(32))"`. Its length isn't checked, so a short one is accepted.
+
 - `app/errors.py`: `ApiError` and the `{"error": {"code", "message", "fields"}}` handlers.
 - `app/schemas/base.py`: `CamelModel`, the base of every wire model (camelCase JSON).
 - `app/domain/`: pure business rules, tested on `../contracts/test-vectors/`; it imports no FastAPI or storage code.

@@ -1,3 +1,6 @@
+import logging
+from pathlib import Path
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -59,3 +62,47 @@ def test_cors_follows_the_settings(monkeypatch: pytest.MonkeyPatch) -> None:
         denied = client.get("/api/health", headers={"Origin": "http://localhost:5173"})
     assert allowed.headers["access-control-allow-origin"] == "http://192.168.1.10:5173"
     assert "access-control-allow-origin" not in denied.headers
+
+
+def test_no_fixed_jwt_secret_is_the_default() -> None:
+    first, second = Settings(_env_file=None), Settings(_env_file=None)
+    assert first.jwt_secret_is_random
+    assert len(first.jwt_secret) >= 32
+    assert first.jwt_secret != second.jwt_secret
+
+
+@pytest.mark.parametrize("blank", ["", "   "])
+def test_a_blank_jwt_secret_counts_as_unset(monkeypatch: pytest.MonkeyPatch, blank: str) -> None:
+    monkeypatch.setenv("JWT_SECRET", blank)
+    settings = Settings(_env_file=None)
+    assert settings.jwt_secret_is_random
+    assert settings.jwt_secret.strip()
+
+
+def test_a_set_jwt_secret_is_kept_and_short_ones_are_accepted(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("JWT_SECRET", "s")
+    settings = Settings(_env_file=None)
+    assert settings.jwt_secret == "s"
+    assert not settings.jwt_secret_is_random
+
+
+def test_startup_warns_when_the_jwt_secret_is_random(caplog: pytest.LogCaptureFixture) -> None:
+    with caplog.at_level(logging.WARNING, logger="app.main"):
+        create_app(Settings(_env_file=None))
+    assert "JWT_SECRET is not set" in caplog.text
+    assert "survive a restart" in caplog.text
+    assert "Production must set it" in caplog.text
+
+
+def test_startup_is_quiet_when_the_jwt_secret_is_set(
+    monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    monkeypatch.setenv("JWT_SECRET", "a-secret-for-this-test")
+    with caplog.at_level(logging.WARNING, logger="app.main"):
+        create_app(Settings(_env_file=None))
+    assert "JWT_SECRET" not in caplog.text
+
+
+def test_the_env_example_ships_no_usable_secret() -> None:
+    example = (Path(__file__).parents[1] / ".env.example").read_text(encoding="utf-8")
+    assert "JWT_SECRET=" in example.splitlines()
