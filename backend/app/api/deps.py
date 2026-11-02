@@ -1,11 +1,13 @@
-"""What routes depend on: the storage, the signed-in user and the rate limiter."""
+"""What routes depend on: the storage, the signed-in user, the membership check and the rate limiter."""
 
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer
 
 from app.config import Settings
+from app.errors import ApiError
 from app.rate_limit import RateLimiter
 from app.repositories.base import Storage
 from app.repositories.records import User
@@ -49,3 +51,25 @@ def get_current_user(
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
+
+
+def parse_id(value: str) -> UUID:
+    """A path id. One that isn't a UUID can't exist, so it is a 404 like any unknown id, never a 422."""
+    try:
+        return UUID(value)
+    except ValueError:
+        raise ApiError("not_found") from None
+
+
+def require_member(cid: str, user: CurrentUser, storage: StorageDep) -> UUID:
+    """The company of a `/api/companies/{cid}/...` route. Every such route takes this, and gets a 404 for a company the
+    user isn't in, the same as for one that doesn't exist. In the MVP a member is the owner."""
+    company_id = parse_id(cid)
+    with storage.unit_of_work() as uow:
+        membership = uow.memberships.get(company_id, user.id)
+    if membership is None:
+        raise ApiError("not_found")
+    return company_id
+
+
+MemberCompanyId = Annotated[UUID, Depends(require_member)]
