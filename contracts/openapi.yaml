@@ -93,22 +93,29 @@ paths:
       x-service-method: auth.login
       tags: [auth]
       summary: Sign in with email and password
+      description: |
+        JSON is what the http services send. The form is the OAuth2 password form of Swagger's Authorize button, with the
+        email in `username`.
       security: []
       requestBody:
         required: true
         content:
           application/json:
             schema: { $ref: '#/components/schemas/LoginInput' }
+          application/x-www-form-urlencoded:
+            schema: { $ref: '#/components/schemas/LoginForm' }
       responses:
         '200':
-          description: The user and their token
+          description: |
+            The user and their token. A JSON request gets exactly `AuthSession`. A form request gets `LoginFormSession`,
+            which is `AuthSession` plus the `access_token` and `token_type` that OAuth2 clients read.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/AuthSession' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '422': { $ref: '#/components/responses/ValidationError' }
         '429':
-          description: Too many tries
+          description: Too many tries. Every attempt counts, including a successful one.
           content:
             application/json:
               schema: { $ref: '#/components/schemas/ErrorResponse' }
@@ -1013,12 +1020,28 @@ components:
       properties:
         email: { type: string }
         password: { type: string }
+    LoginForm:
+      type: object
+      required: [username, password]
+      properties:
+        username: { type: string, description: The email }
+        password: { type: string }
+        grant_type: { type: string, description: Ignored. Swagger sends `password` }
     AuthSession:
       type: object
       required: [accessToken, user]
       properties:
         accessToken: { type: string }
         user: { $ref: '#/components/schemas/User' }
+    LoginFormSession:
+      description: What a form-encoded login returns.
+      allOf:
+        - { $ref: '#/components/schemas/AuthSession' }
+        - type: object
+          required: [access_token, token_type]
+          properties:
+            access_token: { type: string, description: The same token as `accessToken` }
+            token_type: { type: string, enum: [bearer] }
     Me:
       type: object
       required: [user, companies]
