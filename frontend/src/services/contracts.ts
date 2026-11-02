@@ -90,7 +90,7 @@ export interface ArticlesService {
 export interface DocumentsService {
   list(params?: DocumentListParams): Promise<Page<DocumentSummary>>
   get(id: Id): Promise<Document>
-  /** Creates a draft quote, invoice or act. A repeated `clientRequestId` returns the existing document. */
+  /** Creates a draft quote; invoices and acts come from `convert` (docs/spec.md, D4). A repeated `clientRequestId` returns the existing document. */
   create(input: DocumentInput): Promise<Document>
   /** Replaces an editable document, lines included. `version_conflict` when `input.version` is stale; `document_locked` when it can no longer be edited. */
   update(id: Id, input: DocumentUpdateInput): Promise<Document>

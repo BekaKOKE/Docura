@@ -214,7 +214,7 @@ Routes: 38.
 | method path | does | who | input | output | flow |
 | --- | --- | --- | --- | --- | --- |
 | `GET …/documents` | list with filters | member | `type, status, paymentState, clientId, q, from, to, limit, offset` | `Page<DocumentSummary>` | F04, F05, F10 |
-| `POST …/documents` | create a draft quote, invoice or act | member | `DocumentInput {type, clientId, issueDate?, validUntil?, dueDate?, periodFrom?, periodTo?, contractRef?, vatEnabled, lines[], notes?, terms?, clientRequestId?}` | `Document` | F02 |
+| `POST …/documents` | create a draft quote; any other `type` is a 422 (D4: invoices and acts come from convert) | member | `DocumentInput {type, clientId, issueDate?, validUntil?, dueDate?, periodFrom?, periodTo?, contractRef?, vatEnabled, lines[], notes?, terms?, clientRequestId?}` | `Document` | F02 |
 | `GET …/documents/{id}` | full document: lines, totals, link, signature summary, payment state, children | member | — | `Document` | F02–F07 |
 | `PUT …/documents/{id}` | replace an editable document, lines included | member | `DocumentInput + version` | `Document` · 409 `version_conflict` / `document_locked` | F02 |
 | `DELETE …/documents/{id}` | delete a draft | member | — | 204 · 409 if not a draft | F02 |
