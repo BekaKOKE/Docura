@@ -53,3 +53,7 @@ replica/         recon, architecture, schema, design system (planning inputs, no
 
 `frontend/` and `backend/` don't exist yet; the first issues of M1 and M3 create them. The commands they must provide are in
 [AGENTS.md](AGENTS.md#commands).
+
+## DevOps and observability
+
+Dev and prod environments, the manual promotion workflow, OpenTelemetry, the dashboard, alerts and the on-call agent are described in [docs/devops.md](docs/devops.md).

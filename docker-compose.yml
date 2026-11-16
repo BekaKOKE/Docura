@@ -1,0 +1,53 @@
+# One stack, two environments:
+#   docker compose --env-file env/dev.env  -p docura-dev  up -d --build
+#   docker compose --env-file env/prod.env -p docura-prod up -d --build
+name: docura
+services:
+  backend:
+    build: ./backend
+    environment:
+      APP_ENV: ${APP_ENV}
+      STORAGE: memory
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGINS: ${PUBLIC_URL}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+      OTEL_SERVICE_NAME: docura-backend
+  web:
+    build: {context: ., dockerfile: frontend/Dockerfile, args: {VITE_API_MODE: http}}
+    ports: ["${WEB_PORT}:80"]
+    depends_on: [backend]
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otel.yaml"]
+    volumes: ["./observability/otel-collector.yaml:/etc/otel.yaml:ro"]
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./observability/alerts.yml:/etc/prometheus/alerts.yml:ro
+    ports: ["${PROM_PORT}:9090"]
+  alertmanager:
+    image: prom/alertmanager:latest
+    volumes: ["./observability/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro"]
+  loki:
+    image: grafana/loki:latest
+  tempo:
+    image: grafana/tempo:latest
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes: ["./observability/tempo.yaml:/etc/tempo.yaml:ro"]
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports: ["${GRAFANA_PORT}:3000"]
+  oncall-agent:
+    build: ./oncall-agent
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GH_TOKEN: ${GH_TOKEN:-}
+      GITHUB_REPO: BekaKOKE/Docura

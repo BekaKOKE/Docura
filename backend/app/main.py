@@ -8,6 +8,7 @@ from app.config import Settings, get_settings
 from app.errors import install_error_handlers
 from app.rate_limit import RateLimiter
 from app.repositories import build_storage
+from app.telemetry import setup_telemetry
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +34,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(health.router, prefix="/api")
     app.include_router(auth.router, prefix="/api")
     app.include_router(companies.router, prefix="/api")
+    setup_telemetry(app, settings.app_env)
     return app
 
 

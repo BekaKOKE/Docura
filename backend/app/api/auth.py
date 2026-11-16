@@ -15,6 +15,7 @@ from app.repositories.records import User
 from app.schemas.auth import AuthSession, LoginForm, LoginInput, Me, RegisterInput, UserOut
 from app.security import create_access_token
 from app.services import auth as auth_service
+from app.telemetry import logins, rate_limited, registrations
 
 router = APIRouter()
 
@@ -72,6 +73,7 @@ def _check_rate(rate_limiter: RateLimiter, route: str, request: Request, email: 
     checked: junk can't flood the limiter for free, as it uses up the sender's own keys like any other try."""
     group = _client_group(request.client.host if request.client else "unknown")
     if not rate_limiter.allow((route, group, normalize_email(email)[:MAX_EMAIL_LENGTH]), group):
+        rate_limited.add(1, {"route": route})
         raise ApiError("rate_limited")
 
 
@@ -88,7 +90,9 @@ def register(
     rate_limiter: AuthRateLimiterDep,
 ) -> AuthSession:
     _check_rate(rate_limiter, "register", request, data.email)
-    return _session(auth_service.register(storage, data), settings)
+    session = _session(auth_service.register(storage, data), settings)
+    registrations.add(1)
+    return session
 
 
 @router.post("/auth/login", operation_id="authLogin", response_model=AuthSession, openapi_extra=_LOGIN_BODY)
@@ -102,7 +106,9 @@ def login(
     _check_rate(rate_limiter, "login", request, credentials.email)
     user = auth_service.authenticate(storage, credentials.email, credentials.password)
     if user is None:
+        logins.add(1, {"outcome": "failure"})
         raise unauthorized()
+    logins.add(1, {"outcome": "success"})
     session = _session(user, settings)
     if credentials.from_form:
         return JSONResponse(session.to_wire() | {"access_token": session.access_token, "token_type": "bearer"})

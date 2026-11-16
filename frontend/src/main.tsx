@@ -7,7 +7,7 @@ import './styles/index.css'
 // The development panel's styles: loaded in development only, so `npm run build` has none of the panel (#14 AC 5).
 if (import.meta.env.DEV) void import('./dev/dev.css')
 
-const router = createBrowserRouter(routes)
+const router = createBrowserRouter(routes, { basename: import.meta.env.BASE_URL.replace(/\/$/, '') || '/' })
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

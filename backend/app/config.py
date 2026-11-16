@@ -12,6 +12,8 @@ from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
+    # Which deployment this is: labels every metric, trace and log.
+    app_env: Literal["development", "production"] = "development"
     # memory = in-memory repositories, sql = SQLAlchemy repositories.
     storage: Literal["memory", "sql"] = "memory"
     database_url: str = "sqlite:///./docura.db"

@@ -12,6 +12,8 @@ from fastapi.responses import JSONResponse
 from pydantic.alias_generators import to_camel
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.telemetry import api_errors
+
 API_ERROR_STATUS: dict[str, int] = {
     "validation_error": 422,
     "unauthorized": 401,
@@ -96,6 +98,7 @@ def _json(status: int, code: str, message: str, fields: dict[str, str] | None = 
 
 async def _api_error_handler(_: Request, exc: Exception) -> JSONResponse:
     assert isinstance(exc, ApiError)
+    api_errors.add(1, {"code": exc.code})
     return _json(exc.status, exc.code, exc.message, exc.fields)
 
 

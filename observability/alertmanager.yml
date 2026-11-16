@@ -1,0 +1,11 @@
+route:
+  receiver: oncall-agent
+  group_by: [alertname, deployment_environment]
+  group_wait: 5s
+  repeat_interval: 1h
+receivers:
+  - name: oncall-agent
+    webhook_configs:
+      # The on-call AI agent: a small service that triages the alert with Claude and opens a GitHub issue.
+      - url: http://oncall-agent:9000/alert
+        send_resolved: false

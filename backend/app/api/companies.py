@@ -6,13 +6,16 @@ from app.api.deps import CurrentUser, MemberCompanyId, StorageDep
 from app.domain.logo import LOGO_MAX_BYTES
 from app.schemas.company import CompanyInput, CompanyOut, CompanyPatch
 from app.services import companies as company_service
+from app.telemetry import companies_created
 
 router = APIRouter()
 
 
 @router.post("/companies", operation_id="companyCreate", response_model=CompanyOut, status_code=201)
 def create_company(data: CompanyInput, user: CurrentUser, storage: StorageDep) -> CompanyOut:
-    return CompanyOut.from_record(company_service.create_company(storage, user, data.sent()))
+    company = company_service.create_company(storage, user, data.sent())
+    companies_created.add(1)
+    return CompanyOut.from_record(company)
 
 
 @router.get("/companies/{cid}", operation_id="companyGet", response_model=CompanyOut)

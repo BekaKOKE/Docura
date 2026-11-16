@@ -1,0 +1,28 @@
+groups:
+  - name: docura
+    rules:
+      - alert: DocuraLoginFailureSpike
+        expr: sum by (deployment_environment) (increase(docura_logins_total{outcome="failure"}[1m])) > 5
+        for: 10s
+        labels: {severity: warning}
+        annotations:
+          summary: "Failed logins spiking in {{ $labels.deployment_environment }}"
+          description: "More than 5 failed logins in the last minute: possible credential stuffing or a broken login."
+      - alert: DocuraRateLimitHits
+        expr: sum by (deployment_environment) (increase(docura_rate_limited_total[1m])) > 3
+        for: 10s
+        labels: {severity: warning}
+        annotations:
+          summary: "Auth rate limiter is refusing requests in {{ $labels.deployment_environment }}"
+      - alert: DocuraApiErrorBurst
+        expr: sum by (deployment_environment) (increase(docura_api_errors_total[1m])) > 20
+        for: 10s
+        labels: {severity: critical}
+        annotations:
+          summary: "API error burst in {{ $labels.deployment_environment }}"
+      - alert: DocuraBackendDown
+        expr: absent(docura_registrations_total) and absent(http_server_duration_milliseconds_count)
+        for: 1m
+        labels: {severity: critical}
+        annotations:
+          summary: "No telemetry from the Docura backend"

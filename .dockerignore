@@ -1,0 +1,10 @@
+**/node_modules
+**/dist
+**/.venv
+.git
+.claude
+brain
+replica/*
+!replica/design
+docs
+*.rar

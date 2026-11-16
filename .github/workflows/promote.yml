@@ -1,0 +1,96 @@
+name: Promote (manual)
+
+# Manual trigger only. "Run workflow" in the Actions tab picks the target.
+#   development: deploys the chosen ref to the dev site (/dev/)
+#   production:  deploys to the production site (/), after the `production` environment's required reviewer approves
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Environment to deploy to
+        type: choice
+        options: [development, production]
+        default: development
+      ref:
+        description: Git ref to deploy (branch, tag or SHA)
+        default: main
+
+concurrency:
+  group: promote-${{ inputs.target }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: astral-sh/setup-uv@v5
+      - name: Backend tests
+        working-directory: backend
+        run: |
+          uv sync --frozen
+          uv run pytest -q
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Frontend tests
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run typecheck
+          npm test
+
+  deploy:
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.target }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Build the site for ${{ inputs.target }}
+        working-directory: frontend
+        env:
+          VITE_API_MODE: mock
+          VITE_APP_ENV: ${{ inputs.target }}
+          BASE: ${{ inputs.target == 'production' && '/Docura/' || '/Docura/dev/' }}
+        run: |
+          npm ci
+          npx vite build --base "$BASE"
+          cp dist/index.html dist/404.html
+      - name: Publish to gh-pages (${{ inputs.target }})
+        run: |
+          SUBDIR="${{ inputs.target == 'production' && '.' || 'dev' }}"
+          git config user.name "docura-deploy"
+          git config user.email "deploy@users.noreply.github.com"
+          git fetch origin gh-pages || true
+          rm -rf /tmp/pages
+          if git rev-parse origin/gh-pages >/dev/null 2>&1; then
+            git worktree add --detach /tmp/pages origin/gh-pages
+          else
+            git worktree add --detach /tmp/pages
+            (cd /tmp/pages && git checkout --orphan gh-pages && git rm -rf . >/dev/null)
+          fi
+          cd /tmp/pages
+          if [ "$SUBDIR" = "dev" ]; then
+            rm -rf dev && mkdir dev && cp -r "$GITHUB_WORKSPACE"/frontend/dist/. dev/
+          else
+            find . -mindepth 1 -maxdepth 1 ! -name .git ! -name dev -exec rm -rf {} +
+            cp -r "$GITHUB_WORKSPACE"/frontend/dist/. .
+          fi
+          touch .nojekyll
+          git add -A
+          git commit -m "deploy ${{ inputs.target }} from ${{ inputs.ref }}" || echo "nothing to deploy"
+          git push origin HEAD:gh-pages

@@ -11,3 +11,6 @@ agentdb.rvf.lock
 
 # Vitest output (generated)
 frontend/.vitest/
+
+# Local secrets for the compose stacks
+env/*.secret
